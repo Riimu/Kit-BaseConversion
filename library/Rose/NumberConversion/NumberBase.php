@@ -81,7 +81,7 @@ class NumberBase
             }
         } else {
             for ($i = 0; $i < $integer; $i++) {
-                $numbers[] = "#$integer";
+                $numbers[] = "#$i;";
             }
         }
         
@@ -104,21 +104,30 @@ class NumberBase
      */
     public function setBaseArray (array $array)
     {
-        ksort($array);
-        $base = array_flip(array_values($array));
-
-        // This basically tests that the array is 0 ... n indexed
-        if (array_flip($base) != $array) {
-            throw new \InvalidArgumentException('Invalid number base provided');
-        }
-
-        $this->radix = count($base);
-
-        if ($this->radix < 2) {
+        if (count($array) < 2) {
             throw new \InvalidArgumentException('Number base must have at least 2 numbers');
         }
+        
+        $numbers = array();
+        
+        // array_unique does string comparison which is not always desirable
+        foreach ($array as $key => $value) {
+            if (array_search($value, $numbers) !== false) {
+                throw new \InvalidArgumentException('Duplicate numbers in number base');
+            }
+            $numbers[$key] = $value;
+        }
+        
+        $keys = array_keys($numbers);
+        sort($keys);
+        
+        // Sorted array from 0 to n should have identical keys and values
+        if (array_flip($keys) !== $keys) {
+            throw new \InvalidArgumentException('Invalid number values in number base');
+        }
 
-        $this->numbers = $base;
+        $this->radix = count($numbers);
+        $this->numbers = $numbers;
     }
 
     /**
@@ -136,13 +145,15 @@ class NumberBase
      * @return integer The decimal value for the provided character
      * @throws \InvalidArgumentException If the character does not exist
      */
-    public function getDecimalValue ($character)
+    public function getDecimalValue ($number)
     {
-        if (!isset($this->numbers[$character])) {
-            throw new \InvalidArgumentException('Given character does not exist in the number base');
+        $key = array_search($number, $this->numbers);
+        
+        if ($key === false) {
+            throw new \InvalidArgumentException('Number does not exist in the number base');
         }
-
-        return $this->numbers[$character];
+        
+        return $key;
     }
 
     /**
@@ -152,14 +163,12 @@ class NumberBase
      * @throws \InvalidArgumentException If the decimal value is not within the number system
      */
     public function getFromDecimalValue ($decimal)
-    {
-        $decimal = (int) $decimal;
-
-        if ($decimal < 0 || $decimal >= $this->radix) {
-            throw new \InvalidArgumentException('The given decimal value does not exist within the number base');
+    {   
+        if (!isset($this->numbers[$decimal])) {
+            throw new \InvalidArgumentException('Decimal value does not exist in the number base');
         }
         
-        return (string) array_search($decimal, $this->numbers);
+        return $this->numbers[$decimal];
     }
 
     /**
@@ -181,12 +190,21 @@ class NumberBase
             : $this->isNthRootFor($base->radix, $this->radix));
     }
     
+    /**
+     * Finds integer roots that are commont to radix of both number bases.
+     * @param NumberBase $base Number base to compare against
+     * @return integer|false Highest common integer root or false if none
+     */
     public function findCommonRadixRoot (NumberBase $base)
     {
         $common = array_intersect($this->getRadixRoots(), $base->getRadixRoots());        
         return count($common) > 0 ? max($common) : false;
     }
     
+    /**
+     * Returns all integer roots for the radix.
+     * @return array Array of integer roots for the radix
+     */
     private function getRadixRoots ()
     {
         $roots = array($this->radix);
@@ -200,6 +218,12 @@ class NumberBase
         return $roots;
     }
     
+    /**
+     * Tests if given number is nth root for the number.
+     * @param integer $number Number to test against
+     * @param integer $root Root to test
+     * @return boolean True if the number is nth root and false if not
+     */
     private function isNthRootFor ($number, $root)
     {
         for ($pow = 2; pow($root, $pow) < $number; $pow++);
@@ -230,25 +254,25 @@ class NumberBase
             $min = $this;
             $max = $target;
         }
-
-        $source = array_flip($min->numbers);       
-        $last = (string) end($source);
-        $number = null;        
-        $values = array();
+     
+        $last = $min->numbers[$min->radix - 1];
+        $size = (int) log($max->radix, $min->radix);
+        $number = array_fill(0, $size, $min->numbers[0]);
+        $next = array_fill(0, $size, 0);
+        $minNumbers = array();
 
         for ($i = 0; $i < $max->radix; $i++) {
-            if ($number === null) {
-                $number = str_repeat($source[0], log($max->radix, $min->radix));
-            } else {
-                for ($j = 0; $number[$j] === $last; $j++) {
-                    $number[$j] = $source[0];
+            if ($i > 0) {
+                for ($j = $size - 1; $number[$j] == $last; $j--) {
+                    $number[$j] = $min->numbers[0];
+                    $next[$j] = 0;
                 }
-                $number[$j] = $source[$min->numbers[$number[$j]] + 1];
+                $number[$j] = $min->numbers[++$next[$j]];
             }
-            $values[] = strrev($number);
+            $minNumbers[] = $number;
         }
         
-        $table = array_combine(array_keys($max->numbers), $values);
-        return $min === $this ? array_flip($table) : $table;
+        $table = array($minNumbers, array_chunk($max->numbers, 1));
+        return $min === $this ? $table : array_reverse($table);
     }
 }

@@ -5,26 +5,34 @@ namespace Rose\NumberConversion;
 /**
  * Converts numbers of arbitrary size from number base to another.
  *
- * PHP has a built in function base_convert that does most of what this
- * class does. There are, however, two key differences. BaseConverter can
- * handle numbers of arbitrary size, unlike base_convert, and the number bases
- * does not necessarily have to consist of only ranges 0..9 and A..Z.
+ * PHP's built in base_convert can handle base conversion needed in most cases.
+ * There are however two special cases where the function is not sufficient.
+ * First, the build in function can't handle numbers that require bigger than 32
+ * bit integer to convert. Secondly, base_convert only supports number bases up
+ * to 36. BaseConverter is capable of handling integers of any size in addition
+ * to being able to handle very large number bases.
  *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  */
 class BaseConverter
 {
     /**
-     * Base the number is converted from.
+     * Number base for the original number.
      * @var NumberBase
      */
     private $sourceBase;
 
     /**
-     * Base the number is converted to.
+     * Number base for the resulting number.
      * @var NumberBase
      */
     private $targetBase;
+    
+    /**
+     * Library used to perform decimal conversion
+     * @var \Rose\NumberConversion\DecimalConverter\DecimalConverter
+     */
+    private $decimalConverter;
 
     /**
      * Creates a new base base converter.
@@ -35,10 +43,33 @@ class BaseConverter
     {
         $this->sourceBase = $sourceBase;
         $this->targetBase = $targetBase;
+        
+        // @codeCoverageIgnoreStart
+        if (function_exists('gmp_add')) {
+            $this->decimalConverter = new DecimalConverter\GMPConverter();
+        } elseif (function_exists('bcadd')) {
+            $this->decimalConverter = new DecimalConverter\BCMathConverter();
+        } else {
+            $this->decimalConverter = null;
+        }
+        // @codeCoverageIgnoreEnd
+    }
+    
+    /**
+     * Sets the decimal converter library to use.
+     * 
+     * It's possible to call the method with null parameter in order to disable
+     * the decimal converter used by default.
+     * 
+     * @param \Rose\NumberConversion\DecimalConverter\DecimalConverter $converter Converter to use
+     */
+    public function setDecimalConverter (DecimalConverter\DecimalConverter $converter = null)
+    {
+        $this->decimalConverter = $converter;
     }
 
     /**
-     * Converts a number provided as a string.
+     * Converts the number provided as a string using best available method.
      * @param string $number Number to convert
      * @return string The converted number
      */
@@ -48,7 +79,7 @@ class BaseConverter
     }
 
     /**
-     * Converts the number provided as an array using best method.
+     * Converts the number provided as an array using the best available method.
      * @param array $number Number to covert with most significant digit last
      * @return array The converted number with most significant digit last
      */
@@ -56,15 +87,29 @@ class BaseConverter
     {
         if ($this->sourceBase->findCommonRadixRoot($this->targetBase)) {
             return $this->convertViaCommonRoot($number);
-        } elseif (function_exists('bcadd')) {
+        } elseif ($this->decimalConverter !== null) {
             return $this->convertViaDecimal($number);
         } else {
-            // @codeCoverageIgnoreStart
             return $this->convertDirectly($number);
-            // @codeCoverageIgnoreEnd
         }
     }
     
+    /**
+     * Converts the number by replacing numbers via a common radix root.
+     * 
+     * This method will attempt a find a root that is common to both the source
+     * and target radix. If one is found, the number is first converted to a
+     * number base with radix equal to the common root and then from that number
+     * base to the target number base. Replacement method is fast enough that
+     * doing it twice is still faster than any other method.
+     * 
+     * If no common root is found, an exception is thrown. If the bases are
+     * exponential, then only one conversion will take place. 
+     * 
+     * @param array $number Number to covert with most significant digit last
+     * @return array The converted number with most significant digit last
+     * @throws \InvalidArgumentException If no common root can be found
+     */
     public function convertViaCommonRoot (array $number)
     {
         $root = $this->sourceBase->findCommonRadixRoot($this->targetBase);
@@ -85,10 +130,14 @@ class BaseConverter
     }
 
     /**
-     * Converts number from base to another by replacing characters.
+     * Converts number from base to another by simply replacing the numbers.
      *
-     * Conversion via character replacement can only be done if the bigger base
-     * is a result of natural exponent of the smaller base.
+     * If two number bases are exponential (i.e. one number can be represented
+     * by exactly n numbers in the other base), then conversion can be done by
+     * simply replacing the original numbers with numbers from the other base.
+     * For large numbers, this is several magnitudes faster than any other
+     * conversion method. Exception is thrown if the number bases are not
+     * exponential.
      *
      * @param array $number Number to covert with most significant digit last
      * @return array The converted number with most significant digit last
@@ -97,17 +146,34 @@ class BaseConverter
     public function convertByReplace (array $number)
     {
         $table = $this->sourceBase->createConversionTable($this->targetBase);
-        $size = strlen(key($table));
-        $zero = $this->sourceBase->getFromDecimalValue(0);
+        $size = count($table[0][0]);
+        $sourceZero = $this->sourceBase->getFromDecimalValue(0);
+        $targetZero = $this->targetBase->getFromDecimalValue(0);
         $pad = $size - (count($number) % $size);
 
-        $number = implode('', $number);
-        if ($pad) {
-            $number = str_repeat($zero, $size - $pad) . $number;
+        while ($pad--) {
+            array_unshift($number, $sourceZero);
         }
-        $number = ltrim(strtr($number, $table), $zero);
+        
+        $replacements = array();
+        
+        foreach (array_chunk($number, $size) as $chunk) {
+            $key = array_search($chunk, $table[0]);
+            
+            if ($key === false) {
+                throw new \InvalidArgumentException('Invalid number');
+            }
+            
+            $replacements[] = $table[1][$key];
+        }
+        
+        $result = call_user_func_array('array_merge', $replacements);
+        
+        while ($result[0] == $targetZero && isset($result[1])) {
+            array_shift($result);
+        }
 
-        return str_split($number);
+        return $result;
     }
 
     /**
@@ -117,51 +183,15 @@ class BaseConverter
      */
     public function convertViaDecimal (array $number)
     {
-        $decimal = $this->convertToDecimal($number);
-        return $this->convertFromDecimal($decimal);
-    }
-
-    /**
-     * Converts the given number from the source number base to decimal.
-     * @param array $number Number to convert
-     * @return string The resulting decimal number as string
-     */
-    public function convertToDecimal (array $number)
-    {
-        $power = 0;
-        $decimal = '0';
-        $sourceRadix = $this->sourceBase->getRadix();
-
-        foreach (array_reverse($number) as $digit) {
-            $decimalDigit = $this->sourceBase->getDecimalValue($digit);
-            $decimal = bcadd($decimal, bcmul($decimalDigit, bcpow($sourceRadix, $power++)));
+        if ($this->decimalConverter === null) {
+            throw new \RuntimeException('No decimal conversion library available');
         }
+        
+        $result = $this->decimalConverter->convertNumber(
+            array_map(array($this->sourceBase, 'getDecimalValue'), $number),
+            $this->sourceBase->getRadix(), $this->targetBase->getRadix());
 
-        return $decimal;
-    }
-
-    /**
-     * Converts from decimal number to the target number base.
-     * @param string $decimal Decimal number as a string
-     * @return array The resulting number as an array with most significant digit last
-     * @throws \InvalidArgumentException If the number string doesn't only contain digits
-     */
-    public function convertFromDecimal ($decimal)
-    {
-        if (!ctype_digit($decimal)) {
-            throw new \InvalidArgumentException('Decimal must consist of numbers only');
-        }
-
-        $number = array();
-        $targetRadix = $this->targetBase->getRadix();
-
-        while ($decimal !== '0') {
-            $modulo = bcmod($decimal, $targetRadix);
-            $decimal = bcdiv(bcsub($decimal, $modulo), $targetRadix);
-            $number[] = $this->targetBase->getFromDecimalValue($modulo);
-        }
-
-        return empty($number) ? array('0') : array_reverse($number);
+        return array_map(array($this->targetBase, 'getFromDecimalValue'), $result);
     }
 
     /**

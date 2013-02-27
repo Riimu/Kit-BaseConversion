@@ -13,22 +13,44 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
      */
     public function testInvalidBaseType ()
     {
-        $base = new NumberBase(true);
+        new NumberBase(true);
     }
 
-    public function testCreateWithInteger ()
+    public function testCreateDefaultIntegerBase ()
     {
         $base = new NumberBase(18);
         $this->assertEquals(18, $base->getRadix());
         $this->assertEquals('G', $base->getFromDecimalValue(16));
+        $this->assertEquals(17, $base->getDecimalValue('H'));
+    }
+    
+    public function testCreateBase64IntegerBase ()
+    {
+        $base = new NumberBase(64);
+        $this->assertEquals('A', $base->getFromDecimalValue(0));
+        $this->assertEquals(62, $base->getDecimalValue('+'));
+    }
+    
+    public function testCreateByteIntegerBase ()
+    {
+        $base = new NumberBase(256);
+        $this->assertEquals("\x64", $base->getFromDecimalValue(0x64));
+        $this->assertEquals(032, $base->getDecimalValue("\032"));
+    }
+    
+    public function testCreateLargeIntegerBase ()
+    {
+        $base = new NumberBase(512);
+        $this->assertEquals("#306;", $base->getFromDecimalValue(306));
+        $this->assertEquals(32, $base->getDecimalValue("#32;"));
     }
 
     /**
      * @expectedException InvalidArgumentException
      */
-    public function testCreateWithTooLargeInteger ()
+    public function testCreateWithTooSmallInteger ()
     {
-        $vase = new NumberBase(99);
+        new NumberBase(1);
     }
 
     public function testCreateWithString ()
@@ -49,17 +71,25 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     /**
      * @expectedException InvalidArgumentException
      */
-    public function testTooSmallBase ()
+    public function testBaseWithSingleNumber ()
     {
-        $base = new NumberBase('0');
+        new NumberBase(array(0));
     }
 
     /**
      * @expectedException InvalidArgumentException
      */
-    public function testInvalidNumberBase ()
+    public function testBaseWithDuplicateNumbers ()
     {
-        $base = new NumberBase(array('a', 'a', 'b'));
+        new NumberBase(array(0, 0, 1));
+    }
+    
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testBaseWithMissingValues ()
+    {
+        new NumberBase(array(0 => 0, 2 => 1));
     }
 
     /**
@@ -106,9 +136,19 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     {
         $a = new NumberBase($a);
         $b = new NumberBase($b);
+        
+        $table = array(
+            array_map('str_split', array_keys($result)),
+            array_map('str_split', array_values($result)),
+        );
 
-        $this->assertEquals($result, $a->createConversionTable($b));
-        $this->assertEquals(array_flip($result), $b->createConversionTable($a));
+        $this->assertEquals($table, $a->createConversionTable($b));
+        
+        $temp = $table[0];
+        $table[0] = $table[1];
+        $table[1] = $temp;
+        
+        $this->assertEquals($table, $b->createConversionTable($a));
     }
     
     public function getConversionTableTestValues ()
@@ -125,6 +165,22 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
                 '#%' => 'F', '%!' => 'G', '%#' => 'H', '%%' => 'I',
             )),
         );
+    }
+    
+    public function testObjectConversionTable ()
+    {
+        $std1 = new \stdClass();
+        $std1->value = 0;
+        $std2 = new \stdClass();
+        $std2->value = 1;
+        
+        $a = new NumberBase(array($std1, $std2));
+        $b = new NumberBase(array($std2, $std1));
+        
+        $this->assertEquals(array(
+            array(array($std1), array($std2)),
+            array(array($std2), array($std1)),
+        ), $a->createConversionTable($b));
     }
 
     /**
