@@ -1,10 +1,11 @@
 <?php
 
-require '../library/Rose/NumberConversion/DecimalConverter/DecimalConverter.php';
-require '../library/Rose/NumberConversion/DecimalConverter/BCMathConverter.php';
-require '../library/Rose/NumberConversion/DecimalConverter/GMPConverter.php';
-require '../library/Rose/NumberConversion/BaseConverter.php';
-require '../library/Rose/NumberConversion/NumberBase.php';
+set_include_path(__DIR__ . '/../src');
+spl_autoload_register();
+
+use Riimu\Kit\NumberConversion\BaseConverter;
+use Riimu\Kit\NumberConversion\DecimalConverter;
+
 
 echo "Test for efficiency of different algorithms available:\n";
 
@@ -31,9 +32,7 @@ $number = str_split(
 $source = str_split('012345');
 $target = str_split('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ');
 
-$converter = new Rose\NumberConversion\BaseConverter(
-    new Rose\NumberConversion\NumberBase($source),
-    new Rose\NumberConversion\NumberBase($target));
+$converter = new BaseConverter($source, $target);
 
 $timer = microtime(true);
 for ($i = 0; $i < $count; $i++) {
@@ -41,11 +40,23 @@ for ($i = 0; $i < $count; $i++) {
 }
 echo round(microtime(true) - $timer, 4) . 's - Replace conversion' . PHP_EOL;
 
-$timer = microtime(true);
-for ($i = 0; $i < $count; $i++) {
-    $converter->convertViaDecimal($number);
+if (function_exists('bcadd')) {
+    $converter->setDecimalConverter(new DecimalConverter\BCMathConverter());
+    $timer = microtime(true);
+    for ($i = 0; $i < $count; $i++) {
+        $converter->convertViaDecimal($number);
+    }
+    echo round(microtime(true) - $timer, 4) . 's - BCMath conversion' . PHP_EOL;
 }
-echo round(microtime(true) - $timer, 4) . 's - Decimal conversion' . PHP_EOL;
+
+if (function_exists('gmp_add')) {
+    $converter->setDecimalConverter(new DecimalConverter\GMPConverter());
+    $timer = microtime(true);
+    for ($i = 0; $i < $count; $i++) {
+        $converter->convertViaDecimal($number);
+    }
+    echo round(microtime(true) - $timer, 4) . 's - GMP conversion' . PHP_EOL;
+}
 
 $timer = microtime(true);
 for ($i = 0; $i < $count; $i++) {
@@ -55,6 +66,6 @@ echo round(microtime(true) - $timer, 4) . 's - Direct conversion' . PHP_EOL;
 
 $timer = microtime(true);
 for ($i = 0; $i < $count; $i++) {
-    \Rose\NumberConversion\BaseConverter::customConvert($number, $source, $target);
+    BaseConverter::customConvert($number, $source, $target);
 }
 echo round(microtime(true) - $timer, 4) . 's - Custom conversion' . PHP_EOL;

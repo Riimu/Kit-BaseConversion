@@ -1,6 +1,7 @@
 <?php
 
-namespace Rose\NumberConversion;
+use Riimu\Kit\NumberConversion\BaseConverter;
+use Riimu\Kit\NumberConversion\NumberBase;
 
 /**
  * Tests for NumberConverter.
@@ -10,51 +11,51 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
 {
     public function testDefaultReplaceConversion ()
     {
-        $converter = new BaseConverter(new NumberBase(16), new NumberBase(2));
-        $this->assertEquals('101010111100110111101111', $converter->convertString('ABCDEF'));
+        $converter = new BaseConverter(16, 2);
+        $this->assertEquals('101010111100110111101111', $converter->convert('ABCDEF'));
     }
-    
+
     public function testDecimalConvertFallback ()
     {
-        $converter = new BaseConverter(new NumberBase(8), new NumberBase(10));
-        $this->assertEquals('73', $converter->convertString('111'));
+        $converter = new BaseConverter(8, 10);
+        $this->assertEquals('73', $converter->convert('111'));
     }
-    
+
     public function testDirectConvertFallback ()
     {
-        $converter = new BaseConverter(new NumberBase(2), new NumberBase(10));
+        $converter = new BaseConverter(2, 10);
         $converter->setDecimalConverter(null);
-        $this->assertEquals('7', $converter->convertString('111'));
+        $this->assertEquals('7', $converter->convert('111'));
     }
 
     public function testReplaceConversion ()
     {
-        $converter = new BaseConverter(new NumberBase(5), new NumberBase(25));
-        $backwards = new BaseConverter(new NumberBase(25), new NumberBase(5));
+        $converter = new BaseConverter(5, 25);
+        $backwards = new BaseConverter(25, 5);
         $start = str_split('2413323433233422122');
         $this->assertEquals($start, $backwards->convertByReplace($converter->convertByReplace($start)));
     }
-    
+
     public function testConvertViaCommonRoot ()
     {
-        $converter = new BaseConverter(new NumberBase(16), new NumberBase(8));
+        $converter = new BaseConverter(16, 8);
         $this->assertEquals(str_split('2635706640'),
             $converter->convertViaCommonRoot(str_split('16778DA0')));
     }
-    
+
     /**
      * @expectedException RuntimeException
      */
     public function testDecimalConversionException ()
     {
-        $converter = new BaseConverter(new NumberBase(2), new NumberBase(10));
+        $converter = new BaseConverter(2, 10);
         $converter->setDecimalConverter(null);
-        $converter->convertViaDecimal(array(1, 1, 1));
+        $converter->convertViaDecimal([1, 1, 1]);
     }
 
     public function testDirectConversion ()
     {
-        $converter = new BaseConverter(new NumberBase(16), new NumberBase(2));
+        $converter = new BaseConverter(16, 2);
         $this->assertEquals('101010111100110111101111',
             implode('', $converter->convertDirectly(str_split('ABCDEF'))));
     }
@@ -64,23 +65,23 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('101010111100110111101111',
             BaseConverter::customConvert('ABCDEF', '0123456789ABCDEF', '01'));
     }
-    
+
     /**
      * @expectedException InvalidArgumentException
      */
     public function testMissingCommonRoot ()
     {
-        $converter = new BaseConverter(new NumberBase(10), new NumberBase(15));
+        $converter = new BaseConverter(10, 15);
         $converter->convertViaCommonRoot(str_split('123'));
     }
-    
+
     /**
      * @expectedException InvalidArgumentException
      */
     public function testInvalidCharacterInReplaceConversion ()
     {
-        $converter = new BaseConverter(new NumberBase(2), new NumberBase(4));
-        $converter->convertByReplace(array('2'));
+        $converter = new BaseConverter(2, 4);
+        $converter->convertByReplace(['2']);
     }
 
     public function testCustomConversionErrors ()
@@ -116,9 +117,10 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
 
     public function getAlgorithmTests ()
     {
-        return array(
-            array('0123456789', '01', '2919739656537', '101010011111001110000010111000100101011001'),
-            array('0123456789ABCDEFGH', '0123456789ABCDEFGHIJKLMNOP', 'A09GH0076AAB49DEF', 'IMOI1A8HM60KPH9'),
-        );
+        return [
+            ['0123456789', '01', '2919739656537', '101010011111001110000010111000100101011001'],
+            ['0123456789ABCDEFGH', '0123456789ABCDEFGHIJKLMNOP', 'A09GH0076AAB49DEF', 'IMOI1A8HM60KPH9'],
+            ['0123456789ABCDEF', '01234567', 'A09FF', '2404777'],
+        ];
     }
 }

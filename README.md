@@ -1,3 +1,3 @@
-# Rose Number Base Conversion Library #
+# Library for number base conversion of positive integers of arbitrary size #
 
-Not yet release quality.
+The NumberConversion package contains class that 

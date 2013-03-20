@@ -1,21 +1,15 @@
 <?php
 
-set_include_path(implode(PATH_SEPARATOR, array(
+set_include_path(implode(PATH_SEPARATOR, [
     get_include_path(),
-    dirname(__DIR__) . DIRECTORY_SEPARATOR . 'library',
-    __DIR__
-)));
+    dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src',
+]));
 
 spl_autoload_register(function ($class) {
-   $filename = str_replace(array('_', '\\'), DIRECTORY_SEPARATOR, $class);
-   foreach (explode(PATH_SEPARATOR, get_include_path()) as $path) {
-       if (file_exists($path . DIRECTORY_SEPARATOR . $filename . '.php')) {
-           require_once $path . DIRECTORY_SEPARATOR . $filename . '.php';
-           break;
-       }
-   }
-
-   return class_exists($class, false);
+    $file = implode(DIRECTORY_SEPARATOR, preg_split('/\\\\|_(?=[^\\\\]*$)/', $class));
+    if ($path = stream_resolve_include_path($file . '.php')) {
+        require $path;
+    }
 });
 
 ?>
