@@ -4,6 +4,17 @@ use Riimu\Kit\NumberConversion\DecimalConverter;
 
 class DecimalConvertersTest extends \PHPUnit_Framework_TestCase
 {
+    public function testSettingDefaultPrecision()
+    {
+        if (!function_exists('gmp_add')) {
+            $this->markTestSkipped('Missing GMP functions');
+        }
+
+        $converter = new DecimalConverter\GMPConverter();
+        $converter->setDefaultPrecision(1);
+        $this->assertEquals([1], $converter->convertFractions([3], 4, 2));
+    }
+
     /**
      * @dataProvider getConverterTestValues
      */
@@ -46,9 +57,13 @@ class DecimalConvertersTest extends \PHPUnit_Framework_TestCase
      */
     public function testBCMathFractionConversion($number, $expected, $source, $target, $precision)
     {
+        if (!function_exists('bcadd')) {
+            $this->markTestSkipped('Missing BCMath functions');
+        }
+
         $converter = new DecimalConverter\BCMathConverter();
         $this->assertEquals($expected,
-            $converter->convertFraction($number, $source, $target, $precision));
+            $converter->convertFractions($number, $source, $target, $precision));
     }
 
     /**
@@ -56,9 +71,13 @@ class DecimalConvertersTest extends \PHPUnit_Framework_TestCase
      */
     public function testGMPFractionConversion($number, $expected, $source, $target, $precision)
     {
+        if (!function_exists('gmp_add')) {
+            $this->markTestSkipped('Missing GMP functions');
+        }
+
         $converter = new DecimalConverter\GMPConverter();
         $this->assertEquals($expected,
-            $converter->convertFraction($number, $source, $target, $precision));
+            $converter->convertFractions($number, $source, $target, $precision));
     }
 
     public function getFractionTestValues()
@@ -66,9 +85,12 @@ class DecimalConvertersTest extends \PHPUnit_Framework_TestCase
         return [
             [[1], [5], 2, 10, 0],
             [[2], [6, 6, 7], 3, 10, 3],
-            [[1], [3, 3, 3], 3, 10, -1],
+            [[1], [3, 3], 3, 10, -1],
             [[7, 5], [1], 10, 2, 1],
-
+            [[1, 4], [1, 0, 7, 5, 3, 4, 1, 2, 1,7], 10, 8, 10],
+            [[1, 4], [0, 0, 1, 0, 0, 1, 0, 0, 0], 10, 2, 9],
+            [[1, 4], [0, 0, 1, 0], 10, 2, 4],
+            [[4, 2], [0, 1, 1, 0, 1, 1, 0, 0], 10, 2, -1],
         ];
     }
 }

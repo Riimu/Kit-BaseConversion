@@ -104,15 +104,23 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
         $sourceBase = new NumberBase($source);
         $targetBase = new NumberBase($target);
         $converter = new BaseConverter($sourceBase, $targetBase);
+        $reverse = new BaseConverter($targetBase, $sourceBase);
         $number = str_split($number);
         $expected = str_split($expected);
 
         if ($sourceBase->findCommonRadixRoot($targetBase) !== false) {
             $this->assertEquals($expected, $converter->convertViaCommonRoot($number));
+            $this->assertEquals($number, $reverse->convertViaCommonRoot($expected));
         }
+
         $this->assertEquals($expected, $converter->convertViaDecimal($number));
+        $this->assertEquals($number, $reverse->convertViaDecimal($expected));
+
         $this->assertEquals($expected, $converter->convertDirectly($number));
+        $this->assertEquals($number, $reverse->convertDirectly($expected));
+
         $this->assertEquals($expected, BaseConverter::customConvert($number, $source, $target));
+        $this->assertEquals($number, BaseConverter::customConvert($expected, $target, $source));
     }
 
     public function getAlgorithmTests ()
@@ -122,5 +130,40 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
             ['0123456789ABCDEFGH', '0123456789ABCDEFGHIJKLMNOP', 'A09GH0076AAB49DEF', 'IMOI1A8HM60KPH9'],
             ['0123456789ABCDEF', '01234567', 'A09FF', '2404777'],
         ];
+    }
+
+    public function testNegativeNumbers()
+    {
+        $converter = new BaseConverter(10, 2);
+        $this->assertEquals('-1010111', $converter->convert('-87'));
+    }
+
+    public function testFractionConversion()
+    {
+        $converter = new BaseConverter(10, 2);
+        $decimal = $converter->getDecimalConverter();
+
+        if ($decimal === null) {
+            $this->markTestSkipped('No decimal conversion library available');
+        }
+
+        $decimal->setDefaultPrecision(10);
+        $this->assertEquals('11.0010001111', $converter->convert('3.14'));
+    }
+
+    public function testFractionConversionByReplace()
+    {
+        $converter = new BaseConverter(27, 9);
+        $this->assertEquals('22.7782135321061', $converter->convert('K.NH6CG2363'));
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testMissingFractionConversion()
+    {
+        $converter = new BaseConverter(10, 2);
+        $converter->setDecimalConverter(null);
+        $converter->convert('3.14');
     }
 }

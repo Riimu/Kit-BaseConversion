@@ -3,16 +3,15 @@
 namespace Riimu\Kit\NumberConversion;
 
 /**
- * Converts positive integers of arbitrary size from number base to another.
+ * Number conversion library for numbers of arbitrary size and precision.
  *
- * PHP's built in base_convert can handle base conversion needed in most cases.
- * There are however two special cases where the function is not sufficient.
- * First, the builtin function can't handle numbers that require bigger than 32
- * bit integer to convert. Secondly, base_convert only supports number bases up
- * to 36. BaseConverter is capable of handling positive integers of arbitrary
- * size and number bases larger than 36. In addition, the number bases can be
- * defined in more customizable manner. Note that all operations perfomed by
- * the BaseConverter are case sensitive.
+ * This library allows conversion of numbers that cannot be converted using
+ * PHP's builtin base_convert function. This library is not limited by 32 bit
+ * integers and this will also allow conversion of fractions in the number.
+ * Negative numbers are also supported by maintaining the negative sign in the
+ * result number. The NumberBase class also allows more customization in the
+ * manner how number bases are defined. Note that all operations performed by
+ * the number conversion library are case sensitive.
  *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
@@ -99,10 +98,10 @@ class BaseConverter
     /**
      * Sets the decimal converter library to use.
      *
-     * The decimal converter library is determined by available functions in PHP
-     * by default. You can use this method to change the decimal converter used.
-     * Using the the value "null" will disable the decimal conversion method
-     * from being used.
+     * The default decimal conversion library is determined by the available
+     * functions in the PHP installation. You can use this method to change the
+     * decimal converter used. Using the the value "null" will disable the
+     * decimal conversion method from being used.
      *
      * @param DecimalConverter\DecimalConverter $converter Converter to use
      */
@@ -112,18 +111,27 @@ class BaseConverter
     }
 
     /**
-     * Converts the provided number using the best possible method.
+     * Returns the decimal converter currently in use.
+     * @return DecimalConverter\DecimalConverter
+     */
+    public function getDecimalConverter()
+    {
+        return $this->decimalConverter;
+    }
+
+    /**
+     * Converts the given number taking care of different possible factors.
      *
      * The number can be provided as either an array with least significant
      * digit first or as a string. The return value will be in the same format
      * as the input value. Note that using strings with number bases that
      * contain longer than single byte values may provide unexpected results.
      *
-     * The conversion will be performed using the "best" available method. The
-     * replacement conversion method is preferred, if possible between the two
-     * number bases. If replacement is not available, decimal conversion is
-     * used. If no decimal converter is available, then conversion will fall
-     * back to manual conversion.
+     * This method will automatically handle negative numbers and fractions.
+     * If the number is preceded by the negative sign '-', it will be kept in
+     * the resulting number and ignored otherwise. Additionally, if the number
+     * contains the decimal separator '.', the digits after that will be
+     * converted as fractions.
      *
      * @param array|string $number The number to convert
      * @return array|string The converted number
@@ -131,16 +139,75 @@ class BaseConverter
     public function convert ($number)
     {
         $source = is_array($number) ? $number : str_split($number);
+        $negative = $source[0] == '-';
+        $dot = array_search('.', $source);
 
-        if ($this->commonRoot !== false) {
-            $result = $this->convertViaCommonRoot($source);
-        } elseif ($this->decimalConverter !== null) {
-            $result = $this->convertViaDecimal($source);
-        } else {
-            $result = $this->convertDirectly($source);
+        if ($dot !== false) {
+            $fractions = array_slice($source, $dot + 1);
+            $source = array_slice($source, 0, $dot);
+        }
+        if ($negative) {
+            array_shift($source);
+        }
+
+        $result = $this->convertNumber($source);
+
+        if ($negative) {
+            array_unshift($result, '-');
+        }
+        if ($dot !== false) {
+            $result[] = '.';
+            $result = array_merge($result, $this->convertFractions($fractions));
         }
 
         return is_array($number) ? $result : implode('', $result);
+    }
+
+    /**
+     * Converts the provided integer using the best possible method.
+     *
+     * The conversion will be performed using the "best" available method. The
+     * replacement conversion method is preferred, if possible between the two
+     * number bases. If replacement is not available, decimal conversion is
+     * used. If no decimal converter is available, then conversion will fall
+     * back to manual conversion.
+     *
+     * @param array $number Number to covert with most significant digit last
+     * @return array The converted number with most significant digit last
+     */
+    public function convertNumber(array $number)
+    {
+        if ($this->commonRoot !== false) {
+            return $this->convertViaCommonRoot($number);
+        } elseif ($this->decimalConverter !== null) {
+            return $this->convertViaDecimal($number);
+        } else {
+            return $this->convertDirectly($number);
+        }
+    }
+
+    /**
+     * Converts the provided fractional part using the best possible method.
+     *
+     * If replacement conversion is possible between the two number bases, that
+     * will be preferred. Otherwise decimal conversion is used. If no decimal
+     * conversion library is available, then an exception will be thrown as
+     * decimal conversion is not implemented without a decimal conversion
+     * library.
+     *
+     * @param array $number Fractions to covert with most significant digit last
+     * @return array The converted fractions with most significant digit last
+     * @throws \RuntimeException If no decimal conversion library is available
+     */
+    public function convertFractions(array $number)
+    {
+        if ($this->commonRoot !== false) {
+            return $this->convertViaCommonRoot($number, true);
+        } elseif ($this->decimalConverter !== null) {
+            return $this->convertViaDecimal($number, true);
+        } else {
+            throw new \RuntimeException("Fraction conversion is not available without decimal converter");
+        }
     }
 
     /**
@@ -150,16 +217,15 @@ class BaseConverter
      * number can be converted by using convertByReplace() by converting it via
      * a number base with radix equal to the common root. Doing two replacement
      * conversion should still be faster in most cases than any other conversion
-     * method.
-     *
-     * If no common root exists between the two number bases, an exception
-     * will be thrown.
+     * method. If no common root exists between the two number bases,
+     * an exception will be thrown.
      *
      * @param array $number Number to covert with most significant digit last
+     * @param boolean $fractions True if converting fractions, false if not
      * @return array The converted number with most significant digit last
      * @throws \InvalidArgumentException If no common root exists
      */
-    public function convertViaCommonRoot (array $number)
+    public function convertViaCommonRoot (array $number, $fractions = false)
     {
         if ($this->commonRoot === false) {
             throw new \InvalidArgumentException('No common root exists');
@@ -168,7 +234,7 @@ class BaseConverter
         // If the common root is the radix of either number base, do it directly
         if ($this->commonRoot === $this->sourceBase->getRadix() ||
             $this->commonRoot === $this->targetBase->getRadix()) {
-            return $this->convertByReplace($number);
+            return $this->convertByReplace($number, $fractions);
         }
 
         if ($this->intermediateSource === null) {
@@ -178,7 +244,8 @@ class BaseConverter
         }
 
         return $this->intermediateTarget->convertByReplace(
-            $this->intermediateSource->convertByReplace($number));
+            $this->intermediateSource->convertByReplace($number, $fractions),
+            $fractions);
     }
 
     /**
@@ -193,10 +260,11 @@ class BaseConverter
      * the two number bases.
      *
      * @param array $number Number to covert with most significant digit last
+     * @param boolean $fractions True if converting fractions, false if not
      * @return array The converted number with most significant digit last
      * @throws \InvalidArgumentException if replacement conversion is not possible
      */
-    public function convertByReplace (array $number)
+    public function convertByReplace (array $number, $fractions = false)
     {
         if ($this->conversionTable === null) {
             $this->conversionTable = $this->sourceBase->createConversionTable($this->targetBase);
@@ -208,7 +276,11 @@ class BaseConverter
         $pad = $size - (count($number) % $size);
 
         while ($pad--) {
-            array_unshift($number, $sourceZero);
+            if ($fractions) {
+                $number[] = $sourceZero;
+            } else {
+                array_unshift($number, $sourceZero);
+            }
         }
 
         $replacements = [];
@@ -225,8 +297,10 @@ class BaseConverter
 
         $result = call_user_func_array('array_merge', $replacements);
 
-        while ($result[0] == $targetZero && isset($result[1])) {
-            array_shift($result);
+        if (!$fractions) {
+            while ($result[0] == $targetZero && isset($result[1])) {
+                array_shift($result);
+            }
         }
 
         return $result;
@@ -244,15 +318,17 @@ class BaseConverter
      * conversion.
      *
      * @param array $number Number to covert with most significant digit last
+     * @param boolean $fractions True if converting fractions, false if not
      * @return array The converted number with most significant digit last
      */
-    public function convertViaDecimal (array $number)
+    public function convertViaDecimal (array $number, $fractions = false)
     {
         if ($this->decimalConverter === null) {
             throw new \RuntimeException('No decimal conversion library available');
         }
 
-        $result = $this->decimalConverter->convertNumber(
+        $method = $fractions ? 'convertFractions' : 'convertNumber';
+        $result = $this->decimalConverter->$method(
             array_map([$this->sourceBase, 'getDecimalValue'], $number),
             $this->sourceBase->getRadix(), $this->targetBase->getRadix());
 
@@ -260,7 +336,7 @@ class BaseConverter
     }
 
     /**
-     * Converts directly from the source number base to target number base.
+     * Converts numbers directly from base to another.
      *
      * Direct conversion converts the number by taking the decimal values of
      * the digits in the number and determining the reminder by using an
@@ -268,7 +344,7 @@ class BaseConverter
      * to convert the number to decimal number in between and it avoids the
      * limits of 32 bit integers. Due manual implementation of long division,
      * this tends to be slowest of all the conversion methods (unless BCMath is
-     * used).
+     * used). Direct conversion cannot be used to convert fractional part.
      *
      * @param array $number Number to covert with most significant digit last
      * @return array The converted number with most significant digit last
@@ -308,7 +384,7 @@ class BaseConverter
     }
 
     /**
-     * Converts number directly from base to another with minimal overhead.
+     * Converts integers directly from base to another with minimal overhead.
      *
      * Any of the arguments may be provided as a string or an array with the
      * least significant digit first. For example, using 'A09FF' as the number,
