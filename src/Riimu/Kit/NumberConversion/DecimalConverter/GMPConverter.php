@@ -8,25 +8,40 @@ namespace Riimu\Kit\NumberConversion\DecimalConverter;
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class GMPConverter implements DecimalConverter
+class GMPConverter extends DecimalConverter
 {
-    public function ConvertNumber(array $number, $sourceRadix, $targetRadix)
+    protected function init($number)
     {
-        $sourceRadix = gmp_init($sourceRadix);
-        $targetRadix = gmp_init($targetRadix);
-        $decimal = gmp_init(0);
-        $result = [];
-        $power = 0;
+        return gmp_init($number);
+    }
 
-        foreach (array_reverse($number) as $value) {
-            $decimal = gmp_add($decimal, gmp_mul($value, gmp_pow($sourceRadix, $power++)));
-        }
+    protected function val($number)
+    {
+        return gmp_strval($number);
+    }
 
-        while (gmp_cmp($decimal, '0') != 0) {
-            list($decimal, $modulo) = gmp_div_qr($decimal, $targetRadix);
-            $result[] = (int) gmp_strval($modulo);
-        }
+    protected function add($a, $b)
+    {
+        return gmp_add($a, $b);
+    }
 
-        return empty($result) ? [0] : array_reverse($result);
+    protected function mul($a, $b)
+    {
+        return gmp_mul($a, $b);
+    }
+
+    protected function pow($a, $b)
+    {
+        return gmp_pow($a, $b);
+    }
+
+    protected function div($a, $b)
+    {
+        return gmp_div_qr($a, $b);
+    }
+
+    protected function cmp($a, $b)
+    {
+        return gmp_cmp($a, $b);
     }
 }

@@ -8,7 +8,7 @@ namespace Riimu\Kit\NumberConversion\DecimalConverter;
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-interface DecimalConverter
+abstract class DecimalConverter
 {
     /**
      * Converts number from radix to another using decimal logic.
@@ -28,5 +28,102 @@ interface DecimalConverter
      * @param integer $targetRadix Radix of the target base
      * @return array List of digit values for the converted number
      */
-    public function ConvertNumber (array $number, $sourceRadix, $targetRadix);
+    public function convertNumber(array $number, $sourceRadix, $targetRadix)
+    {
+        $source = $this->init($sourceRadix);
+        $target = $this->init($targetRadix);
+
+        return $this->toBase($this->toDecimal($number, $source), $target);
+    }
+
+    public function convertFraction(array $number, $sourceRadix, $targetRadix, $precision = -1)
+    {
+        $source = $this->init($sourceRadix);
+        $target = $this->init($targetRadix);
+        $dividend = $this->toDecimal($number, $source);
+        $divisor = $this->toDecimal([1] + array_fill(1, count($number), 0), $source);
+        $digits = $precision > 0 ? $precision
+            : $this->countDigits($number, $source, $target) + abs($precision);
+        $zero = $this->init('0');
+
+        for ($i = 0; $i <= $digits && $this->cmp($dividend, $zero) > 0; $i++) {
+            list($digit, $dividend) = $this->div($this->mul($dividend, $target), $divisor);
+            $result[] = (int) $this->val($digit);
+        }
+
+        var_dump($i, $digits, $result);
+
+        return $i > $digits ? $this->round($result, $targetRadix) : $result;
+    }
+
+    private function toDecimal(array $number, $radix)
+    {
+        if ($this->val($radix) === '10') {
+            return $this->init(implode('', $number));
+        }
+
+        $decimal = $this->init('0');
+        $power = 0;
+
+        foreach (array_reverse($number) as $value) {
+            $decimal = $this->add($decimal, $this->mul($value,
+                $this->pow($radix, $power++)));
+        }
+
+        return $decimal;
+    }
+
+    private function toBase($decimal, $radix)
+    {
+        if ($this->val($radix) === '10') {
+            return array_map('intval', str_split($this->val($decimal)));
+        }
+
+        $zero = $this->init('0');
+
+        while ($this->cmp($decimal, $zero) > 0) {
+            list($decimal, $modulo) = $this->div($decimal, $radix);
+            $result[] = (int) $this->val($modulo);
+        }
+
+        return empty($result) ? [0] : array_reverse($result);
+    }
+
+    private function countDigits(array $number, $source, $target)
+    {
+        $maxFraction = $this->pow($source, count($number));
+        for ($pow = 1; $this->cmp($this->pow($target, $pow), $maxFraction) <= 0; $pow++);
+        return $pow + 1;
+    }
+
+    private function round(array $number, $radix)
+    {
+        if (array_pop($number) >= $radix / 2) {
+            $i = count($number) - 1;
+            for ($number[$i] += 1; $number[$i] == $radix; $i--) {
+                $number[$i] = 0;
+
+                // If it overflows, don't round it
+                if ($i === 0) {
+                    return array_fill(0, count($number), $radix - 1);
+                }
+
+                $number[$i - 1] += 1;
+            }
+        }
+
+        while (end($number) === 0) {
+            array_pop($number);
+        }
+
+        return $number;
+    }
+
+    abstract protected function init($number);
+    abstract protected function val($number);
+    abstract protected function add($a, $b);
+    abstract protected function mul($a, $b);
+    abstract protected function pow($a, $b);
+    abstract protected function div($a, $b);
+    abstract protected function cmp($a, $b);
 }
