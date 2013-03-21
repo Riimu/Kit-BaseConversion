@@ -120,7 +120,7 @@ class BaseConverter
     }
 
     /**
-     * Converts the given number taking care of different possible factors.
+     * Converts the given number while taking care of fractions and negativity.
      *
      * The number can be provided as either an array with least significant
      * digit first or as a string. The return value will be in the same format
@@ -138,8 +138,9 @@ class BaseConverter
      */
     public function convert ($number)
     {
-        $source = is_array($number) ? $number : str_split($number);
-        $negative = $source[0] == '-';
+        $source = is_array($number) ? $number
+            : ($number === '' ? [] : str_split($number));
+        $negative = isset($source[0]) && $source[0] == '-';
         $dot = array_search('.', $source);
 
         if ($dot !== false) {
@@ -192,7 +193,7 @@ class BaseConverter
      * If replacement conversion is possible between the two number bases, that
      * will be preferred. Otherwise decimal conversion is used. If no decimal
      * conversion library is available, then an exception will be thrown as
-     * decimal conversion is not implemented without a decimal conversion
+     * fraction conversion is not implemented without a decimal conversion
      * library.
      *
      * @param array $number Fractions to covert with most significant digit last
@@ -277,7 +278,7 @@ class BaseConverter
         $pad = count($number) + ($size - (count($number) % $size ?: $size));
         $number = array_pad($number, $pad * ($fractions ? +1: -1), $sourceZero);
 
-        $replacements = [];
+        $replacements = [[]];
 
         foreach (array_chunk($number, $size) as $chunk) {
             $key = array_search($chunk, $this->conversionTable[0]);
@@ -414,8 +415,10 @@ class BaseConverter
             $numbers[$numberLength] = $sourceMap[$number[$numberLength]];
         }
 
-        if ($sourceRadix < 2 || $targetRadix < 2 || $numberLength < 1) {
+        if ($sourceRadix < 2 || $targetRadix < 2) {
             return false;
+        } elseif ($numberLength < 1) {
+            return $targetBase[0];
         }
 
         $result = [];

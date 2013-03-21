@@ -132,6 +132,21 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
+    public function testEmptyNumber()
+    {
+        $converter = new BaseConverter(8, 16);
+        $this->assertSame('0', $converter->convert(''));
+        $this->assertSame('-0', $converter->convert('-'));
+        $this->assertSame('-0.0', $converter->convert('-.'));
+        $this->assertSame('0.0', $converter->convert('.'));
+        $this->assertSame(['0'], $converter->convertNumber([]));
+        $this->assertSame(['0'], $converter->convertFractions([]));
+        $this->assertSame(['0'], $converter->convertViaCommonRoot([]));
+        $this->assertSame(['0'], $converter->convertViaDecimal([]));
+        $this->assertSame(['0'], $converter->convertDirectly([]));
+        $this->assertSame('0', BaseConverter::customConvert('', '01', '0124'));
+    }
+
     public function testNegativeNumbers()
     {
         $converter = new BaseConverter(10, 2);
