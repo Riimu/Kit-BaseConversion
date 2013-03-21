@@ -166,4 +166,21 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
         $converter->setDecimalConverter(null);
         $converter->convert('3.14');
     }
+
+    public function testEnsureReplaceConversionOnSameBase()
+    {
+        $converter = $this->getMock('Riimu\Kit\NumberConversion\BaseConverter', ['convertByReplace'], [10, 10]);
+        $converter->expects($this->exactly(2))->method('convertByReplace')
+            ->with($this->equalTo(['4', '2']))
+            ->will($this->returnValue(['4', '2']));
+        $this->assertEquals('42.42', $converter->convert('42.42'));
+    }
+
+    public function testReplacementConversionWithSameBase()
+    {
+        $converter = new BaseConverter(10, 10);
+        $this->assertSame('42.42', $converter->convert('42.42'));
+        $this->assertSame('0', $converter->convert('0'));
+        $this->assertSame('0.0', $converter->convert('0.0'));
+    }
 }

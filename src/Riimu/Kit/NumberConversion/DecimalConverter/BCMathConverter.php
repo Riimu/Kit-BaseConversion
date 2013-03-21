@@ -42,6 +42,6 @@ class BCMathConverter extends DecimalConverter
 
     protected function cmp($a, $b)
     {
-        return bccomp($a, $b);
+        return bccomp($a, $b, 0);
     }
 }

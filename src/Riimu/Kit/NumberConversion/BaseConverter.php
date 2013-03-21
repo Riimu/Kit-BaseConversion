@@ -273,15 +273,9 @@ class BaseConverter
         $size = count($this->conversionTable[0][0]);
         $sourceZero = $this->sourceBase->getFromDecimalValue(0);
         $targetZero = $this->targetBase->getFromDecimalValue(0);
-        $pad = $size - (count($number) % $size);
 
-        while ($pad--) {
-            if ($fractions) {
-                $number[] = $sourceZero;
-            } else {
-                array_unshift($number, $sourceZero);
-            }
-        }
+        $pad = count($number) + ($size - (count($number) % $size ?: $size));
+        $number = array_pad($number, $pad * ($fractions ? +1: -1), $sourceZero);
 
         $replacements = [];
 
@@ -297,13 +291,11 @@ class BaseConverter
 
         $result = call_user_func_array('array_merge', $replacements);
 
-        if (!$fractions) {
-            while ($result[0] == $targetZero && isset($result[1])) {
-                array_shift($result);
-            }
+        while (!empty($result) && ($fractions ? end($result) : reset($result)) == $targetZero) {
+            unset($result[key($result)]);
         }
 
-        return $result;
+        return empty($result) ? [$targetZero] : array_values($result);
     }
 
     /**
