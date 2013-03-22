@@ -128,10 +128,12 @@ class BaseConverter
      * contain longer than single byte values may provide unexpected results.
      *
      * This method will automatically handle negative numbers and fractions.
-     * If the number is preceded by the negative sign '-', it will be kept in
-     * the resulting number and ignored otherwise. Additionally, if the number
-     * contains the decimal separator '.', the digits after that will be
-     * converted as fractions.
+     * If the number is preceded by either '+' or '-', it will be maintained in
+     * the resulting number and ignored. Additionally, if the number contains
+     * the decimal separator '.', the digits after that will be converted as
+     * fractions. The special meaning of the character will be ignored,
+     * however, if the character is a digit for the source base (e.g '+' being
+     * part of base 64).
      *
      * @param array|string $number The number to convert
      * @return array|string The converted number
@@ -140,21 +142,29 @@ class BaseConverter
     {
         $source = is_array($number) ? $number
             : ($number === '' ? [] : str_split($number));
-        $negative = isset($source[0]) && $source[0] == '-';
+        $signed = isset($source[0]) && in_array($source[0], ['-', '+']);
         $dot = array_search('.', $source);
 
         if ($dot !== false) {
-            $fractions = array_slice($source, $dot + 1);
-            $source = array_slice($source, 0, $dot);
+            if ($this->sourceBase->hasDigit('.')) {
+                $dot = false;
+            } else {
+                $fractions = array_slice($source, $dot + 1);
+                $source = array_slice($source, 0, $dot);
+            }
         }
-        if ($negative) {
-            array_shift($source);
+        if ($signed) {
+            if ($this->sourceBase->hasDigit($source[0])) {
+                $signed = false;
+            } else {
+                $sign = array_shift($source);
+            }
         }
 
         $result = $this->convertNumber($source);
 
-        if ($negative) {
-            array_unshift($result, '-');
+        if ($signed) {
+            array_unshift($result, $sign);
         }
         if ($dot !== false) {
             $result[] = '.';

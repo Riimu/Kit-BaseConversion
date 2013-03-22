@@ -81,7 +81,7 @@ abstract class DecimalConverter
      * @param array $number List of digit values with least significant first
      * @param integer $sourceRadix Radix of the source base
      * @param integer $targetRadix Radix of the target base
-     * @param type $precision Precision of the resulting number
+     * @param type $precision Precision of the resulting number or false for default
      * @return array List of digit values for the converted number
      */
     public function convertFractions(array $number, $sourceRadix, $targetRadix, $precision = false)
@@ -234,7 +234,7 @@ abstract class DecimalConverter
     abstract protected function pow($a, $b);
 
     /**
-     * Performs integer division and returns quotient and remained.
+     * Performs integer division and returns quotient and remainder.
      * @param resource $a The dividend given as an integer
      * @param resource $b The divisor given as an integer
      * @return array First index with the quotient and second as the remainder

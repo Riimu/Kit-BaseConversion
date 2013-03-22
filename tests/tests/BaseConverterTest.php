@@ -147,10 +147,11 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('0', BaseConverter::customConvert('', '01', '0124'));
     }
 
-    public function testNegativeNumbers()
+    public function testSignedNumbers()
     {
         $converter = new BaseConverter(10, 2);
         $this->assertEquals('-1010111', $converter->convert('-87'));
+        $this->assertEquals('+1010111', $converter->convert('+87'));
     }
 
     public function testFractionConversion()
@@ -197,5 +198,14 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('42.42', $converter->convert('42.42'));
         $this->assertSame('0', $converter->convert('0'));
         $this->assertSame('0.0', $converter->convert('0.0'));
+    }
+
+    public function testConvertCharacterIgnorance()
+    {
+        $converter = new BaseConverter('.-', '01');
+        $this->assertSame('11001', $converter->convert('--..-'));
+
+        $converter = new BaseConverter('.+', '01');
+        $this->assertSame('11001', $converter->convert('++..+'));
     }
 }

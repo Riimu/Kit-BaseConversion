@@ -169,8 +169,17 @@ class NumberBase
     }
 
     /**
+     * Tells if the given digit is part of this number system.
+     * @param mixed $digit The digit to look up
+     * @return boolean True if the digit exists, false is not
+     */
+    public function hasDigit($digit) {
+        return array_search($digit, $this->numbers) !== false;
+    }
+
+    /**
      * Returns the decimal value represented by the given digit.
-     * @param string $digit The digit to look up
+     * @param mixed $digit The digit to look up
      * @return integer The decimal value for the provided digit
      * @throws \InvalidArgumentException If the given digit does not exist
      */
