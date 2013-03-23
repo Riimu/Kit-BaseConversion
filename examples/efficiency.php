@@ -40,6 +40,13 @@ for ($i = 0; $i < $count; $i++) {
 }
 echo round(microtime(true) - $timer, 4) . 's - Replace conversion' . PHP_EOL;
 
+/*$converter->setDecimalConverter(new DecimalConverter\InternalConverter());
+$timer = microtime(true);
+for ($i = 0; $i < $count; $i++) {
+    $converter->convertViaDecimal($number);
+}
+echo round(microtime(true) - $timer, 4) . 's - Internal conversion' . PHP_EOL;*/
+
 if (function_exists('bcadd')) {
     $converter->setDecimalConverter(new DecimalConverter\BCMathConverter());
     $timer = microtime(true);

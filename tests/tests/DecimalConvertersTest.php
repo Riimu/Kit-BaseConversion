@@ -6,11 +6,7 @@ class DecimalConvertersTest extends \PHPUnit_Framework_TestCase
 {
     public function testSettingDefaultPrecision()
     {
-        if (!function_exists('gmp_add')) {
-            $this->markTestSkipped('Missing GMP functions');
-        }
-
-        $converter = new DecimalConverter\GMPConverter();
+        $converter = new DecimalConverter\InternalConverter();
         $converter->setDefaultPrecision(1);
         $this->assertEquals([1], $converter->convertFractions([3], 4, 2));
     }
@@ -39,6 +35,16 @@ class DecimalConvertersTest extends \PHPUnit_Framework_TestCase
         }
 
         $converter = new DecimalConverter\GMPConverter();
+        $this->assertEquals($expected, $converter->ConvertNumber($number, $source, $target));
+        $this->assertEquals($number, $converter->ConvertNumber($expected, $target, $source));
+    }
+
+    /**
+     * @dataProvider getConverterTestValues
+     */
+    public function testInternalConverter ($number, $expected, $source, $target)
+    {
+        $converter = new DecimalConverter\InternalConverter();
         $this->assertEquals($expected, $converter->ConvertNumber($number, $source, $target));
         $this->assertEquals($number, $converter->ConvertNumber($expected, $target, $source));
     }
@@ -76,6 +82,16 @@ class DecimalConvertersTest extends \PHPUnit_Framework_TestCase
         }
 
         $converter = new DecimalConverter\GMPConverter();
+        $this->assertEquals($expected,
+            $converter->convertFractions($number, $source, $target, $precision));
+    }
+
+    /**
+     * @dataProvider getFractionTestValues
+     */
+    public function testInternalfractionConversion($number, $expected, $source, $target, $precision)
+    {
+        $converter = new DecimalConverter\InternalConverter();
         $this->assertEquals($expected,
             $converter->convertFractions($number, $source, $target, $precision));
     }

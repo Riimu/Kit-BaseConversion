@@ -55,6 +55,28 @@ class InternalConverterTest extends PHPUnit_Framework_TestCase
             $method->invokeArgs($converter, ['2', '40']));
     }
 
+    public function testDivision()
+    {
+        $method = $this->getMethod('div');
+        $converter = new InternalConverter();
+
+        $this->assertEquals(['2', '1'],
+            $method->invokeArgs($converter, ['5', '2']));
+        $this->assertEquals(['240698692', '2720'],
+            $method->invokeArgs($converter, ['1099511627776', '4568']));
+        $this->assertEquals(['240674625', '3041809741497875'],
+            $method->invokeArgs($converter, [
+                '1099511627776456789220000',
+                '4568456789886541']));
+        $this->assertEquals([
+            '120411114009286733350003545175496252377468019183542312991243',
+            '0'],
+            $method->invokeArgs($converter, [
+                '4334800104334322400600127626317865085588848690607523267684748',
+                '36']));
+
+    }
+
     private function getMethod($name)
     {
         $class = new ReflectionClass('Riimu\Kit\NumberConversion\DecimalConverter\InternalConverter');

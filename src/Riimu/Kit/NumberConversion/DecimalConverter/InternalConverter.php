@@ -112,12 +112,68 @@ class InternalConverter extends DecimalConverter
 
     protected function div($a, $b)
     {
+        if ($this->cmp($a, $b) < 0) {
+            return ['0', $a];
+        }
+
+        $zeroIt = false;
+        $result = '';
+        $temp = substr($a, 0, strlen($b));
+        $pos = strlen($b);
+
+        while (true) {
+            while ($this->cmp($temp, $b) < 0) {
+                if ($zeroIt) {
+                    $result .= '0';
+                }
+                if (!isset($a[$pos])) {
+                    break 2;
+                }
+
+                $temp = ($temp == '0' ? '' : $temp) . $a[$pos++];
+                $zeroIt = true;
+            }
+
+            $temp = $this->subFrom($temp, $b);
+            for ($count = 1; $this->cmp($temp, $b) >= 0; $count++) {
+                $temp = $this->subFrom($temp, $b);
+            }
+
+            $result .= $count;
+            $zeroIt = false;
+        }
+
+        return [$result, $temp];
+    }
+
+    private function subFrom($a, $b)
+    {
+        $a = $this->splitFromRight($a, 9);
+        $b = $this->splitFromRight($b, 9);
+        $mask = pow(10, 9);
+
+        foreach (array_reverse($a, true) as $key => $chunk) {
+            $a[$key] = $chunk - array_pop($b);
+        }
+
+        $result = '';
+
+        foreach (array_reverse(array_keys($a)) as $key) {
+            if ($a[$key] < 0) {
+                $a[$key - 1] -= 1;
+                $a[$key] = $a[$key] + $mask;
+            }
+
+            $result = sprintf('%09s', $a[$key]) . $result;
+        }
+
+        return ltrim($result, '0') ?: '0';
     }
 
     protected function cmp($a, $b)
     {
-        if (strlen($a) != strlen($b)) {
-            return strlen($a) > strlen($b) ? 1 : -1;
+        if ($diff = strlen($a) - strlen($b)) {
+            return $diff > 0 ? 1 : -1;
         }
 
         return strcmp($a, $b);
