@@ -3,15 +3,16 @@
 namespace Riimu\Kit\NumberConversion;
 
 /**
- * Number conversion library for numbers of arbitrary size and precision.
+ * Number conversion library for integers and fractions of arbitrary precision.
  *
- * This library allows conversion of numbers that cannot be converted using
- * PHP's builtin base_convert function. This library is not limited by 32 bit
- * integers and this will also allow conversion of fractions in the number.
- * Negative numbers are also supported by maintaining the negative sign in the
- * result number. The NumberBase class also allows more customization in the
- * manner how number bases are defined. Note that all operations performed by
- * the number conversion library are case sensitive.
+ * BaseConverter provides more features in number base conversion than PHP's
+ * builtin base_convert. This library supports numbers of arbitrary size, unlike
+ * base_convert which is limited by 32 bit integers. In addition, conversion of
+ * fractions is also supported up to unlimited precision. This library will also
+ * attempt to make several optimizations regarding conversion to provide fastest
+ * possible result. On top of it all, use of NumberBase class allows greater
+ * customization in how number bases as represented in addition to supporting
+ * number bases of arbitrary size.
  *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
@@ -20,13 +21,13 @@ namespace Riimu\Kit\NumberConversion;
 class BaseConverter
 {
     /**
-     * Number base for the original number.
+     * Number base used by provided numbers.
      * @var NumberBase
      */
     private $sourceBase;
 
     /**
-     * Number base for the resulting number.
+     * Number base used by returned numbers.
      * @var NumberBase
      */
     private $targetBase;
@@ -44,19 +45,19 @@ class BaseConverter
     private $decimalConverter;
 
     /**
-     * BaseConverter used for source conversion via common root.
+     * BaseConverter used to convert input number to intermediate number.
      * @var BaseConverter
      */
     private $intermediateSource;
 
     /**
-     * BaseConverter used for target conversion via common root.
+     * BaseConverter used to convert intermediate number to returned number.
      * @var BaseConverter
      */
     private $intermediateTarget;
 
     /**
-     * Replacement conversion table from source base to target base.
+     * Replacement conversion table between source base and target base.
      * @var array
      */
     private $conversionTable;
@@ -69,8 +70,8 @@ class BaseConverter
      * NumberBase constructor for information about possible values.
      *
      * @see NumberBase::__construct
-     * @param Mixed $sourceBase Number base used by the original number.
-     * @param Mixed $targetBase Number base used by the resulting number.
+     * @param Mixed $sourceBase Number base used by the provided numbers.
+     * @param Mixed $targetBase Number base used by the returned numbers.
      */
     public function __construct ($sourceBase, $targetBase)
     {
@@ -90,7 +91,7 @@ class BaseConverter
         } elseif (function_exists('bcadd')) {
             $this->decimalConverter = new DecimalConverter\BCMathConverter();
         } else {
-            $this->decimalConverter = null;
+            $this->decimalConverter = new DecimalConverter\InternalConverter();
         }
         // @codeCoverageIgnoreEnd
     }
@@ -103,7 +104,7 @@ class BaseConverter
      * decimal converter used. Using the the value "null" will disable the
      * decimal conversion method from being used.
      *
-     * @param DecimalConverter\DecimalConverter $converter Converter to use
+     * @param DecimalConverter\DecimalConverter $converter Decimal converter to use
      */
     public function setDecimalConverter (DecimalConverter\DecimalConverter $converter = null)
     {
@@ -124,15 +125,15 @@ class BaseConverter
      *
      * The number can be provided as either an array with least significant
      * digit first or as a string. The return value will be in the same format
-     * as the input value. Note that using strings with number bases that
-     * contain longer than single byte values may provide unexpected results.
+     * as the input value. Note that you may get unexpected results when using
+     * strings if the source or target number base contains multibyte digits.
      *
      * This method will automatically handle negative numbers and fractions.
-     * If the number is preceded by either '+' or '-', it will be maintained in
-     * the resulting number and ignored. Additionally, if the number contains
+     * If the number is preceded by either '+' or '-', the appropriate sign will
+     * be added to the resulting number. Additionally, if the number contains
      * the decimal separator '.', the digits after that will be converted as
-     * fractions. The special meaning of the character will be ignored,
-     * however, if the character is a digit for the source base (e.g '+' being
+     * fractions. The special meaning of these characters will be ignored,
+     * however, if the characters are digits in the source base (e.g '+' being
      * part of base 64).
      *
      * @param array|string $number The number to convert
@@ -190,7 +191,7 @@ class BaseConverter
     {
         if ($this->commonRoot !== false) {
             return $this->convertViaCommonRoot($number);
-        } elseif ($this->decimalConverter !== null) {
+        } elseif ($this->decimalConverter instanceof DecimalConverter\GMPConverter) {
             return $this->convertViaDecimal($number);
         } else {
             return $this->convertDirectly($number);

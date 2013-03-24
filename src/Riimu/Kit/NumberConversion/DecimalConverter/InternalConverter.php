@@ -3,6 +3,7 @@
 namespace Riimu\Kit\NumberConversion\DecimalConverter;
 
 /**
+ * Provides slow decimal conversion using arbitrary precision implementation.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
@@ -65,7 +66,7 @@ class InternalConverter extends DecimalConverter
 
     protected function mul($a, $b)
     {
-        if (strlen($a) < 9 && strlen($b) < 9) {
+        if (strlen($a) + strlen($b) < 10) {
             return (string) ($a * $b);
         } elseif ($a == '1') {
             return $b;
@@ -107,7 +108,7 @@ class InternalConverter extends DecimalConverter
 
     protected function pow($a, $b)
     {
-        if (strlen($a) < 10 && is_int($pow = pow($a, $b))) {
+        if (strlen($a) <= 5 && $b <= 32 && is_int($pow = pow($a, $b))) {
             return (string) $pow;
         } elseif ($b == 0 || $a == '1') {
             return '1';
@@ -176,6 +177,12 @@ class InternalConverter extends DecimalConverter
         return [$result, $temp];
     }
 
+    /**
+     * Substracts a smaller positive integer from larger positive integer.
+     * @param string $a The number to subtract from
+     * @param string $b The number to subtract
+     * @return string The difference as a string
+     */
     private function subFrom($a, $b)
     {
         if (strlen($a) < 10 && strlen($b) < 10) {
@@ -213,6 +220,12 @@ class InternalConverter extends DecimalConverter
         return strcmp($a, $b);
     }
 
+    /**
+     * Splits string using right justification.
+     * @param string $string String to split
+     * @param integer $split The number of characters in each chunk
+     * @return array The string plit into chunks
+     */
     private function splitFromRight($string, $split)
     {
         if (strlen($string) <= $split) {
