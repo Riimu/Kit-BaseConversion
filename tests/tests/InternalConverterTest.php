@@ -14,6 +14,10 @@ class InternalConverterTest extends PHPUnit_Framework_TestCase
         $method = $this->getMethod('add');
         $converter = new InternalConverter();
 
+        $this->assertEquals('1000000000',
+            $method->invokeArgs($converter, ['999999999', '1']));
+        $this->assertEquals('1000000000000000000',
+            $method->invokeArgs($converter, ['999999999999999999', '1']));
         $this->assertEquals(
             '2670151321593002918758104907580797343931592346904690',
             $method->invokeArgs($converter, [

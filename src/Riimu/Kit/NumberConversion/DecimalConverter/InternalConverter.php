@@ -25,24 +25,42 @@ class InternalConverter extends DecimalConverter
             return $b;
         } elseif ($b == '0') {
             return $a;
+        } elseif (strlen($a) < 10 && strlen($b) < 10) {
+            return (string) ($a + $b);
         }
 
         $a = $this->splitFromRight($a, 9);
         $b = $this->splitFromRight($b, 9);
-        $mask = pow(10, 9);
+        $mask = 1000000000;
 
-        $a = array_pad($a, -count($b), 0);
-
-        $result = '';
-        $overflow = 0;
-
-        while (($left = array_pop($a)) !== null) {
-            $chunk = $left + array_pop($b) + $overflow;
-            $overflow = (int) ($chunk / $mask);
-            $result = sprintf('%09s', $chunk % $mask) . $result;
+        if (count($a) > count($b)) {
+            $temp = $a;
+            $a = $b;
+            $b = $temp;
         }
 
-        return ltrim($overflow . $result, '0');
+        $overflow = 0;
+        $aLength = count($a);
+        $bLength = count($b);
+
+        for ($i = 1; $i <= $aLength; $i++) {
+            $chunk = $a[$aLength - $i] + $b[$bLength - $i] + $overflow;
+            $overflow = (int) ($chunk / $mask);
+            $b[$bLength - $i] = sprintf('%09s', $chunk % $mask);
+        }
+
+        if ($overflow > 0 && $bLength > $aLength) {
+            do {
+                $chunk = $b[$bLength - $i] + $overflow;
+                $overflow = (int) ($chunk / $mask);
+                $b[$bLength - $i] = sprintf('%09s', $chunk % $mask);
+            } while ($overflow && $i++ < $bLength);
+        } elseif ($bLength > $aLength) {
+            return implode('', $b);
+        }
+
+        return $overflow > 0
+            ? $overflow . implode('', $b) : ltrim(implode('', $b), '0');
     }
 
     protected function mul($a, $b)
@@ -53,10 +71,12 @@ class InternalConverter extends DecimalConverter
             return $a;
         } elseif ($a == '0' || $b == '0') {
             return '0';
+        } elseif (strlen($a) < 9 && strlen($b) < 9) {
+            return (string) ($a * $b);
         }
 
         $a = array_reverse($this->splitFromRight($a, 8));
-        $mask = pow(10, 8);
+        $mask = 100000000;
         $adds = [];
 
         foreach(str_split(strrev($b)) as $zeros => $multiplier) {
@@ -91,6 +111,8 @@ class InternalConverter extends DecimalConverter
             return '1';
         } elseif ($b == 1) {
             return $a;
+        } elseif (strlen($a) < 10 && is_int($pow = pow($a, $b))) {
+            return (string) $pow;
         }
 
         $pows = [$a];
@@ -114,12 +136,15 @@ class InternalConverter extends DecimalConverter
     {
         if ($this->cmp($a, $b) < 0) {
             return ['0', $a];
+        } elseif (strlen($a) < 10 && strlen($b) < 10) {
+            return [(string)(int) ($a / $b), (string) ($a % $b)];
         }
 
         $zeroIt = false;
         $result = '';
         $temp = substr($a, 0, strlen($b));
         $pos = strlen($b);
+        $intDiv = $this->cmp($b, '1000000000') < 0;
 
         while (true) {
             while ($this->cmp($temp, $b) < 0) {
@@ -134,9 +159,14 @@ class InternalConverter extends DecimalConverter
                 $zeroIt = true;
             }
 
-            $temp = $this->subFrom($temp, $b);
-            for ($count = 1; $this->cmp($temp, $b) >= 0; $count++) {
+            if ($intDiv) {
+                $count = (int) ($temp / $b);
+                $temp = $temp % $b;
+            } else {
                 $temp = $this->subFrom($temp, $b);
+                for ($count = 1; $this->cmp($temp, $b) >= 0; $count++) {
+                    $temp = $this->subFrom($temp, $b);
+                }
             }
 
             $result .= $count;
@@ -148,9 +178,13 @@ class InternalConverter extends DecimalConverter
 
     private function subFrom($a, $b)
     {
+        if (strlen($a) < 10 && strlen($b) && 10) {
+            return (string) ($a - $b);
+        }
+
         $a = $this->splitFromRight($a, 9);
         $b = $this->splitFromRight($b, 9);
-        $mask = pow(10, 9);
+        $mask = 1000000000;
 
         foreach (array_reverse($a, true) as $key => $chunk) {
             $a[$key] = $chunk - array_pop($b);
