@@ -21,12 +21,12 @@ class InternalConverter extends DecimalConverter
 
     protected function add($a, $b)
     {
-        if ($a == '0') {
+        if (strlen($a) < 10 && strlen($b) < 10) {
+            return (string) ($a + $b);
+        } elseif ($a == '0') {
             return $b;
         } elseif ($b == '0') {
             return $a;
-        } elseif (strlen($a) < 10 && strlen($b) < 10) {
-            return (string) ($a + $b);
         }
 
         $a = $this->splitFromRight($a, 9);
@@ -65,14 +65,14 @@ class InternalConverter extends DecimalConverter
 
     protected function mul($a, $b)
     {
-        if ($a == '1') {
+        if (strlen($a) < 9 && strlen($b) < 9) {
+            return (string) ($a * $b);
+        } elseif ($a == '1') {
             return $b;
         } elseif ($b == '1') {
             return $a;
         } elseif ($a == '0' || $b == '0') {
             return '0';
-        } elseif (strlen($a) < 9 && strlen($b) < 9) {
-            return (string) ($a * $b);
         }
 
         $a = array_reverse($this->splitFromRight($a, 8));
@@ -107,12 +107,12 @@ class InternalConverter extends DecimalConverter
 
     protected function pow($a, $b)
     {
-        if ($b == 0 || $a == '1') {
+        if (strlen($a) < 10 && is_int($pow = pow($a, $b))) {
+            return (string) $pow;
+        } elseif ($b == 0 || $a == '1') {
             return '1';
         } elseif ($b == 1) {
             return $a;
-        } elseif (strlen($a) < 10 && is_int($pow = pow($a, $b))) {
-            return (string) $pow;
         }
 
         $pows = [$a];
@@ -134,17 +134,17 @@ class InternalConverter extends DecimalConverter
 
     protected function div($a, $b)
     {
-        if ($this->cmp($a, $b) < 0) {
-            return ['0', $a];
-        } elseif (strlen($a) < 10 && strlen($b) < 10) {
+        if (strlen($a) < 10 && strlen($b) < 10) {
             return [(string)(int) ($a / $b), (string) ($a % $b)];
+        } elseif ($this->cmp($a, $b) < 0) {
+            return ['0', $a];
         }
 
         $zeroIt = false;
         $result = '';
         $temp = substr($a, 0, strlen($b));
         $pos = strlen($b);
-        $intDiv = $this->cmp($b, '1000000000') < 0;
+        $intDiv = $this->cmp($b, '100000000') < 0;
 
         while (true) {
             while ($this->cmp($temp, $b) < 0) {
@@ -178,7 +178,7 @@ class InternalConverter extends DecimalConverter
 
     private function subFrom($a, $b)
     {
-        if (strlen($a) < 10 && strlen($b) && 10) {
+        if (strlen($a) < 10 && strlen($b) < 10) {
             return (string) ($a - $b);
         }
 
