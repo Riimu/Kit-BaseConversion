@@ -32,12 +32,12 @@ abstract class ConversionMethod
 
     protected function getDecimals(array $number)
     {
-        return empty($number) ? [0] : array_map([$this->source, 'getDecimal'], $number);
+        return empty($number) ? [0] : $this->source->getDecimals($number);
     }
 
     protected function getDigits(array $number)
     {
-        return array_map([$this->target, 'getDigit'], empty($number) ? [0] : $number);
+        return $this->target->getDigits(empty($number) ? [0] : $number);
     }
 }
 

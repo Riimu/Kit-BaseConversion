@@ -1,105 +1,88 @@
 <?php
 
+if ($argc < 3) {
+    echo "Usage efficiency.php <repeats> <length> [source-base] [target-base]" . PHP_EOL;
+    exit;
+}
+
 set_include_path(__DIR__ . '/../src');
 spl_autoload_register();
 
-use Riimu\Kit\NumberConversion\BaseConverter;
-use Riimu\Kit\NumberConversion\DecimalConverter;
+use \Riimu\Kit\NumberConversion\ConversionMethod\ConversionException;
 
+echo "Test for efficiency of different algorithms available:" . PHP_EOL;
 
-echo "Test for efficiency of different algorithms available:\n";
+$sbase = isset($argv[3]) ? (ctype_digit($argv[3]) ? intval($argv[3]) : $argv[3]) : 2;
+$tbase = isset($argv[4]) ? (ctype_digit($argv[4]) ? intval($argv[4]) : $argv[4]) : 16;
 
-$count = 5;
+$source = new Riimu\Kit\NumberConversion\NumberBase($sbase);
+$target = new Riimu\Kit\NumberConversion\NumberBase($tbase);
 
-$number = str_split(
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053' .
-    '51234523543204324304531204345024035045302043503203503503200420530350200405350053'
-);
-$source = str_split('012345');
-$target = str_split('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+$repeats = (int) $argv[1];
+$length = (int) $argv[2];
+$max = $source->getRadix() - 1;
+$number = [mt_rand(1, $max)];
 
-$converter = new BaseConverter($source, $target);
-$backwards = new BaseConverter($target, $source);
-
-$timer = microtime(true);
-for ($i = 0; $i < $count; $i++) {
-    $backwards->convertByReplace($converter->convertByReplace($number));
+for ($i = 1; $i < $length; $i++) {
+    $number[$i] = mt_rand(0, $max);
 }
-echo round(microtime(true) - $timer, 4) . 's - Replace conversion' . PHP_EOL;
 
-$timer = microtime(true);
-for ($i = 0; $i < $count; $i++) {
-    $backwards->convertByReplaceNum($converter->convertByReplaceNum($number));
-}
-echo round(microtime(true) - $timer, 4) . 's - Replace conversion (Num)' . PHP_EOL;
+$number = $source->getDigits($number);
 
-$timer = microtime(true);
-for ($i = 0; $i < $count; $i++) {
-    $backwards->convertByReplaceMath($converter->convertByReplaceMath($number));
-}
-echo round(microtime(true) - $timer, 4) . 's - Replace conversion (Math)' . PHP_EOL;
+class TimeoutException extends RuntimeException { }
 
-$timer = microtime(true);
-for ($i = 0; $i < $count; $i++) {
-    $backwards->convertByReplaceOrig($converter->convertByReplaceOrig($number));
-}
-echo round(microtime(true) - $timer, 4) . 's - Replace conversion (Orig)' . PHP_EOL;
-die;
+$timer = 0;
 
-/*$converter->setDecimalConverter(new DecimalConverter\InternalConverter());
-$timer = microtime(true);
-for ($i = 0; $i < $count; $i++) {
-    $converter->convertViaDecimal($number);
-}
-echo round(microtime(true) - $timer, 4) . 's - Internal conversion' . PHP_EOL;*/
+function ticker () {
+    global $timer;
 
-if (function_exists('bcadd')) {
-    $converter->setDecimalConverter(new DecimalConverter\BCMathConverter());
-    $timer = microtime(true);
-    for ($i = 0; $i < $count; $i++) {
-        $converter->convertViaDecimal($number);
+    if ((microtime(true) - $timer > 5.0)) {
+        throw new TimeoutException();
     }
-    echo round(microtime(true) - $timer, 4) . 's - BCMath conversion' . PHP_EOL;
 }
 
-if (function_exists('gmp_add')) {
-    $converter->setDecimalConverter(new DecimalConverter\GMPConverter());
+register_tick_function('ticker');
+
+$doTrial = function ($class) use ($source, $target, $repeats, $number, & $timer) {
+    $one = new $class($source, $target);
+    $two = new $class($target, $source);
+    $name = substr($class, 27);
     $timer = microtime(true);
-    for ($i = 0; $i < $count; $i++) {
-        $converter->convertViaDecimal($number);
+
+    try {
+        declare(ticks = 1) {
+            for ($i = 0; $i < $repeats; $i++) {
+                $mid = $one->convertNumber($number);
+                $result = $two->convertNumber($mid);
+
+                if ($result !== $number) {
+                    throw new RuntimeException('Result does not match the original');
+                }
+            }
+        }
+    } catch (TimeoutException $ex) {
+        return print "timeout - $name" . PHP_EOL;
+    } catch (ConversionException $ex) {
+        return print "    N/A - $name" . PHP_EOL;
     }
-    echo round(microtime(true) - $timer, 4) . 's - GMP conversion' . PHP_EOL;
-}
 
-$timer = microtime(true);
-for ($i = 0; $i < $count; $i++) {
-    $converter->convertDirectly($number);
-}
-echo round(microtime(true) - $timer, 4) . 's - Direct conversion' . PHP_EOL;
+    echo number_format(microtime(true) - $timer, 4) . "s - $name" . PHP_EOL;
+};
 
-$timer = microtime(true);
-for ($i = 0; $i < $count; $i++) {
-    BaseConverter::customConvert($number, $source, $target);
-}
-echo round(microtime(true) - $timer, 4) . 's - Custom conversion' . PHP_EOL;
+echo "\nReplace Conversion:\n\n";
+
+$doTrial('Riimu\Kit\NumberConversion\ConversionMethod\DirectReplaceConverter');
+$doTrial('Riimu\Kit\NumberConversion\ConversionMethod\MathReplaceConverter');
+$doTrial('Riimu\Kit\NumberConversion\ConversionMethod\NumberReplaceConverter');
+
+echo "\nDirect Conversion:\n\n";
+
+$doTrial('Riimu\Kit\NumberConversion\ConversionMethod\NoveltyConverter');
+$doTrial('Riimu\Kit\NumberConversion\ConversionMethod\DirectConverter');
+
+echo "\nDecimal Conversion:\n\n";
+
+$doTrial('Riimu\Kit\NumberConversion\DecimalConverter\GMPConverter');
+$doTrial('Riimu\Kit\NumberConversion\DecimalConverter\BCMathConverter');
+$doTrial('Riimu\Kit\NumberConversion\DecimalConverter\InternalConverter');
+

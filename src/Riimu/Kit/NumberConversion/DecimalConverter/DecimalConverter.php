@@ -6,6 +6,21 @@ use Riimu\Kit\NumberConversion\ConversionMethod\ConversionMethod;
 use Riimu\Kit\NumberConversion\NumberBase;
 
 /**
+     * Converts number from base to another using arbitrary precision math.
+     *
+     * Decimal conversion takes advantage of arbitrary precision libraries
+     * to first convert the source number into decimal and then converting that
+     * number into the target base. The speed of this method depends entirely
+     * on the integer library used. It is worth noting that the GMP library is
+     * few magnitudes faster than BCMath, which is several magnitudes faster
+     * than Internal implementation. Comparably, using GMP library, this method
+     * is only few times slower than replace conversion.
+     *
+     * @param array $number Number to covert with most significant digit last
+     * @param boolean $fractions True if converting fractions, false if not
+     * @return array The converted number with most significant digit last
+     */
+/**
  * Decimal converter converts numbers from radix to another using decimal logic.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki

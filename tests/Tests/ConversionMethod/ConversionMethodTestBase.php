@@ -19,6 +19,13 @@ abstract class ConversionMethodTestBase extends \PHPUnit_Framework_TestCase
         $this->assertSame(['0'], $conv->convertNumber([]));
     }
 
+    public function testCaseInsensitiveConversion()
+    {
+        $conv = $this->getConverter(16, 2);
+        $this->assertSame(str_split('10101100101011011110'),
+            $conv->convertNumber(str_split('ACadE')));
+    }
+
     /**
      * @dataProvider getNumberConversionData
      */
@@ -36,8 +43,11 @@ abstract class ConversionMethodTestBase extends \PHPUnit_Framework_TestCase
             ['BA', 'DC', 'AB', 'CD'],
             ['11', '3', 2, 10],
             ['0', '0', 10, 10],
+            ['2', '10', 16, 2],
             ['A09FF', '2404777', 16, 8],
             ['ABCDEF', '101010111100110111101111', 16, 2],
+            ['FABCAB', 'FLF5B', 16, 32],
+            ['FABCABABBA', '511373342342371', 27, 9],
         ];
     }
 

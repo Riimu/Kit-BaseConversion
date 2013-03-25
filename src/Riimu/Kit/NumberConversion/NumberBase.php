@@ -197,6 +197,11 @@ class NumberBase
         return $this->radix;
     }
 
+    public function getNumbers()
+    {
+        return $this->numbers;
+    }
+
     /**
      * Tells if the given digit is part of this number system.
      * @param mixed $digit The digit to look up
@@ -215,22 +220,29 @@ class NumberBase
      */
     public function getDecimal($digit)
     {
-        $value = $this->findDigit($digit);
+        return $this->getDecimals([$digit])[0];
+    }
 
-        if ($value === false) {
-            throw new \InvalidArgumentException("The digit '$digit' does not exist");
+    public function getDecimals(array $digits)
+    {
+        $decimals = [];
+
+        foreach ($digits as $digit) {
+            if ($this->valueMap && isset($this->valueMap[$digit])) {
+                $decimals[] = $this->valueMap[$digit];
+            } elseif (($decimal = $this->findDigit($digit)) !== false) {
+                $decimals[] = $decimal;
+            } else {
+                throw new \InvalidArgumentException("The digit '$digit' does not exist");
+            }
         }
 
-        return $value;
+        return $decimals;
     }
 
     private function findDigit($digit)
     {
-        if ($this->valueMap && isset($this->valueMap[$digit])) {
-            return $this->valueMap[$digit];
-        } else {
-            $value = array_search($digit, $this->numbers);
-        }
+        $value = array_search($digit, $this->numbers);
 
         if ($value === false && !$this->caseSensitive && is_string($digit)) {
             $find = strtolower($digit);
@@ -254,11 +266,22 @@ class NumberBase
      */
     public function getDigit($decimal)
     {
-        if (!isset($this->numbers[$decimal])) {
-            throw new \InvalidArgumentException("The decimal value '$decimal' does not exist");
+        return $this->getDigits([$decimal])[0];
+    }
+
+    public function getDigits(array $decimals)
+    {
+        $digits = [];
+
+        foreach ($decimals as $decimal) {
+            if (!isset($this->numbers[$decimal])) {
+                throw new \InvalidArgumentException("The decimal value '$decimal' does not exist");
+            }
+
+            $digits[] = $this->numbers[$decimal];
         }
 
-        return $this->numbers[$decimal];
+        return $digits;
     }
 
     /**
@@ -371,72 +394,5 @@ class NumberBase
 
         $table = [$minNumbers, array_chunk(array_keys($max->numbers), 1)];
         return $min === $this ? $table : array_reverse($table);
-    }
-
-    public function createOrigConversionTable (NumberBase $target)
-    {
-        if (!$this->isExponentialBase($target)) {
-            throw new \InvalidArgumentException(
-                'Cannot create conversion table from non exponential number bases');
-        }
-
-        if ($this->radix > $target->radix) {
-            $min = $target;
-            $max = $this;
-        } else {
-            $min = $this;
-            $max = $target;
-        }
-
-        $last = $min->numbers[$min->radix - 1];
-        $size = (int) log($max->radix, $min->radix);
-        $number = array_fill(0, $size, $min->numbers[0]);
-        $next = array_fill(0, $size, 0);
-        $minNumbers = [];
-
-        for ($i = 0; $i < $max->radix; $i++) {
-            if ($i > 0) {
-                for ($j = $size - 1; $number[$j] == $last; $j--) {
-                    $number[$j] = $min->numbers[0];
-                    $next[$j] = 0;
-                }
-                $number[$j] = $min->numbers[++$next[$j]];
-            }
-            $minNumbers[] = $number;
-        }
-
-        $table = [$minNumbers, array_chunk($max->numbers, 1)];
-        return $min === $this ? $table : array_reverse($table);
-    }
-
-    public function createNewConversionTable (NumberBase $target)
-    {
-        if (!$this->isExponentialBase($target)) {
-            throw new \InvalidArgumentException(
-                'Cannot create conversion table from non exponential number bases');
-        }
-
-        $max = max($this->radix, $target->radix);
-        $min = min($this->radix, $target->radix);
-        $size = (int) log($max, $min);
-        $number = array_fill(0, $size, 0);
-        $table = [];
-
-        for ($i = 0; $i < $max; $i++) {
-            if ($i > 0) {
-                for ($j = $size - 1; $number[$j] == $min - 1; $j--) {
-                    $number[$j] = 0;
-                }
-                $number[$j]++;
-            }
-
-            if ($min == $this->radix) {
-                $table[implode(':', $number)] = [$i];
-            } else {
-                $table[$i] = $number;
-            }
-        }
-
-        return $table;
     }
 }
