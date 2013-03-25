@@ -3,7 +3,15 @@
 namespace Riimu\Kit\NumberConversion;
 
 /**
- * Represents a number base.
+ * NumberBase handles digit representations in number systems.
+ *
+ * The number base can be defined in multiple different ways. For more
+ * information, see the details on the constructor. While NumberBase cares
+ * little about the type of digit representations, it is worth noting that all
+ * comparisons are done using loose comparison operators. Additionally,
+ * NumberBase handles strings in case insensitive manner whenever possible (i.e.
+ * it does not create conflicting digits).
+ *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
@@ -21,6 +29,9 @@ class NumberBase
      * @var array
      */
     private $numbers;
+
+    private $valueMap;
+    private $caseSensitive;
 
     /**
      * List of digits used when the base is provided as a number.
@@ -94,8 +105,10 @@ class NumberBase
 
         if ($integer <= strlen(self::$integerBase)) {
             $this->numbers = str_split(substr(self::$integerBase, 0, $integer));
+            $this->caseSensitive = $integer > strpos(self::$integerBase, 'a');
         } elseif ($integer == 64) {
             $this->numbers = str_split(self::$integerBase64);
+            $this->caseSensitive = true;
         } elseif ($integer <= 256) {
             for ($i = 0; $i < $integer; $i++) {
                 $this->numbers[] = chr($i);
@@ -104,8 +117,10 @@ class NumberBase
             for ($i = 0; $i < $integer; $i++) {
                 $this->numbers[] = "#$i;";
             }
+            $this->caseSensitive = false;
         }
 
+        $this->valueMap = array_flip($this->numbers);
         $this->radix = count($this->numbers);
     }
 
@@ -123,7 +138,10 @@ class NumberBase
         }
 
         $this->numbers = str_split($string);
+        $this->valueMap = array_flip($this->numbers);
         $this->radix = count($this->numbers);
+        $this->caseSensitive =
+            count(array_flip(array_map('strtolower', $this->numbers))) != $this->radix;
     }
 
     /**
@@ -138,13 +156,22 @@ class NumberBase
         }
 
         $numbers = [];
+        $strings = [];
+        $mapped = true;
 
         // array_unique does string comparison which is not always desirable
         foreach ($array as $key => $value) {
             if (array_search($value, $numbers) !== false) {
                 throw new \InvalidArgumentException('Duplicate values in number base');
             }
+
             $numbers[$key] = $value;
+
+            if (is_string($value)) {
+                $strings[] = strtolower($value);
+            } elseif (!is_int($value)) {
+                $mapped = false;
+            }
         }
 
         $keys = array_keys($numbers);
@@ -157,6 +184,8 @@ class NumberBase
 
         $this->radix = count($numbers);
         $this->numbers = $numbers;
+        $this->valueMap = $mapped ? array_flip($this->numbers) : null;
+        $this->caseSensitive = count($strings) != count(array_flip($strings));
     }
 
     /**
@@ -173,8 +202,9 @@ class NumberBase
      * @param mixed $digit The digit to look up
      * @return boolean True if the digit exists, false is not
      */
-    public function hasDigit($digit) {
-        return array_search($digit, $this->numbers) !== false;
+    public function hasDigit($digit)
+    {
+        return $this->findDigit($digit) !== false;
     }
 
     /**
@@ -183,27 +213,49 @@ class NumberBase
      * @return integer The decimal value for the provided digit
      * @throws \InvalidArgumentException If the given digit does not exist
      */
-    public function getDecimalValue ($digit)
+    public function getDecimal($digit)
     {
-        $key = array_search($digit, $this->numbers);
+        $value = $this->findDigit($digit);
 
-        if ($key === false) {
-            throw new \InvalidArgumentException('The number does not exist in the number base');
+        if ($value === false) {
+            throw new \InvalidArgumentException("The digit '$digit' does not exist");
         }
 
-        return $key;
+        return $value;
+    }
+
+    private function findDigit($digit)
+    {
+        if ($this->valueMap && isset($this->valueMap[$digit])) {
+            return $this->valueMap[$digit];
+        } else {
+            $value = array_search($digit, $this->numbers);
+        }
+
+        if ($value === false && !$this->caseSensitive && is_string($digit)) {
+            $find = strtolower($digit);
+
+            foreach ($this->numbers as $key => $cmp) {
+                if (is_string($cmp) && strtolower($cmp) == $find) {
+                    $value = $key;
+                    break;
+                }
+            }
+        }
+
+        return $value;
     }
 
     /**
-     * Returns the value representing the given decimal value.
+     * Returns the digit representing the given decimal value.
      * @param integer $decimal Decimal value to lookup
-     * @return string The value that represents the given decimal value
+     * @return string The digit that represents the given decimal value
      * @throws \InvalidArgumentException If the decimal value is not within the number system
      */
-    public function getFromDecimalValue ($decimal)
+    public function getDigit($decimal)
     {
         if (!isset($this->numbers[$decimal])) {
-            throw new \InvalidArgumentException('Decimal value does not exist in the number base');
+            throw new \InvalidArgumentException("The decimal value '$decimal' does not exist");
         }
 
         return $this->numbers[$decimal];
@@ -302,6 +354,40 @@ class NumberBase
             $max = $target;
         }
 
+        $last = $min->radix - 1;
+        $size = (int) log($max->radix, $min->radix);
+        $number = array_fill(0, $size, 0);
+        $minNumbers = [];
+
+        for ($i = 0; $i < $max->radix; $i++) {
+            if ($i > 0) {
+                for ($j = $size - 1; $number[$j] == $last; $j--) {
+                    $number[$j] = 0;
+                }
+                $number[$j]++;
+            }
+            $minNumbers[] = $number;
+        }
+
+        $table = [$minNumbers, array_chunk(array_keys($max->numbers), 1)];
+        return $min === $this ? $table : array_reverse($table);
+    }
+
+    public function createOrigConversionTable (NumberBase $target)
+    {
+        if (!$this->isExponentialBase($target)) {
+            throw new \InvalidArgumentException(
+                'Cannot create conversion table from non exponential number bases');
+        }
+
+        if ($this->radix > $target->radix) {
+            $min = $target;
+            $max = $this;
+        } else {
+            $min = $this;
+            $max = $target;
+        }
+
         $last = $min->numbers[$min->radix - 1];
         $size = (int) log($max->radix, $min->radix);
         $number = array_fill(0, $size, $min->numbers[0]);
@@ -321,5 +407,36 @@ class NumberBase
 
         $table = [$minNumbers, array_chunk($max->numbers, 1)];
         return $min === $this ? $table : array_reverse($table);
+    }
+
+    public function createNewConversionTable (NumberBase $target)
+    {
+        if (!$this->isExponentialBase($target)) {
+            throw new \InvalidArgumentException(
+                'Cannot create conversion table from non exponential number bases');
+        }
+
+        $max = max($this->radix, $target->radix);
+        $min = min($this->radix, $target->radix);
+        $size = (int) log($max, $min);
+        $number = array_fill(0, $size, 0);
+        $table = [];
+
+        for ($i = 0; $i < $max; $i++) {
+            if ($i > 0) {
+                for ($j = $size - 1; $number[$j] == $min - 1; $j--) {
+                    $number[$j] = 0;
+                }
+                $number[$j]++;
+            }
+
+            if ($min == $this->radix) {
+                $table[implode(':', $number)] = [$i];
+            } else {
+                $table[$i] = $number;
+            }
+        }
+
+        return $table;
     }
 }

@@ -1,0 +1,44 @@
+<?php
+
+namespace Riimu\Kit\NumberConversion\ConversionMethod;
+
+use Riimu\Kit\NumberConversion\NumberBase;
+
+/**
+ * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
+ * @copyright Copyright (c) 2013, Riikka Kalliomäki
+ * @license http://opensource.org/licenses/mit-license.php MIT License
+ */
+abstract class ConversionMethod
+{
+    protected $source;
+    protected $target;
+
+    public function __construct(NumberBase $sourceBase, NumberBase $targetBase)
+    {
+        $this->source = $sourceBase;
+        $this->target = $targetBase;
+    }
+
+    public function convertNumber(array $number)
+    {
+        throw new ConversionException("This converter does not support number conversion");
+    }
+
+    public function convertFractions(array $number)
+    {
+        throw new ConversionException("This converter does not support fraction conversion");
+    }
+
+    protected function getDecimals(array $number)
+    {
+        return empty($number) ? [0] : array_map([$this->source, 'getDecimal'], $number);
+    }
+
+    protected function getDigits(array $number)
+    {
+        return array_map([$this->target, 'getDigit'], empty($number) ? [0] : $number);
+    }
+}
+
+class ConversionException extends \RuntimeException { }

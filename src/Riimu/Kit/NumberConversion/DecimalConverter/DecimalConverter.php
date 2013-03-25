@@ -2,35 +2,40 @@
 
 namespace Riimu\Kit\NumberConversion\DecimalConverter;
 
+use Riimu\Kit\NumberConversion\ConversionMethod\ConversionMethod;
+use Riimu\Kit\NumberConversion\NumberBase;
+
 /**
  * Decimal converter converts numbers from radix to another using decimal logic.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-abstract class DecimalConverter
+abstract class DecimalConverter extends ConversionMethod
 {
     /**
      * Default precision used in fraction conversion.
      * @var integer
      */
-    private $defaultPrecision;
+    private $precision;
 
     /**
      * Creates new instance of the decimal converter.
      */
-    public function __construct()
+    public function __construct(NumberBase $sourceBase, NumberBase $targetBase)
     {
-        $this->defaultPrecision = -1;
+        parent::__construct($sourceBase, $targetBase);
+
+        $this->precision = -1;
     }
 
     /**
      * Sets the default precision used in fraction conversion.
      * @param integer $precision Default precision used in fraction conversion
      */
-    public function setDefaultPrecision($precision)
+    public function setPrecision($precision)
     {
-        $this->defaultPrecision = (int) $precision;
+        $this->precision = (int) $precision;
     }
 
     /**
@@ -51,12 +56,13 @@ abstract class DecimalConverter
      * @param integer $targetRadix Radix of the target base
      * @return array List of digit values for the converted number
      */
-    public function convertNumber(array $number, $sourceRadix, $targetRadix)
+    public function convertNumber(array $number)
     {
-        $source = $this->init($sourceRadix);
-        $target = $this->init($targetRadix);
+        $source = $this->init($this->source->getRadix());
+        $target = $this->init($this->target->getRadix());
 
-        return $this->toBase($this->toDecimal($number, $source), $target);
+        return $this->getDigits($this->toBase($this->toDecimal(
+            $this->getDecimals($number), $source), $target));
     }
 
     /**
@@ -84,15 +90,12 @@ abstract class DecimalConverter
      * @param type $precision Precision of the resulting number or false for default
      * @return array List of digit values for the converted number
      */
-    public function convertFractions(array $number, $sourceRadix, $targetRadix, $precision = false)
+    public function convertFractions(array $number)
     {
-        if ($precision === false) {
-            $precision = $this->defaultPrecision;
-        }
-
-        $source = $this->init($sourceRadix);
-        $target = $this->init($targetRadix);
-        $dividend = $this->toDecimal($number, $source);
+        $precision = $this->precision;
+        $source = $this->init($this->source->getRadix());
+        $target = $this->init($this->target->getRadix());
+        $dividend = $this->toDecimal($this->getDecimals($number), $source);
         $divisor = $this->toDecimal([1] + array_fill(1, count($number), 0), $source);
         $digits = $precision > 0 ? $precision
             : $this->countDigits(count($number), $source, $target) + abs($precision);
@@ -103,7 +106,11 @@ abstract class DecimalConverter
             $result[] = (int) $this->val($digit);
         }
 
-        return $i > $digits ? $this->round($result, $targetRadix) : $result;
+        if ($i > $digits) {
+            $result = $this->round($result, $this->target->getRadix());
+        }
+
+        return $this->getDigits($result);
     }
 
     /**
@@ -122,7 +129,7 @@ abstract class DecimalConverter
         $power = 0;
 
         foreach (array_reverse($number) as $value) {
-            $decimal = $this->add($decimal, $this->mul($value,
+            $decimal = $this->add($decimal, $this->mul($this->init($value),
                 $this->pow($radix, $power++)));
         }
 

@@ -12,28 +12,30 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
     public function testDefaultReplaceConversion ()
     {
         $converter = new BaseConverter(16, 2);
-        $this->assertEquals('101010111100110111101111', $converter->convert('ABCDEF'));
+        $this->assertSame('101010111100110111101111', $converter->convert('ABCDEF'));
     }
 
     public function testDecimalConvertFallback ()
     {
         $converter = new BaseConverter(8, 10);
-        $this->assertEquals('73', $converter->convert('111'));
+        $this->assertSame('73', $converter->convert('111'));
     }
 
     public function testDirectConvertFallback ()
     {
         $converter = new BaseConverter(2, 10);
         $converter->setDecimalConverter(null);
-        $this->assertEquals('7', $converter->convert('111'));
+        $this->assertSame('7', $converter->convert('111'));
     }
 
     public function testReplaceConversion ()
     {
         $converter = new BaseConverter(5, 25);
         $backwards = new BaseConverter(25, 5);
-        $start = str_split('2413323433233422122');
-        $this->assertEquals($start, $backwards->convertByReplace($converter->convertByReplace($start)));
+        $start = '2413323433233422122';
+        $this->assertSame($start,
+            implode('', $backwards->convertByReplace(
+                $converter->convertByReplace(str_split($start)))));
     }
 
     public function testConvertViaCommonRoot ()

@@ -20,28 +20,28 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     {
         $base = new NumberBase(18);
         $this->assertEquals(18, $base->getRadix());
-        $this->assertEquals('G', $base->getFromDecimalValue(16));
+        $this->assertEquals('G', $base->getDigit(16));
         $this->assertEquals(17, $base->getDecimalValue('H'));
     }
 
     public function testCreateBase64IntegerBase ()
     {
         $base = new NumberBase(64);
-        $this->assertEquals('A', $base->getFromDecimalValue(0));
+        $this->assertEquals('A', $base->getDigit(0));
         $this->assertEquals(62, $base->getDecimalValue('+'));
     }
 
     public function testCreateByteIntegerBase ()
     {
         $base = new NumberBase(256);
-        $this->assertEquals("\x64", $base->getFromDecimalValue(0x64));
+        $this->assertEquals("\x64", $base->getDigit(0x64));
         $this->assertEquals(032, $base->getDecimalValue("\032"));
     }
 
     public function testCreateLargeIntegerBase ()
     {
         $base = new NumberBase(512);
-        $this->assertEquals("#306;", $base->getFromDecimalValue(306));
+        $this->assertEquals("#306;", $base->getDigit(306));
         $this->assertEquals(32, $base->getDecimalValue("#32;"));
     }
 
@@ -81,7 +81,7 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
         $base = new NumberBase(['foo', 'bar']);
         $this->assertEquals(2, $base->getRadix());
         $this->assertEquals(0, $base->getDecimalValue('foo'));
-        $this->assertEquals('bar', $base->getFromDecimalValue(1));
+        $this->assertEquals('bar', $base->getDigit(1));
     }
 
     /**
@@ -114,7 +114,7 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     public function testGettingMissingDecimalValue ()
     {
         $base = new NumberBase(16);
-        $base->getFromDecimalValue(17);
+        $base->getDigit(17);
     }
 
     /**
@@ -124,6 +124,18 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     {
         $base = new NumberBase(16);
         $base->getDecimalValue('G');
+    }
+
+    public function testCaseSensitivity()
+    {
+        $base = new NumberBase(36);
+        $this->assertTrue($base->hasDigit('A'));
+        $this->assertTrue($base->hasDigit('a'));
+        $this->assertEquals(10, $base->getDecimalValue('A'));
+        $this->assertEquals(10, $base->getDecimalValue('a'));
+
+        $base = new NumberBase('aAB');
+        $this->assertFalse($base->hasDigit('b'));
     }
 
     /**

@@ -2,72 +2,46 @@
 
 namespace Tests\DecimalConverter;
 
+use Tests\ConversionMethod\ConversionMethodTestBase;
+
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-abstract class ConverterTestBase extends \PHPUnit_Framework_TestCase
+abstract class ConverterTestBase extends ConversionMethodTestBase
 {
     private static $methods;
-
     private $converter;
-
-    abstract public function createConverter();
 
     public static function setUpBeforeClass()
     {
         self::$methods = [];
     }
 
-    /* NUMBER AND FRACTION CONVERSION TESTS */
-
-    public function testSettingDefaultPrecision()
-    {
-        $conv = $this->getConverter();
-        $conv->setDefaultPrecision(1);
-        $this->assertSame([1], $conv->convertFractions([3], 4, 2));
-    }
-
-    /**
-     * @dataProvider getNumberConversionData
-     */
-    public function testNumberConversion($input, $result, $source, $target)
-    {
-        $conv = $this->getConverter();
-        $this->assertSame($result, $conv->convertNumber($input, $source, $target));
-        $this->assertSame($input, $conv->convertNumber($result, $target, $source));
-    }
-
-    public function getNumberConversionData ()
-    {
-        return [
-            [[1, 1], [3], 2, 10],
-            [[0], [0], 10, 10],
-            [[10, 0, 9, 15, 15], [2, 4, 0, 4, 7, 7, 7], 16, 8],
-        ];
-    }
+    /* FRACTION CONVERSION TESTS */
 
     /**
      * @dataProvider getFractionConversionData
      */
     public function testFractionConversion($input, $result, $source, $target, $precision)
     {
-        $conv = $this->getConverter();
-        $this->assertSame($result, $conv->convertFractions($input, $source, $target, $precision));
+        $conv = $this->getConverter($source, $target);
+        $conv->setPrecision($precision);
+        $this->assertSame(str_split($result), $conv->convertFractions(str_split($input)));
     }
 
     public function getFractionConversionData()
     {
         return [
-            [[1], [5], 2, 10, 0],
-            [[2], [6, 6, 7], 3, 10, 3],
-            [[1], [3, 3], 3, 10, -1],
-            [[7, 5], [1], 10, 2, 1],
-            [[1, 4], [1, 0, 7, 5, 3, 4, 1, 2, 1,7], 10, 8, 10],
-            [[1, 4], [0, 0, 1, 0, 0, 1, 0, 0, 0], 10, 2, 9],
-            [[1, 4], [0, 0, 1, 0], 10, 2, 4],
-            [[4, 2], [0, 1, 1, 0, 1, 1, 0, 0], 10, 2, -1],
+            ['1', '5', 2, 10, 0],
+            ['2', '667', 3, 10, 3],
+            ['1', '33', 3, 10, -1],
+            ['75', '1', 10, 2, 1],
+            ['14', '1075341217', 10, 8, 10],
+            ['14', '001001000', 10, 2, 9],
+            ['14', '0010', 10, 2, 4],
+            ['42', '01101100', 10, 2, -1],
         ];
     }
 
@@ -191,7 +165,11 @@ abstract class ConverterTestBase extends \PHPUnit_Framework_TestCase
 
     private function invoke($method, array $args)
     {
-        $conv = $this->getConverter();
+        if (!isset($this->converter)) {
+            $this->converter = $this->getConverter(16, 32);
+        }
+
+        $conv = $this->converter;
 
         if (!isset(self::$methods[$method])) {
             $call = new \ReflectionMethod($conv, $method);
@@ -200,14 +178,5 @@ abstract class ConverterTestBase extends \PHPUnit_Framework_TestCase
         }
 
         return self::$methods[$method]->invokeArgs($conv, $args);
-    }
-
-    protected function getConverter()
-    {
-        if (!isset($this->converter)) {
-            $this->converter = $this->createConverter();
-        }
-
-        return $this->converter;
     }
 }

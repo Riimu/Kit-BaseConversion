@@ -9,15 +9,12 @@ namespace Tests\DecimalConverter;
  */
 class BCMathConverterTest extends ConverterTestBase
 {
+    protected $className = 'Riimu\Kit\NumberConversion\DecimalConverter\BCMathConverter';
+
     public function setUp()
     {
         if (!function_exists('bcadd')) {
             $this->markTestSkipped('Missing BCMath extension');
         }
-    }
-
-    public function createConverter()
-    {
-        return new \Riimu\Kit\NumberConversion\DecimalConverter\BCMathConverter();
     }
 }

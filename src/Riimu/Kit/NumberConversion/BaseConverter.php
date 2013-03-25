@@ -178,11 +178,11 @@ class BaseConverter
     /**
      * Converts the provided integer using the best possible method.
      *
-     * The conversion will be performed using the "best" available method. The
-     * replacement conversion method is preferred, if possible between the two
-     * number bases. If replacement is not available, decimal conversion is
-     * used. If no decimal converter is available, then conversion will fall
-     * back to manual conversion.
+     * The conversion will be performed using the fastest method possible.
+     * Replace conversion will be preferred, if it is possible between the two
+     * number bases. If replacement is not available, then decimal conversion
+     * will be used, but only if the GMPConverter is available. Otherwise this
+     * method will fall back to using direct conversion.
      *
      * @param array $number Number to covert with most significant digit last
      * @return array The converted number with most significant digit last
@@ -206,6 +206,12 @@ class BaseConverter
      * conversion library is available, then an exception will be thrown as
      * fraction conversion is not implemented without a decimal conversion
      * library.
+     *
+     * To change the precision in the resulting number, use getDecimalConverter()
+     * to return the converter and DecimalConverter::setDefaultPrecision() to
+     * set the precision. Note that this precision is ignore if replacement
+     * conversion is used or the number can be accurately converted with less
+     * digits than required by the precision.
      *
      * @param array $number Fractions to covert with most significant digit last
      * @return array The converted fractions with most significant digit last
@@ -278,13 +284,128 @@ class BaseConverter
      */
     public function convertByReplace (array $number, $fractions = false)
     {
+        $source = $this->sourceBase->getRadix();
+        $target = $this->targetBase->getRadix();
+        $number = $this->toDecimals($number);
+
+        if ($source == $target) {
+            return $this->toDigits($number);
+        }
+
+        $table = $this->sourceBase->createConversionTable($this->targetBase);
+        $log = max(1, log($target, $source));
+
+        if ($log > 1 && $pad = count($number) % $log) {
+            $pad = count($number) + ($log - $pad);
+            $number = array_pad($number, $pad * ($fractions ? +1: -1), 0);
+        }
+
+        $replacements = [[]];
+
+        foreach (array_chunk($number, $log) as $chunk) {
+            $replacements[] = $table[1][array_search($chunk, $table[0])];
+        }
+
+        $result = call_user_func_array('array_merge', $replacements);
+
+        while (!empty($result) && ($fractions ? end($result) : reset($result)) == 0) {
+            unset($result[key($result)]);
+        }
+
+        return $this->toDigits($result);
+    }
+
+
+    public function convertByReplaceMath (array $number, $fractions = false)
+    {
+        if ($this->commonRoot === false) {
+            throw new \InvalidArgumentException('Source and target base are not exponential');
+        }
+
+        $source = $this->sourceBase->getRadix();
+        $target = $this->targetBase->getRadix();
+        $number = $this->toDecimals($number);
+
+        if ($source == $target) {
+            return $this->toDigits($number);
+        } elseif ($source < $target) {
+            $log = log($target, $source);
+            $result = [];
+
+            if ($fractions && ($pad = count($number) % $log)) {
+                $number = array_pad($number, count($number) + ($log - $pad), 0);
+            }
+
+            foreach (array_chunk(array_reverse($number), $log) as $chunk) {
+                $value = 0;
+
+                foreach ($chunk as $pow => $dec) {
+                    $value += $dec * pow($source, $pow);
+                }
+
+                $result[] = $value;
+            }
+        } else {
+            $log = log($source, $target);
+            $result = [];
+
+            foreach (array_reverse($number) as $dec) {
+                for ($i = 0; $i < $log; $i++) {
+                    $result[] = $dec % $target;
+                    $dec = (int) ($dec / $target);
+                }
+            }
+        }
+
+        while (($fractions ? reset($result) : end($result)) === 0) {
+            unset($result[key($result)]);
+        }
+
+        return $this->toDigits(array_reverse($result));
+    }
+
+    public function convertByReplaceNum (array $number, $fractions = false)
+    {
+        $source = $this->sourceBase->getRadix();
+        $target = $this->targetBase->getRadix();
+        $number = $this->toDecimals($number);
+
+        if ($source == $target) {
+            return $this->toDigits($number);
+        }
+
+        $table = $this->sourceBase->createNewConversionTable($this->targetBase);
+        $log = max(1, log($target, $source));
+
+        if ($log > 1 && $pad = count($number) % $log) {
+            $pad = count($number) + ($log - $pad);
+            $number = array_pad($number, $pad * ($fractions ? +1: -1), 0);
+        }
+
+        $replacements = [[]];
+
+        foreach (array_chunk($number, $log) as $chunk) {
+            $replacements[] = $table[implode(':', $chunk)];
+        }
+
+        $result = call_user_func_array('array_merge', $replacements);
+
+        while (($fractions ? end($result) : reset($result)) === 0) {
+            unset($result[key($result)]);
+        }
+
+        return $this->toDigits($result);
+    }
+
+    public function convertByReplaceOrig (array $number, $fractions = false)
+    {
         if ($this->conversionTable === null) {
-            $this->conversionTable = $this->sourceBase->createConversionTable($this->targetBase);
+            $this->conversionTable = $this->sourceBase->createOrigConversionTable($this->targetBase);
         }
 
         $size = count($this->conversionTable[0][0]);
-        $sourceZero = $this->sourceBase->getFromDecimalValue(0);
-        $targetZero = $this->targetBase->getFromDecimalValue(0);
+        $sourceZero = $this->sourceBase->getDigit(0);
+        $targetZero = $this->targetBase->getDigit(0);
 
         $pad = count($number) + ($size - (count($number) % $size ?: $size));
         $number = array_pad($number, $pad * ($fractions ? +1: -1), $sourceZero);
@@ -311,15 +432,15 @@ class BaseConverter
     }
 
     /**
-     * Converts number from base to another using arbitrary size integer logic.
+     * Converts number from base to another using arbitrary precision math.
      *
-     * Decimal conversion takes advantage of arbitrary size integer libraries
+     * Decimal conversion takes advantage of arbitrary precision libraries
      * to first convert the source number into decimal and then converting that
      * number into the target base. The speed of this method depends entirely
-     * on the integer library used. From the implemented libraries, GMP is
-     * several magnitudes faster than BCMath. Using BCMath, this is the slowest
-     * conversion method. Using GMP, this is not much slower than replacement
-     * conversion.
+     * on the integer library used. It is worth noting that the GMP library is
+     * few magnitudes faster than BCMath, which is several magnitudes faster
+     * than Internal implementation. Comparably, using GMP library, this method
+     * is only few times slower than replace conversion.
      *
      * @param array $number Number to covert with most significant digit last
      * @param boolean $fractions True if converting fractions, false if not
@@ -332,11 +453,12 @@ class BaseConverter
         }
 
         $method = $fractions ? 'convertFractions' : 'convertNumber';
-        $result = $this->decimalConverter->$method(
-            array_map([$this->sourceBase, 'getDecimalValue'], $number),
-            $this->sourceBase->getRadix(), $this->targetBase->getRadix());
 
-        return array_map([$this->targetBase, 'getFromDecimalValue'], $result);
+        return $this->toDigits($this->decimalConverter->$method(
+            $this->toDecimals($number),
+            $this->sourceBase->getRadix(),
+            $this->targetBase->getRadix()
+        ));
     }
 
     /**
@@ -345,20 +467,19 @@ class BaseConverter
      * Direct conversion converts the number by taking the decimal values of
      * the digits in the number and determining the reminder by using an
      * implementation of long division. Using this method, it is not required
-     * to convert the number to decimal number in between and it avoids the
+     * to convert the entire number to decimal number in between which avoids the
      * limits of 32 bit integers. Due manual implementation of long division,
-     * this tends to be slowest of all the conversion methods (unless BCMath is
-     * used). Direct conversion cannot be used to convert fractional part.
+     * this tends to be quite a bit slower than decimal conversion using GMP
+     * library. However, it is still a bit faster than decimal conversion using
+     * BCMath library. Direct conversion, however, can only be used for the
+     * integer part of numbers.
      *
      * @param array $number Number to covert with most significant digit last
      * @return array The converted number with most significant digit last
      */
     public function convertDirectly (array $number)
     {
-        foreach ($number as $i => $digit) {
-            $number[$i] = $this->sourceBase->getDecimalValue($digit);
-        }
-
+        $number = $this->toDecimals($number);
         $sourceRadix = $this->sourceBase->getRadix();
         $targetRadix = $this->targetBase->getRadix();
         $result = [];
@@ -381,91 +502,9 @@ class BaseConverter
                 }
             }
 
-            $result[] = $this->targetBase->getFromDecimalValue($remainder);
+            $result[] = $remainder;
         } while (!empty($number));
 
-        return array_reverse($result);
-    }
-
-    /**
-     * Converts integers directly from base to another with minimal overhead.
-     *
-     * Any of the arguments may be provided as a string or an array with the
-     * least significant digit first. For example, using 'A09FF' as the number,
-     * '0123456789ABCDEF' as the source base and '01234567' as the target base
-     * will return '2404777'. The method will return a string or an array
-     * depending on the type of the input number.
-     *
-     * The logic of this method is essentially the same as convertDirectly(),
-     * except that there is no function call overhead as the method only uses
-     * language constructs. This makes it slightly faster than
-     * convertDirectly(), but it does not take advantage of the NumberBase
-     * class. This method exists mostly for vanity reasons providing a silly
-     * example of using strings and arrays interchangeably.
-     *
-     * @param string|array $number The number to convert
-     * @param string|array $sourceBase The number base for the original number
-     * @param string|array $targetBase The number base for the resulting number
-     * @return string|array|false Resulted number or false on error
-     */
-    public static function customConvert ($number, $sourceBase, $targetBase)
-    {
-        for ($sourceRadix = 0; isset($sourceBase[$sourceRadix]); $sourceRadix++) {
-            $sourceMap[$sourceBase[$sourceRadix]] = $sourceRadix;
-        }
-
-        for ($targetRadix = 0; isset($targetBase[$targetRadix]); $targetRadix++);
-
-        $numbers = [];
-
-        for ($numberLength = 0; isset($number[$numberLength]); $numberLength++) {
-            if (!isset($sourceMap[$number[$numberLength]])) {
-                return false;
-            }
-
-            $numbers[$numberLength] = $sourceMap[$number[$numberLength]];
-        }
-
-        if ($sourceRadix < 2 || $targetRadix < 2) {
-            return false;
-        } elseif ($numberLength < 1) {
-            return $targetBase[0];
-        }
-
-        $result = [];
-        $resultLength = 0;
-        $skip = 0;
-
-        do {
-            $remainder = 0;
-            $first = true;
-
-            for ($i = $skip; $i < $numberLength; $i++) {
-                $remainder = $numbers[$i] + $remainder * $sourceRadix;
-
-                if ($remainder >= $targetRadix) {
-                    $numbers[$i] = (int) ($remainder / $targetRadix);
-                    $remainder = $remainder % $targetRadix;
-                    $first = false;
-                } elseif ($first) {
-                    $skip++;
-                } else {
-                    $numbers[$i] = 0;
-                }
-            }
-
-            $result[$resultLength++] = $targetBase[$remainder];
-        } while ($skip < $numberLength);
-
-        // Essentially is_string() using language construct
-        $test = $number;
-        $test[0] = '';
-        $return = $test[0] === '' ? [] : ' ';
-
-        for ($i = 0; $i < $resultLength; $i++) {
-            $return[$i] = $result[$resultLength - $i - 1];
-        }
-
-        return $return;
+        return $this->toDigits(array_reverse($result));
     }
 }

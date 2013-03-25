@@ -9,15 +9,12 @@ namespace Tests\DecimalConverter;
  */
 class GMPConverterTest extends ConverterTestBase
 {
+    protected $className = 'Riimu\Kit\NumberConversion\DecimalConverter\GMPConverter';
+    
     public function setUp()
     {
         if (!function_exists('gmp_add')) {
             $this->markTestSkipped('Missing GMP extension');
         }
-    }
-
-    public function createConverter()
-    {
-        return new \Riimu\Kit\NumberConversion\DecimalConverter\GMPConverter();
     }
 }
