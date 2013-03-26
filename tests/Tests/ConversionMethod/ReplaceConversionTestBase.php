@@ -21,12 +21,22 @@ abstract class ReplaceConversionTestBase extends ConversionMethodTestBase
     }
 
     /**
+     * @expectedException Riimu\Kit\NumberConversion\ConversionMethod\ConversionException
+     */
+    public function testMissingCommonRoot()
+    {
+        $this->getConverter(7, 13)->convertNumber(['1']);
+    }
+
+    /**
      * @dataProvider getFractionConversionData
      */
     public function testFractionConversion($input, $result, $source, $target)
     {
         $this->assertSame(str_split($result), $this->getConverter($source, $target)
             ->convertFractions(str_split($input)));
+        $this->assertSame(str_split($input), $this->getConverter($target, $source)
+            ->convertFractions(str_split($result)));
     }
 
     public function getFractionConversionData ()
@@ -34,6 +44,9 @@ abstract class ReplaceConversionTestBase extends ConversionMethodTestBase
         return [
             ['2', '1', 4, 2],
             ['1', '01', 4, 2],
+            ['ABEEF', 'LFNF', 16, 32],
+            ['302230323', 'CACEC', 4, 16],
+            ['NH6CG2363', '7782135321061', 27, 9]
         ];
     }
 }

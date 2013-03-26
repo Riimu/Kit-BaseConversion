@@ -17,7 +17,7 @@ $target = new NumberBase(is_numeric($argv[3]) ? (int) $argv[3] : $argv[3]);
 $converter = new BaseConverter($source, $target);
 
 if ($argc > 4) {
-    $converter->getDecimalConverter()->setDefaultPrecision($argv[4]);
+    $converter->setPrecision($argv[4]);
 }
 
 echo "In Base " . $source->getRadix() . ": $argv[1]" . PHP_EOL;

@@ -10,6 +10,11 @@ namespace Riimu\Kit\NumberConversion\DecimalConverter;
  */
 class GMPConverter extends DecimalConverter
 {
+    public function isSupported()
+    {
+        return function_exists('gmp_add');
+    }
+
     protected function init($number)
     {
         return gmp_init($number);

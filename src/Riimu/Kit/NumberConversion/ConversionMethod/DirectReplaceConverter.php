@@ -32,10 +32,6 @@ class DirectReplaceConverter extends ReplaceConverter
             if ($key === false) {
                 $chunk = $this->source->getDigits($this->getDecimals($chunk));
                 $key = array_search($chunk, $table[0]);
-
-                if ($key === false) {
-                    throw new \InvalidArgumentException('Invalid number');
-                }
             }
 
             $replacements[] = $table[1][$key];

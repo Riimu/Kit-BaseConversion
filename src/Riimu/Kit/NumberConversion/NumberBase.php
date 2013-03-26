@@ -159,7 +159,6 @@ class NumberBase
         $strings = [];
         $mapped = true;
 
-        // array_unique does string comparison which is not always desirable
         foreach ($array as $key => $value) {
             if (array_search($value, $numbers) !== false) {
                 throw new \InvalidArgumentException('Duplicate values in number base');
@@ -184,7 +183,7 @@ class NumberBase
 
         $this->radix = count($numbers);
         $this->numbers = $numbers;
-        $this->valueMap = $mapped ? array_flip($this->numbers) : null;
+        $this->valueMap = $mapped ? array_flip($numbers) : null;
         $this->caseSensitive = count($strings) != count(array_flip($strings));
     }
 
@@ -285,24 +284,6 @@ class NumberBase
     }
 
     /**
-     * Tells if the number base is exponential with another number base.
-     *
-     * Two number bases are exponential if the radix of either base is the nth
-     * root of the other base. When two number bases are exponential, then
-     * any digit in the larger number base can be represented exactly by n
-     * digits of the smaller number base.
-     *
-     * @param NumberBase $base Number base to test against
-     * @return boolean True if the number bases are exponential, false if not
-     */
-    public function isExponentialBase (NumberBase $base)
-    {
-        return $this->radix == $base->radix || ($this->radix > $base->radix
-            ? $this->isNthRootFor($this->radix, $base->radix)
-            : $this->isNthRootFor($base->radix, $this->radix));
-    }
-
-    /**
      * Finds the largest integer root shared by the radix of both number bases.
      * @param NumberBase $base Number base to compare against
      * @return integer|false Highest common integer root or false if none
@@ -340,59 +321,5 @@ class NumberBase
     {
         for ($pow = 2; pow($root, $pow) < $number; $pow++);
         return pow($root, $pow) == $number;
-    }
-
-    /**
-     * Generates a conversion table between two exponential number bases.
-     *
-     * The returned value contains two arrays. The first array contains digits
-     * in the source base and the second array contains the corresponding digits
-     * in the target base. Replacement can be performed by replacing the
-     * sequence of digits from the first array with the sequence of digits in
-     * the second array with the same index value. For example, the conversion
-     * table returned between base 2 and 4 would be:
-     *
-     * <code>[
-     *   [[0, 0], [0, 1], [1, 0], [1, 1]],
-     *   [[0], [1], [2], [3]]
-     * ]</code>
-     *
-     *
-     * @param NumberBase $target The target for the conversion
-     * @return array Array containing the conversions
-     * @throws \InvalidArgumentException If the number bases are not exponential
-     */
-    public function createConversionTable (NumberBase $target)
-    {
-        if (!$this->isExponentialBase($target)) {
-            throw new \InvalidArgumentException(
-                'Cannot create conversion table from non exponential number bases');
-        }
-
-        if ($this->radix > $target->radix) {
-            $min = $target;
-            $max = $this;
-        } else {
-            $min = $this;
-            $max = $target;
-        }
-
-        $last = $min->radix - 1;
-        $size = (int) log($max->radix, $min->radix);
-        $number = array_fill(0, $size, 0);
-        $minNumbers = [];
-
-        for ($i = 0; $i < $max->radix; $i++) {
-            if ($i > 0) {
-                for ($j = $size - 1; $number[$j] == $last; $j--) {
-                    $number[$j] = 0;
-                }
-                $number[$j]++;
-            }
-            $minNumbers[] = $number;
-        }
-
-        $table = [$minNumbers, array_chunk(array_keys($max->numbers), 1)];
-        return $min === $this ? $table : array_reverse($table);
     }
 }

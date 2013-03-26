@@ -3,6 +3,7 @@
 namespace Riimu\Kit\NumberConversion\DecimalConverter;
 
 use Riimu\Kit\NumberConversion\ConversionMethod\ConversionMethod;
+use Riimu\Kit\NumberConversion\ConversionMethod\ConversionException;
 use Riimu\Kit\NumberConversion\NumberBase;
 
 /**
@@ -73,6 +74,10 @@ abstract class DecimalConverter extends ConversionMethod
      */
     public function convertNumber(array $number)
     {
+        if (!$this->isSupported()) {
+            throw new ConversionException("This decimal converter is not supported");
+        }
+
         $source = $this->init($this->source->getRadix());
         $target = $this->init($this->target->getRadix());
 
@@ -107,6 +112,10 @@ abstract class DecimalConverter extends ConversionMethod
      */
     public function convertFractions(array $number)
     {
+        if (!$this->isSupported()) {
+            throw new ConversionException("This decimal converter is not supported");
+        }
+
         $precision = $this->precision;
         $source = $this->init($this->source->getRadix());
         $target = $this->init($this->target->getRadix());
@@ -216,6 +225,8 @@ abstract class DecimalConverter extends ConversionMethod
 
         return $number;
     }
+
+    abstract public function isSupported();
 
     /**
      * Initializes the number resource from given number.

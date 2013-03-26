@@ -27,19 +27,41 @@ abstract class ConversionMethodTestBase extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testInvalidInput()
+    {
+        $conv = $this->getConverter(4, 16);
+        $conv->convertNumber([-1]);
+    }
+
+    public function testLooseValueTypeComparison()
+    {
+        $conv = $this->getConverter(2, 16);
+        $this->assertSame(['E'], $conv->convertNumber([true, '1', 1, false]));
+    }
+
+    /**
      * @dataProvider getNumberConversionData
      */
     public function testNumberConversion($input, $result, $source, $target)
     {
-        $this->assertSame(str_split($result), $this->getConverter($source, $target)
-            ->convertNumber(str_split($input)));
-        $this->assertSame(str_split($input), $this->getConverter($target, $source)
-            ->convertNumber(str_split($result)));
+        $input = is_array($input) ? $input : str_split($input);
+        $result = is_array($result) ? $result : str_split($result);
+
+        $this->assertSame($result, $this->getConverter($source, $target)
+            ->convertNumber($input));
+        $this->assertSame($input, $this->getConverter($target, $source)
+            ->convertNumber($result));
     }
 
     public function getNumberConversionData ()
     {
         return [
+            ['16778DA0', '2635706640', 16, 8],
+            ['2413323433233422122', '2LIDNHIMBC', 5, 25],
+            ['111', '73', 8, 10],
+            ['111', '7', 2, 10],
             ['BA', 'DC', 'AB', 'CD'],
             ['11', '3', 2, 10],
             ['0', '0', 10, 10],
@@ -48,6 +70,12 @@ abstract class ConversionMethodTestBase extends \PHPUnit_Framework_TestCase
             ['ABCDEF', '101010111100110111101111', 16, 2],
             ['FABCAB', 'FLF5B', 16, 32],
             ['FABCABABBA', '511373342342371', 27, 9],
+            [sprintf('%c%c%c%c%c%c', 245, 69, 123, 99, 59, 117), 'B7627A314C886', 256, 13],
+            [['#777;', '#666;', '#555;'], 'wmmor', 1024, 64],
+            [[['', ''], ['', '', '']], [true, true, false], [[''], ['', ''], ['', '', ''], new \stdClass()], [false, true]],
+            ['2919739656537', '101010011111001110000010111000100101011001', 10, 2],
+            ['A09GH0076AAB49DEF', 'IMOI1A8HM60KPH9', '0123456789ABCDEFGH', '0123456789ABCDEFGHIJKLMNOP'],
+            ['1337331', 'LDE2D', 13, 23],
         ];
     }
 

@@ -3,6 +3,7 @@
 namespace Tests\DecimalConverter;
 
 use Tests\ConversionMethod\ConversionMethodTestBase;
+use Riimu\Kit\NumberConversion\NumberBase;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
@@ -40,9 +41,34 @@ abstract class ConverterTestBase extends ConversionMethodTestBase
             ['75', '1', 10, 2, 1],
             ['14', '1075341217', 10, 8, 10],
             ['14', '001001000', 10, 2, 9],
+            ['14', '0010001111', 10, 2, 10],
             ['14', '0010', 10, 2, 4],
             ['42', '01101100', 10, 2, -1],
         ];
+    }
+
+    /* TEST LACK OF SUPPORT */
+
+    /**
+     * @expectedException Riimu\Kit\NumberConversion\ConversionMethod\ConversionException
+     */
+    public function testMissingNumberConversionSupport()
+    {
+        $obj = $this->getMock($this->className, ['isSupported'],
+            [new NumberBase(4), new NumberBase(16)]);
+        $obj->expects($this->once())->method('isSupported')->will($this->returnValue(false));
+        $obj->convertNumber(['1']);
+    }
+
+    /**
+     * @expectedException Riimu\Kit\NumberConversion\ConversionMethod\ConversionException
+     */
+    public function testMissingFractionConversionSupport()
+    {
+        $obj = $this->getMock($this->className, ['isSupported'],
+            [new NumberBase(4), new NumberBase(16)]);
+        $obj->expects($this->once())->method('isSupported')->will($this->returnValue(false));
+        $obj->convertFractions(['1']);
     }
 
     /* PROTECTED MATHEMATICAL FUNCTION TESTS */

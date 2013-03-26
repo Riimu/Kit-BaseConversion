@@ -21,28 +21,28 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
         $base = new NumberBase(18);
         $this->assertEquals(18, $base->getRadix());
         $this->assertEquals('G', $base->getDigit(16));
-        $this->assertEquals(17, $base->getDecimalValue('H'));
+        $this->assertEquals(17, $base->getDecimal('H'));
     }
 
     public function testCreateBase64IntegerBase ()
     {
         $base = new NumberBase(64);
         $this->assertEquals('A', $base->getDigit(0));
-        $this->assertEquals(62, $base->getDecimalValue('+'));
+        $this->assertEquals(62, $base->getDecimal('+'));
     }
 
     public function testCreateByteIntegerBase ()
     {
         $base = new NumberBase(256);
         $this->assertEquals("\x64", $base->getDigit(0x64));
-        $this->assertEquals(032, $base->getDecimalValue("\032"));
+        $this->assertEquals(032, $base->getDecimal("\032"));
     }
 
     public function testCreateLargeIntegerBase ()
     {
         $base = new NumberBase(512);
         $this->assertEquals("#306;", $base->getDigit(306));
-        $this->assertEquals(32, $base->getDecimalValue("#32;"));
+        $this->assertEquals(32, $base->getDecimal("#32;"));
     }
 
     /**
@@ -57,7 +57,7 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     {
         $base = new NumberBase('ABCDEF');
         $this->assertEquals(6, $base->getRadix());
-        $this->assertEquals(4, $base->getDecimalValue('E'));
+        $this->assertEquals(4, $base->getDecimal('E'));
     }
 
     /**
@@ -80,7 +80,7 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     {
         $base = new NumberBase(['foo', 'bar']);
         $this->assertEquals(2, $base->getRadix());
-        $this->assertEquals(0, $base->getDecimalValue('foo'));
+        $this->assertEquals(0, $base->getDecimal('foo'));
         $this->assertEquals('bar', $base->getDigit(1));
     }
 
@@ -108,6 +108,19 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
         new NumberBase([0 => 0, 2 => 1]);
     }
 
+    public function testBaseWithNonScalarValues()
+    {
+        $zero = new stdClass();
+        $zero->n = 0;
+        $one = new stdClass();
+        $one->n = 1;
+
+        $base = new NumberBase([$zero, $one]);
+        $this->assertSame($one, $base->getDigit(1));
+        $this->assertSame(0, $base->getDecimal($zero));
+        $this->assertSame([$zero, $one], $base->getNumbers());
+    }
+
     /**
      * @expectedException InvalidArgumentException
      */
@@ -123,7 +136,7 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     public function testGettingMissingCharacter ()
     {
         $base = new NumberBase(16);
-        $base->getDecimalValue('G');
+        $base->getDecimal('G');
     }
 
     public function testCaseSensitivity()
@@ -131,97 +144,11 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
         $base = new NumberBase(36);
         $this->assertTrue($base->hasDigit('A'));
         $this->assertTrue($base->hasDigit('a'));
-        $this->assertEquals(10, $base->getDecimalValue('A'));
-        $this->assertEquals(10, $base->getDecimalValue('a'));
+        $this->assertEquals(10, $base->getDecimal('A'));
+        $this->assertEquals(10, $base->getDecimal('a'));
 
         $base = new NumberBase('aAB');
         $this->assertFalse($base->hasDigit('b'));
-    }
-
-    /**
-     * @dataProvider getExponentialBaseTestValues
-     */
-    public function testExponentialBases ($a, $b, $equals)
-    {
-        $aBase = new NumberBase($a);
-        $bBase = new NumberBase($b);
-        $this->assertEquals($equals, $aBase->isExponentialBase($bBase));
-        $this->assertEquals($equals, $bBase->isExponentialBase($aBase));
-    }
-
-    public function getExponentialBaseTestValues ()
-    {
-        return [
-            [2, 16, true], [5, 25, true],
-            [5, 20, false], [3, 17, false]
-        ];
-    }
-
-    /**
-     * @dataProvider getConversionTableTestValues
-     */
-    public function testConversionTable ($a, $b, $result)
-    {
-        $a = new NumberBase($a);
-        $b = new NumberBase($b);
-
-        $table = [
-            array_map('str_split', array_keys($result)),
-            array_map('str_split', array_values($result)),
-        ];
-
-        $this->assertEquals($table, $a->createConversionTable($b));
-
-        $temp = $table[0];
-        $table[0] = $table[1];
-        $table[1] = $temp;
-
-        $this->assertEquals($table, $b->createConversionTable($a));
-    }
-
-    public function getConversionTableTestValues ()
-    {
-        return [
-            [2, 16, [
-                '0000' => '0', '0001' => '1', '0010' => '2', '0011' => '3',
-                '0100' => '4', '0101' => '5', '0110' => '6', '0111' => '7',
-                '1000' => '8', '1001' => '9', '1010' => 'A', '1011' => 'B',
-                '1100' => 'C', '1101' => 'D', '1110' => 'E', '1111' => 'F',
-            ]],
-            ['!#%', 'ABCDEFGHI', [
-                '!!' => 'A', '!#' => 'B', '!%' => 'C', '#!' => 'D', '##' => 'E',
-                '#%' => 'F', '%!' => 'G', '%#' => 'H', '%%' => 'I',
-            ]],
-            [2, 4, [
-               '00' => '0', '01' => '1', '10' => '2', '11' => '3',
-            ]],
-        ];
-    }
-
-    public function testObjectConversionTable ()
-    {
-        $std1 = new \stdClass();
-        $std1->value = 0;
-        $std2 = new \stdClass();
-        $std2->value = 1;
-
-        $a = new NumberBase([$std1, $std2]);
-        $b = new NumberBase([$std2, $std1]);
-
-        $this->assertEquals([
-            [[$std1], [$std2]],
-            [[$std2], [$std1]],
-        ], $a->createConversionTable($b));
-    }
-
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testConversionTableException ()
-    {
-        $a = new NumberBase(5);
-        $b = new NumberBase(20);
-        $a->createConversionTable($b);
     }
 
     /**

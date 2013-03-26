@@ -10,6 +10,11 @@ namespace Riimu\Kit\NumberConversion\DecimalConverter;
  */
 class BCMathConverter extends DecimalConverter
 {
+    public function isSupported()
+    {
+        return function_exists('bcadd');
+    }
+
     protected function init($number)
     {
         return (string) $number;

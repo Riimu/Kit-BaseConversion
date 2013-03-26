@@ -10,6 +10,11 @@ namespace Riimu\Kit\NumberConversion\DecimalConverter;
  */
 class InternalConverter extends DecimalConverter
 {
+    public function isSupported()
+    {
+        return true;
+    }
+    
     protected function init($number)
     {
         return (string) $number;

@@ -2,6 +2,8 @@
 
 namespace Riimu\Kit\NumberConversion;
 
+use Riimu\Kit\NumberConversion\ConversionMethod\ConversionException;
+
 /**
  * Number conversion library for integers and fractions of arbitrary precision.
  *
@@ -32,35 +34,9 @@ class BaseConverter
      */
     private $targetBase;
 
-    /**
-     * Common root between the number bases, if any.
-     * @var false|integer
-     */
-    private $commonRoot;
-
-    /**
-     * Library used to perform the decimal conversion.
-     * @var DecimalConverter\DecimalConverter
-     */
-    private $decimalConverter;
-
-    /**
-     * BaseConverter used to convert input number to intermediate number.
-     * @var BaseConverter
-     */
-    private $intermediateSource;
-
-    /**
-     * BaseConverter used to convert intermediate number to returned number.
-     * @var BaseConverter
-     */
-    private $intermediateTarget;
-
-    /**
-     * Replacement conversion table between source base and target base.
-     * @var array
-     */
-    private $conversionTable;
+    private $numberConverters;
+    private $fractionConverters;
+    private $precision;
 
     /**
      * Creates a new instance of BaseConverter.
@@ -79,45 +55,41 @@ class BaseConverter
             ? $sourceBase : new NumberBase($sourceBase);
         $this->targetBase = $sourceBase instanceof NumberBase
             ? $targetBase : new NumberBase($targetBase);
-        $this->commonRoot = $this->sourceBase->findCommonRadixRoot($this->targetBase);
 
-        $this->intermediateSource = null;
-        $this->intermediateTarget = null;
-        $this->conversionTable = null;
+        $this->precision = -1;
+        $this->numberConverters = [
+            'ConversionMethod\DirectReplaceConverter',
+            'DecimalConverter\GMPConverter',
+            'ConversionMethod\DirectConverter',
+        ];
 
-        // @codeCoverageIgnoreStart
-        if (function_exists('gmp_add')) {
-            $this->decimalConverter = new DecimalConverter\GMPConverter();
-        } elseif (function_exists('bcadd')) {
-            $this->decimalConverter = new DecimalConverter\BCMathConverter();
-        } else {
-            $this->decimalConverter = new DecimalConverter\InternalConverter();
+        $this->fractionConverters = [
+            'ConversionMethod\DirectReplaceConverter',
+            'DecimalConverter\GMPConverter',
+            'DecimalConverter\BCMathConverter',
+            'DecimalConverter\InternalConverter',
+        ];
+    }
+
+    public function setPrecision($precision)
+    {
+        $this->precision = (int) $precision;
+
+        foreach (array_merge($this->numberConverters, $this->fractionConverters) as $converter) {
+            if ($converter instanceof DecimalConverter\DecimalConverter) {
+                $converter->setPrecision($this->precision);
+            }
         }
-        // @codeCoverageIgnoreEnd
     }
 
-    /**
-     * Sets the decimal converter library to use.
-     *
-     * The default decimal conversion library is determined by the available
-     * functions in the PHP installation. You can use this method to change the
-     * decimal converter used. Using the the value "null" will disable the
-     * decimal conversion method from being used.
-     *
-     * @param DecimalConverter\DecimalConverter $converter Decimal converter to use
-     */
-    public function setDecimalConverter (DecimalConverter\DecimalConverter $converter = null)
+    public function setNumberConverters(array $converters)
     {
-        $this->decimalConverter = $converter;
+        $this->numberConverters = $converters;
     }
 
-    /**
-     * Returns the decimal converter currently in use.
-     * @return DecimalConverter\DecimalConverter
-     */
-    public function getDecimalConverter()
+    public function setFractionConverters(array $converters)
     {
-        return $this->decimalConverter;
+        $this->fractionConverters = $converters;
     }
 
     /**
@@ -189,13 +161,15 @@ class BaseConverter
      */
     public function convertNumber(array $number)
     {
-        if ($this->commonRoot !== false) {
-            return $this->convertViaCommonRoot($number);
-        } elseif ($this->decimalConverter instanceof DecimalConverter\GMPConverter) {
-            return $this->convertViaDecimal($number);
-        } else {
-            return $this->convertDirectly($number);
+        foreach ($this->numberConverters as & $converter) {
+            try {
+                return $this->loadConverter($converter)->convertNumber($number);
+            } catch (ConversionException $ex) {
+                // Just continue to next method
+            }
         }
+
+        throw new \RuntimeException("No applicable conversion method available");
     }
 
     /**
@@ -219,13 +193,36 @@ class BaseConverter
      */
     public function convertFractions(array $number)
     {
-        if ($this->commonRoot !== false) {
-            return $this->convertViaCommonRoot($number, true);
-        } elseif ($this->decimalConverter !== null) {
-            return $this->convertViaDecimal($number, true);
-        } else {
-            throw new \RuntimeException("Fraction conversion is not available without decimal converter");
+        foreach ($this->fractionConverters as & $converter) {
+            try {
+                return $this->loadConverter($converter)->convertFractions($number);
+            } catch (ConversionException $ex) {
+                // Just continue to next method
+            }
         }
+
+        throw new \RuntimeException("No applicable conversion method available");
+    }
+
+    private function loadConverter(& $name)
+    {
+        if (!($name instanceof ConversionMethod\ConversionMethod)) {
+            $class = 'Riimu\Kit\NumberConversion\\' . $name;
+
+            if (class_exists($class)) {
+                $instance = new $class($this->sourceBase, $this->targetBase);
+            } else {
+                $instance = new $name($this->sourceBase, $this->targetBase);
+            }
+
+            if ($instance instanceof DecimalConverter\DecimalConverter) {
+                $instance->setPrecision($this->precision);
+            }
+
+            $name = $instance;
+        }
+
+        return $name;
     }
 
 

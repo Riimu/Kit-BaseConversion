@@ -11,17 +11,11 @@ class NoveltyConverter extends ConversionMethod
 {
     public function convertNumber(array $number)
     {
-        $result = self::convert(
+        return $this->getDigits(self::convert(
             $this->getDecimals($number),
             range(0, $this->source->getRadix() - 1),
             range(0, $this->target->getRadix() - 1)
-        );
-
-        if ($result === false) {
-            throw new \InvalidArgumentException("Invalid number provided");
-        }
-
-        return $this->getDigits($result);
+        ));
     }
 
     /**
