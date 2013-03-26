@@ -61,6 +61,8 @@ class BaseConverter
             'ConversionMethod\DirectReplaceConverter',
             'DecimalConverter\GMPConverter',
             'ConversionMethod\DirectConverter',
+            'DecimalConverter\BCMathConverter',
+            'DecimalConverter\InternalConverter',
         ];
 
         $this->fractionConverters = [

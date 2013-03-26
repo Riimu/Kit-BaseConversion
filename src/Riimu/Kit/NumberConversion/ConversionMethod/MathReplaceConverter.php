@@ -9,8 +9,14 @@ namespace Riimu\Kit\NumberConversion\ConversionMethod;
  */
 class MathReplaceConverter extends ReplaceConverter
 {
+    use IntegerConstrained;
+    
     protected function replace(array $number, $fractions = false)
     {
+        if ($this->isConstrained($this->source->getRadix(), $this->target->getRadix())) {
+            throw new ConversionException("Number bases too large for conversion");
+        }
+
         $source = $this->source->getRadix();
         $target = $this->target->getRadix();
         $number = $this->getDecimals($number);

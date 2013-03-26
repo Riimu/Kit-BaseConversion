@@ -9,6 +9,8 @@ namespace Riimu\Kit\NumberConversion\ConversionMethod;
  */
 class DirectConverter extends ConversionMethod
 {
+    use IntegerConstrained;
+    
     /**
      * Converts numbers directly from base to another.
      *
@@ -27,6 +29,10 @@ class DirectConverter extends ConversionMethod
      */
     public function convertNumber(array $number)
     {
+        if ($this->isConstrained($this->source->getRadix(), $this->target->getRadix())) {
+            throw new ConversionException("Number bases too large for conversion");
+        }
+
         $number = $this->getDecimals($number);
         $sourceRadix = $this->source->getRadix();
         $targetRadix = $this->target->getRadix();

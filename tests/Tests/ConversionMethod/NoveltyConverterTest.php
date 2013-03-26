@@ -11,6 +11,8 @@ use Riimu\Kit\NumberConversion\ConversionMethod\NoveltyConverter;
  */
 class NoveltyConverterTest extends ConversionMethodTestBase
 {
+    use IntegerConstrainedTester;
+    
     protected $className = 'Riimu\Kit\NumberConversion\ConversionMethod\NoveltyConverter';
 
     public function testInvalidBase()

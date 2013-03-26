@@ -42,8 +42,9 @@ function ticker () {
 }
 
 register_tick_function('ticker');
+$common = null;
 
-$doTrial = function ($class) use ($source, $target, $repeats, $number, & $timer) {
+$doTrial = function ($class) use ($source, $target, $repeats, $number, & $timer, & $common) {
     $one = new $class($source, $target);
     $two = new $class($target, $source);
     $name = substr($class, 27);
@@ -57,6 +58,10 @@ $doTrial = function ($class) use ($source, $target, $repeats, $number, & $timer)
 
                 if ($result !== $number) {
                     throw new RuntimeException('Result does not match the original');
+                } elseif ($common === null) {
+                    $common = $mid;
+                } elseif ($mid !== $common) {
+                    throw new RuntimeException('Disperancy between mid results noticed');
                 }
             }
         }

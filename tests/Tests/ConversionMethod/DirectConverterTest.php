@@ -9,5 +9,7 @@ namespace Tests\ConversionMethod;
  */
 class DirectConverterTest extends ConversionMethodTestBase
 {
+    use IntegerConstrainedTester;
+    
     protected $className = 'Riimu\Kit\NumberConversion\ConversionMethod\DirectConverter';
 }
