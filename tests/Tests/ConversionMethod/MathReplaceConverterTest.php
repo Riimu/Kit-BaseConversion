@@ -9,7 +9,5 @@ namespace Tests\ConversionMethod;
  */
 class MathReplaceConverterTest extends ReplaceConversionTestBase
 {
-    use IntegerConstrainedTester;
-    
     protected $className = 'Riimu\Kit\NumberConversion\ConversionMethod\MathReplaceConverter';
 }

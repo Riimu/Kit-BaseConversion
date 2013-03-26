@@ -13,9 +13,7 @@ class NoveltyConverter extends ConversionMethod
 
     public function convertNumber(array $number)
     {
-        if ($this->isConstrained($this->source->getRadix(), $this->target->getRadix())) {
-            throw new ConversionException("Number bases too large for conversion");
-        }
+        $this->verifyIntegerConstraint();
 
         return $this->getDigits(self::convert(
             $this->getDecimals($number),

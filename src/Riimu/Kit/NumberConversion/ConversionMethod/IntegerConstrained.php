@@ -9,7 +9,22 @@ namespace Riimu\Kit\NumberConversion\ConversionMethod;
  */
 trait IntegerConstrained
 {
-    public function isConstrained($source, $target)
+    public function verifyIntegerConstraint()
+    {
+        if ($this->isConstrained()) {
+            throw new PossibleOverflowException("Possible integer overflow with given bases");
+        }
+    }
+
+    public function isConstrained()
+    {
+        return $this->canOverflow(
+            $this->source->getRadix(),
+            $this->target->getRadix()
+        );
+    }
+
+    private function canOverflow($source, $target)
     {
         $digits = ceil(log($target, $source));
         $limit = pow(2, 31) / ($source - 1);
@@ -25,3 +40,5 @@ trait IntegerConstrained
         return false;
     }
 }
+
+class PossibleOverflowException extends ConversionException { }

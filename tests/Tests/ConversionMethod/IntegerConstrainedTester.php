@@ -10,11 +10,11 @@ namespace Tests\ConversionMethod;
 trait IntegerConstrainedTester
 {
     /**
-     * @expectedException Riimu\Kit\NumberConversion\ConversionMethod\ConversionException
+     * @expectedException Riimu\Kit\NumberConversion\ConversionMethod\PossibleOverflowException
      */
     public function testIntegerConstraintment()
     {
-        $conv = $this->getConverter(131072, 131073);
+        $conv = $this->getConverter(46341, 46342);
         $conv->convertNumber([1]);
     }
 }
