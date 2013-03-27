@@ -8,7 +8,7 @@ if ($argc < 3) {
 set_include_path(__DIR__ . '/../src');
 spl_autoload_register();
 
-use \Riimu\Kit\NumberConversion\ConversionMethod\ConversionException;
+use \Riimu\Kit\NumberConversion\Method\ConversionException;
 
 echo "Test for efficiency of different algorithms available:" . PHP_EOL;
 
@@ -76,19 +76,19 @@ $doTrial = function ($class) use ($source, $target, $repeats, $number, & $timer,
 
 echo "\nReplace Conversion:\n\n";
 
-$doTrial('Riimu\Kit\NumberConversion\ConversionMethod\DirectReplaceConverter');
-$doTrial('Riimu\Kit\NumberConversion\ConversionMethod\MathReplaceConverter');
-$doTrial('Riimu\Kit\NumberConversion\ConversionMethod\NumberReplaceConverter');
-$doTrial('Riimu\Kit\NumberConversion\ConversionMethod\StringReplaceConverter');
+$doTrial('Riimu\Kit\NumberConversion\Method\Replace\DirectReplaceConverter');
+$doTrial('Riimu\Kit\NumberConversion\Method\Replace\MathReplaceConverter');
+$doTrial('Riimu\Kit\NumberConversion\Method\Replace\NumberReplaceConverter');
+$doTrial('Riimu\Kit\NumberConversion\Method\Replace\StringReplaceConverter');
 
 echo "\nDirect Conversion:\n\n";
 
-$doTrial('Riimu\Kit\NumberConversion\ConversionMethod\NoveltyConverter');
-$doTrial('Riimu\Kit\NumberConversion\ConversionMethod\DirectConverter');
+$doTrial('Riimu\Kit\NumberConversion\Method\Direct\NoveltyConverter');
+$doTrial('Riimu\Kit\NumberConversion\Method\Direct\DirectConverter');
 
 echo "\nDecimal Conversion:\n\n";
 
-$doTrial('Riimu\Kit\NumberConversion\DecimalConverter\GMPConverter');
-$doTrial('Riimu\Kit\NumberConversion\DecimalConverter\BCMathConverter');
-$doTrial('Riimu\Kit\NumberConversion\DecimalConverter\InternalConverter');
+$doTrial('Riimu\Kit\NumberConversion\Method\Decimal\GMPConverter');
+$doTrial('Riimu\Kit\NumberConversion\Method\Decimal\BCMathConverter');
+$doTrial('Riimu\Kit\NumberConversion\Method\Decimal\InternalConverter');
 
