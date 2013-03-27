@@ -114,8 +114,9 @@ class NumberBase
                 $this->numbers[] = chr($i);
             }
         } else {
+            $format = '#%0' . strlen($integer) . 'd';
             for ($i = 0; $i < $integer; $i++) {
-                $this->numbers[] = "#$i;";
+                $this->numbers[] = sprintf($format, $i);
             }
             $this->caseSensitive = false;
         }
@@ -185,6 +186,13 @@ class NumberBase
         $this->numbers = $numbers;
         $this->valueMap = $mapped ? array_flip($numbers) : null;
         $this->caseSensitive = count($strings) != count(array_flip($strings));
+    }
+
+    public function isStatic()
+    {
+        return $this->valueMap &&
+            count(array_filter($this->numbers, 'is_string')) === $this->radix &&
+            count(array_flip(array_map('strlen', $this->numbers))) === 1;
     }
 
     /**

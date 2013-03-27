@@ -41,8 +41,8 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     public function testCreateLargeIntegerBase ()
     {
         $base = new NumberBase(512);
-        $this->assertEquals("#306;", $base->getDigit(306));
-        $this->assertEquals(32, $base->getDecimal("#32;"));
+        $this->assertEquals("#306", $base->getDigit(306));
+        $this->assertEquals(32, $base->getDecimal("#032"));
     }
 
     /**
@@ -167,5 +167,17 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
             [4, 8, 2],
             [4, 16, 4],
         ];
+    }
+
+    public function testStaticBase()
+    {
+        $this->assertTrue((new NumberBase(32))->isStatic());
+        $this->assertTrue((new NumberBase(64))->isStatic());
+        $this->assertTrue((new NumberBase(128))->isStatic());
+        $this->assertTrue((new NumberBase(1024))->isStatic());
+        $this->assertTrue((new NumberBase('abcd'))->isStatic());
+        $this->assertTrue((new NumberBase(['aa', 'ab', 'bb', 'ba']))->isStatic());
+        $this->assertFalse((new NumberBase(['a', 'aa']))->isStatic());
+        $this->assertFalse((new NumberBase([1, 2]))->isStatic());
     }
 }

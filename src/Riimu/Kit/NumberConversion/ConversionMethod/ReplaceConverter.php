@@ -53,6 +53,8 @@ abstract class ReplaceConverter extends ConversionMethod
     {
         if (!$this->root) {
             throw new ConversionException('No common root exists');
+        } elseif ($number === []) {
+            return [$this->target->getDigit(0)];
         } elseif ($this->source->getRadix() == $this->target->getRadix()) {
             return $this->getDigits($this->getDecimals($number));
         } elseif ($this->root == min($this->source->getRadix(), $this->target->getRadix())) {
@@ -74,4 +76,28 @@ abstract class ReplaceConverter extends ConversionMethod
     }
 
     abstract protected function replace(array $number, $fractions);
+
+    protected function zeroPad(array $number, $right, $zero = null)
+    {
+        $log = (int) log($this->target->getRadix(), $this->source->getRadix());
+
+        if ($log > 1 && $pad = count($number) % $log) {
+            $zero = $zero === null ? $this->source->getDigit(0) : $zero;
+            $pad = count($number) + ($log - $pad);
+            $number = array_pad($number, $pad * ($right ? +1: -1), $zero);
+        }
+
+        return $number;
+    }
+
+    protected function zeroTrim(array $number, $right, $zero = null)
+    {
+        $zero = $zero === null ? $this->target->getDigit(0) : $zero;
+
+        while (($right ? end($number) : reset($number)) === $zero) {
+            unset($number[key($number)]);
+        }
+
+        return empty($number) ? [$zero] : array_values($number);
+    }
 }

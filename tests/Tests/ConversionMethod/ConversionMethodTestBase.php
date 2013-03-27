@@ -71,11 +71,12 @@ abstract class ConversionMethodTestBase extends \PHPUnit_Framework_TestCase
             ['FABCAB', 'FLF5B', 16, 32],
             ['FABCABABBA', '511373342342371', 27, 9],
             [sprintf('%c%c%c%c%c%c', 245, 69, 123, 99, 59, 117), 'B7627A314C886', 256, 13],
-            [['#777;', '#666;', '#555;'], 'wmmor', 1024, 64],
+            [['#0777', '#0666', '#0555'], 'wmmor', 1024, 64],
             [[['', ''], ['', '', '']], [true, true, false], [[''], ['', ''], ['', '', ''], new \stdClass()], [false, true]],
             ['2919739656537', '101010011111001110000010111000100101011001', 10, 2],
             ['A09GH0076AAB49DEF', 'IMOI1A8HM60KPH9', '0123456789ABCDEFGH', '0123456789ABCDEFGHIJKLMNOP'],
             ['1337331', 'LDE2D', 13, 23],
+            [['a', 'aa', 'aaa'], '1B', ['0', 'a', 'aa', 'aaa'], 16],
         ];
     }
 

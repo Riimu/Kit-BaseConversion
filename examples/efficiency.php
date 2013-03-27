@@ -79,6 +79,7 @@ echo "\nReplace Conversion:\n\n";
 $doTrial('Riimu\Kit\NumberConversion\ConversionMethod\DirectReplaceConverter');
 $doTrial('Riimu\Kit\NumberConversion\ConversionMethod\MathReplaceConverter');
 $doTrial('Riimu\Kit\NumberConversion\ConversionMethod\NumberReplaceConverter');
+$doTrial('Riimu\Kit\NumberConversion\ConversionMethod\StringReplaceConverter');
 
 echo "\nDirect Conversion:\n\n";
 
