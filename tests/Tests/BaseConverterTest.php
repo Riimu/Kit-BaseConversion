@@ -1,7 +1,6 @@
 <?php
 
 use Riimu\Kit\NumberConversion\BaseConverter;
-use Riimu\Kit\NumberConversion\NumberBase;
 
 /**
  * Tests for NumberConverter.
@@ -38,7 +37,7 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
     public function testMissingNumberConversionMethod ()
     {
         $converter = new BaseConverter(2, 10);
-        $converter->setNumberConverters(['ConversionMethod\DirectReplaceConverter']);
+        $converter->setNumberConverters(['Method\Replace\DirectReplaceConverter']);
         $converter->convert([1, 1, 1]);
     }
 
@@ -48,7 +47,7 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
     public function testMissingFractionConversionMethod ()
     {
         $converter = new BaseConverter(2, 10);
-        $converter->setFractionConverters(['ConversionMethod\DirectReplaceConverter']);
+        $converter->setFractionConverters(['Method\Replace\DirectReplaceConverter']);
         $converter->convert(['.', 1, 1, 1]);
     }
 
@@ -95,7 +94,7 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
     public function testConverterLoadingByFullName()
     {
         $converter = new BaseConverter(13, 23);
-        $converter->setNumberConverters(['Riimu\Kit\NumberConversion\DecimalConverter\InternalConverter']);
+        $converter->setNumberConverters(['Riimu\Kit\NumberConversion\Method\Decimal\InternalConverter']);
         $this->assertSame('LDE2D', $converter->convert('1337331'));
     }
 }

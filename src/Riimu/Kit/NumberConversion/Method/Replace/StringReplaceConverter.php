@@ -1,15 +1,17 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\ConversionMethod;
+namespace Riimu\Kit\NumberConversion\Method\Replace;
+
+use Riimu\Kit\NumberConversion\Method\ConversionException;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class StringReplaceConverter extends ReplaceConverter
+class StringReplaceConverter extends AbstractReplaceConverter
 {
-    use ConversionTableBuilder { buildConversionTable as buildTable; }
+    use ConversionTableBuilderTrait { buildConversionTable as buildTable; }
 
     public function replace(array $number, $fractions = false)
     {

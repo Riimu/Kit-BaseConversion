@@ -1,6 +1,6 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\DecimalConverter;
+namespace Riimu\Kit\NumberConversion\Method\Decimal;
 
 /**
  * Provides slow decimal conversion using arbitrary precision implementation.
@@ -8,13 +8,13 @@ namespace Riimu\Kit\NumberConversion\DecimalConverter;
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class InternalConverter extends DecimalConverter
+class InternalConverter extends AbstractDecimalConverter
 {
     public function isSupported()
     {
         return true;
     }
-    
+
     protected function init($number)
     {
         return (string) $number;

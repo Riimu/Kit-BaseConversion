@@ -1,6 +1,6 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\DecimalConverter;
+namespace Riimu\Kit\NumberConversion\Method\Decimal;
 
 /**
  * Provides decimal conversion using GMP functions.
@@ -8,7 +8,7 @@ namespace Riimu\Kit\NumberConversion\DecimalConverter;
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class GMPConverter extends DecimalConverter
+class GMPConverter extends AbstractDecimalConverter
 {
     public function isSupported()
     {

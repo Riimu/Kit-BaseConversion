@@ -1,9 +1,9 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\DecimalConverter;
+namespace Riimu\Kit\NumberConversion\Method\Decimal;
 
-use Riimu\Kit\NumberConversion\ConversionMethod\ConversionMethod;
-use Riimu\Kit\NumberConversion\ConversionMethod\ConversionException;
+use Riimu\Kit\NumberConversion\Method\AbstractConverter;
+use Riimu\Kit\NumberConversion\Method\ConversionException;
 use Riimu\Kit\NumberConversion\NumberBase;
 
 /**
@@ -27,7 +27,7 @@ use Riimu\Kit\NumberConversion\NumberBase;
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-abstract class DecimalConverter extends ConversionMethod
+abstract class AbstractDecimalConverter extends AbstractConverter
 {
     /**
      * Default precision used in fraction conversion.

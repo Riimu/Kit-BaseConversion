@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\DecimalConverter;
+namespace Tests\Method\Decimal;
 
-use Tests\ConversionMethod\ConversionMethodTestBase;
+use Tests\Method\ConverterTestBase;
 use Riimu\Kit\NumberConversion\NumberBase;
 
 /**
@@ -10,7 +10,7 @@ use Riimu\Kit\NumberConversion\NumberBase;
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-abstract class ConverterTestBase extends ConversionMethodTestBase
+abstract class DecimalTestBase extends ConverterTestBase
 {
     private static $methods;
     private $converter;
@@ -50,7 +50,7 @@ abstract class ConverterTestBase extends ConversionMethodTestBase
     /* TEST LACK OF SUPPORT */
 
     /**
-     * @expectedException Riimu\Kit\NumberConversion\ConversionMethod\ConversionException
+     * @expectedException Riimu\Kit\NumberConversion\Method\ConversionException
      */
     public function testMissingNumberConversionSupport()
     {
@@ -61,7 +61,7 @@ abstract class ConverterTestBase extends ConversionMethodTestBase
     }
 
     /**
-     * @expectedException Riimu\Kit\NumberConversion\ConversionMethod\ConversionException
+     * @expectedException Riimu\Kit\NumberConversion\Method\ConversionException
      */
     public function testMissingFractionConversionSupport()
     {

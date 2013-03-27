@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\ConversionMethod;
+namespace Tests\Method;
 
 use Riimu\Kit\NumberConversion\NumberBase;
 
@@ -9,7 +9,7 @@ use Riimu\Kit\NumberConversion\NumberBase;
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-abstract class ConversionMethodTestBase extends \PHPUnit_Framework_TestCase
+abstract class ConverterTestBase extends \PHPUnit_Framework_TestCase
 {
     protected $className;
 

@@ -1,13 +1,15 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\ConversionMethod;
+namespace Riimu\Kit\NumberConversion\Method\Direct;
+
+use Riimu\Kit\NumberConversion\Method\ConversionException;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-trait IntegerConstrained
+trait IntegerConstrainedTrait
 {
     public function verifyIntegerConstraint()
     {

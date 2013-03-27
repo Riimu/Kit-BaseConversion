@@ -1,15 +1,17 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\ConversionMethod;
+namespace Riimu\Kit\NumberConversion\Method\Direct;
+
+use Riimu\Kit\NumberConversion\Method\AbstractConverter;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class DirectConverter extends ConversionMethod
+class DirectConverter extends AbstractConverter
 {
-    use IntegerConstrained;
+    use IntegerConstrainedTrait;
 
     /**
      * Converts numbers directly from base to another.

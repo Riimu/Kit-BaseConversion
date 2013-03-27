@@ -2,7 +2,7 @@
 
 namespace Riimu\Kit\NumberConversion;
 
-use Riimu\Kit\NumberConversion\ConversionMethod\ConversionException;
+use Riimu\Kit\NumberConversion\Method\ConversionException;
 
 /**
  * Number conversion library for integers and fractions of arbitrary precision.
@@ -58,18 +58,20 @@ class BaseConverter
 
         $this->precision = -1;
         $this->numberConverters = [
-            'ConversionMethod\DirectReplaceConverter',
-            'DecimalConverter\GMPConverter',
-            'ConversionMethod\DirectConverter',
-            'DecimalConverter\BCMathConverter',
-            'DecimalConverter\InternalConverter',
+            'Method\Replace\StringReplaceConverter',
+            'Method\Replace\DirectReplaceConverter',
+            'Method\Decimal\GMPConverter',
+            'Method\Direct\DirectConverter',
+            'Method\Decimal\BCMathConverter',
+            'Method\Decimal\InternalConverter',
         ];
 
         $this->fractionConverters = [
-            'ConversionMethod\DirectReplaceConverter',
-            'DecimalConverter\GMPConverter',
-            'DecimalConverter\BCMathConverter',
-            'DecimalConverter\InternalConverter',
+            'Method\Replace\StringReplaceConverter',
+            'Method\Replace\DirectReplaceConverter',
+            'Method\Decimal\GMPConverter',
+            'Method\Decimal\BCMathConverter',
+            'Method\Decimal\InternalConverter',
         ];
     }
 
@@ -78,7 +80,7 @@ class BaseConverter
         $this->precision = (int) $precision;
 
         foreach (array_merge($this->numberConverters, $this->fractionConverters) as $converter) {
-            if ($converter instanceof DecimalConverter\DecimalConverter) {
+            if ($converter instanceof Method\Decimal\AbstractDecimalConverter) {
                 $converter->setPrecision($this->precision);
             }
         }
@@ -208,7 +210,7 @@ class BaseConverter
 
     private function loadConverter(& $name)
     {
-        if (!($name instanceof ConversionMethod\ConversionMethod)) {
+        if (!($name instanceof Method\AbstractConverter)) {
             $class = 'Riimu\Kit\NumberConversion\\' . $name;
 
             if (class_exists($class)) {
@@ -217,7 +219,7 @@ class BaseConverter
                 $instance = new $name($this->sourceBase, $this->targetBase);
             }
 
-            if ($instance instanceof DecimalConverter\DecimalConverter) {
+            if ($instance instanceof Method\Decimal\AbstractDecimalConverter) {
                 $instance->setPrecision($this->precision);
             }
 

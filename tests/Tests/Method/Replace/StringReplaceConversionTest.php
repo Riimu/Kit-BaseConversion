@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\ConversionMethod;
+namespace Tests\Method\Replace;
 
 use Riimu\Kit\NumberConversion\NumberBase;
 
@@ -9,9 +9,9 @@ use Riimu\Kit\NumberConversion\NumberBase;
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class StringReplaceConversionTest extends ReplaceConversionTestBase
+class StringReplaceConversionTest extends ReplaceTestBase
 {
-    protected $className = 'Riimu\Kit\NumberConversion\ConversionMethod\StringReplaceConverter';
+    protected $className = 'Riimu\Kit\NumberConversion\Method\Replace\StringReplaceConverter';
 
     public function getNumberConversionData ()
     {
@@ -32,7 +32,7 @@ class StringReplaceConversionTest extends ReplaceConversionTestBase
     }
 
     /**
-     * @expectedException Riimu\Kit\NumberConversion\ConversionMethod\ConversionException
+     * @expectedException Riimu\Kit\NumberConversion\Method\ConversionException
      */
     public function testNonStaticNumberBase()
     {

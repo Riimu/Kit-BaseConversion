@@ -1,7 +1,9 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\ConversionMethod;
+namespace Riimu\Kit\NumberConversion\Method\Replace;
 
+use Riimu\Kit\NumberConversion\Method\AbstractConverter;
+use Riimu\Kit\NumberConversion\Method\ConversionException;
 use Riimu\Kit\NumberConversion\NumberBase;
 
 /**
@@ -9,7 +11,7 @@ use Riimu\Kit\NumberConversion\NumberBase;
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-abstract class ReplaceConverter extends ConversionMethod
+abstract class AbstractReplaceConverter extends AbstractConverter
 {
     private $root;
     private $sourceConverter;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\ConversionMethod;
+namespace Riimu\Kit\NumberConversion\Method;
 
 use Riimu\Kit\NumberConversion\NumberBase;
 
@@ -9,7 +9,7 @@ use Riimu\Kit\NumberConversion\NumberBase;
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-abstract class ConversionMethod
+abstract class AbstractConverter implements Converter
 {
     protected $source;
     protected $target;
@@ -40,5 +40,3 @@ abstract class ConversionMethod
         return $this->target->getDigits(empty($number) ? [0] : $number);
     }
 }
-
-class ConversionException extends \RuntimeException { }

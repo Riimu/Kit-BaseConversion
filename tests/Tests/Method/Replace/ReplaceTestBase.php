@@ -1,7 +1,8 @@
 <?php
 
-namespace Tests\ConversionMethod;
+namespace Tests\Method\Replace;
 
+use Tests\Method\ConverterTestBase;
 use Riimu\Kit\NumberConversion\NumberBase;
 
 /**
@@ -9,7 +10,7 @@ use Riimu\Kit\NumberConversion\NumberBase;
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-abstract class ReplaceConversionTestBase extends ConversionMethodTestBase
+abstract class ReplaceTestBase extends ConverterTestBase
 {
     public function getNumberConversionData ()
     {
@@ -21,7 +22,7 @@ abstract class ReplaceConversionTestBase extends ConversionMethodTestBase
     }
 
     /**
-     * @expectedException Riimu\Kit\NumberConversion\ConversionMethod\ConversionException
+     * @expectedException Riimu\Kit\NumberConversion\Method\ConversionException
      */
     public function testMissingCommonRoot()
     {
