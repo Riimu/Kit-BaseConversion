@@ -41,7 +41,7 @@ class StringReplaceConverter extends AbstractReplaceConverter
         return $this->conversionTable;
     }
 
-    private function buildConversionTable()
+    protected function buildConversionTable()
     {
         if (!$this->source->isStatic() || !$this->target->isStatic()) {
             throw new ConversionException("Both number bases are not static");
