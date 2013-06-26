@@ -15,12 +15,12 @@ $converter = new Riimu\Kit\NumberConversion\BaseConverter(10, 16);
 echo $converter->convert('42'); // Will output '2A'
 ```
 
-The constructor arguments are the number used for conversion. The first is the
+The constructor arguments are the number bases used for conversion. The first is the
 number base used by input numbers and second is the number base for result
 numbers. The values can be given as arguments to `NumberBase` constructor or
 as instances of `NumberBase`.
 
-Convering fractions is just as easy. For example:
+Converting fractions is just as easy. For example:
 
 ```php
 <?php
@@ -34,9 +34,9 @@ handled.
 ### Fractions ###
 
 In some cases, it is impossible to convert fractions accurately. For example,
-0.1 in base 3 is 0.3333... in base 10. For these situations, there is a method
-`BaseConverter::setPrecision()`. A positive value over 0 indicates the number
-digits in these inaccurate conversions. For example:
+0.1 in base 3 equals 0.3333... in base 10. For these situations, there is a method
+`BaseConverter::setPrecision()`. A positive integer of 1 or greater indicates the
+number of digits in these inaccurate conversions. For example:
 
 ```php
 <?php
@@ -50,7 +50,7 @@ $converter->setPrecision(4);
 echo $converter->convert('-1337.1337') . PHP_EOL; // Outputs '-935.1730'
 ```
 
-The last number is always rounded. However, by using 0 or a negative number as
+The last number is always rounded. However, by using 0 or a negative integer as
 the precision, the converter will determine the number of digits required to
 represent the number in at least same accuracy as the input number. If the
 precision is negative, digits will be added equal to the absolute value of the
@@ -68,13 +68,18 @@ $converter->setPrecision(-10);
 echo $converter->convert('0.A7') . PHP_EOL; // Outputs '0.101100101010000110'
 ```
 
+Note that precision parameter is ignored if the number is converted using
+replacement logic as this always yields accurate reults. Additionaly, if the
+number can be accurately represented using less digits than the indicated
+precision, the resulting number will only have the necessary digits.
+
 ### Case sensitivity ###
 
 The general rule of this number conversion library is to act in case insensitive
 manner whenever possible. For example, if the base 36 is used, it will be case
-insensitive, because it only contains the digits 0-9A-Z, so the case of the
-digits does not matter. However, If base 64 was used instead, the digits would
-be case sensitive, because A and a have different value.
+insensitive, because it only contains the digits 0-9A-Z, thus making the 
+letter case irrelevant. However, If base 64 was used instead, the digits would
+be case sensitive, because the digits 'A' and 'a' would have different values.
 
 ### Number Bases ###
 
@@ -168,9 +173,11 @@ linearly as more digits are added. Replacing digits is also considerably faster
 than doing complex calculations to reach the result, which makes the replacement
 conversion fastest method in almost every case.
 
-The only disadvantages of these methods is the fact that most of them have to
+The only disadvantage of these methods is the fact that most of them have to
 build a conversion table between the number bases, which can be memory intensive
 on larger number bases.
+
+### Direct Conversion ###
 
 ## Copyright ##
 
