@@ -5,16 +5,14 @@ namespace Riimu\Kit\NumberConversion;
 use Riimu\Kit\NumberConversion\Method\ConversionException;
 
 /**
- * Number conversion library for integers and fractions of arbitrary precision.
+ * Number conversion library for numbers of arbitrary size.
  *
- * BaseConverter provides more features in number base conversion than PHP's
- * builtin base_convert. This library supports numbers of arbitrary size, unlike
- * base_convert which is limited by 32 bit integers. In addition, conversion of
- * fractions is also supported up to unlimited precision. This library will also
- * attempt to make several optimizations regarding conversion to provide fastest
- * possible result. On top of it all, use of NumberBase class allows greater
- * customization in how number bases as represented in addition to supporting
- * number bases of arbitrary size.
+ * BaseConverter provides more comprehensive approach to converting number from
+ * base to another than PHP's built in base_convert. This library is not limited
+ * by 32 bit integers in addition to being able to convert fractions. The
+ * library also uses various conversion strategies to obtain optimal results
+ * when converting large numbers. Using NumberBase class, it is also possible
+ * define highly customized number bases of any size.
  *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
@@ -34,8 +32,22 @@ class BaseConverter
      */
     private $targetBase;
 
+    /**
+     * List of number conversion methods.
+     * @var array
+     */
     private $numberConverters;
+
+    /**
+     * List of conversion methods used to convert fractions.
+     * @var array
+     */
     private $fractionConverters;
+
+    /**
+     * The number precision for fraction conversion methods.
+     * @var integer
+     */
     private $precision;
 
     /**
@@ -75,15 +87,13 @@ class BaseConverter
         ];
     }
 
+    /**
+     * Sets the precision used when converting fractions.
+     * @param type $precision
+     */
     public function setPrecision($precision)
     {
         $this->precision = (int) $precision;
-
-        foreach (array_merge($this->numberConverters, $this->fractionConverters) as $converter) {
-            if ($converter instanceof Method\Decimal\AbstractDecimalConverter) {
-                $converter->setPrecision($this->precision);
-            }
-        }
     }
 
     public function setNumberConverters(array $converters)
@@ -199,6 +209,9 @@ class BaseConverter
     {
         foreach ($this->fractionConverters as & $converter) {
             try {
+                if ($converter instanceof Method\Decimal\AbstractDecimalConverter) {
+                    $converter->setPrecision($this->precision);
+                }
                 return $this->loadConverter($converter)->convertFractions($number);
             } catch (ConversionException $ex) {
                 // Just continue to next method
