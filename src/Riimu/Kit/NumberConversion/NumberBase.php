@@ -30,7 +30,16 @@ class NumberBase
      */
     private $numbers;
 
+    /**
+     * Maps digits to their values, when possible.
+     * @var array
+     */
     private $valueMap;
+
+    /**
+     * Tells if the number base is case sensitive or not.
+     * @var boolean
+     */
     private $caseSensitive;
 
     /**
@@ -188,6 +197,10 @@ class NumberBase
         $this->caseSensitive = count($strings) != count(array_flip($strings));
     }
 
+    /**
+     * Tells if each digit has same length byte representation.
+     * @return boolean True if the digits are equal length, false if not
+     */
     public function isStatic()
     {
         return $this->valueMap &&
@@ -196,7 +209,7 @@ class NumberBase
     }
 
     /**
-     * Returns the radix (i.e. size) of the number system.
+     * Returns the radix (i.e. size) of the number base.
      * @return integer Radix of the number base
      */
     public function getRadix ()
@@ -204,13 +217,17 @@ class NumberBase
         return $this->radix;
     }
 
+    /**
+     * Returns all the digits in the number base.
+     * @return array Array of digits in the number base
+     */
     public function getNumbers()
     {
         return $this->numbers;
     }
 
     /**
-     * Tells if the given digit is part of this number system.
+     * Tells if the given digit is part of this number base.
      * @param mixed $digit The digit to look up
      * @return boolean True if the digit exists, false is not
      */
@@ -230,6 +247,12 @@ class NumberBase
         return $this->getDecimals([$digit])[0];
     }
 
+    /**
+     * Returns the decimal values for given digits.
+     * @param array $digits Array of digits to look up
+     * @return array Array of digit values
+     * @throws \InvalidArgumentException If some digit does not exist
+     */
     public function getDecimals(array $digits)
     {
         $decimals = [];
@@ -247,6 +270,11 @@ class NumberBase
         return $decimals;
     }
 
+    /**
+     * Return the value for the digit in the number base.
+     * @param mixed $digit Digit to look up
+     * @return integer Decimal value for the digit
+     */
     private function findDigit($digit)
     {
         $value = array_search($digit, $this->numbers);
@@ -276,6 +304,12 @@ class NumberBase
         return $this->getDigits([$decimal])[0];
     }
 
+    /**
+     * Returns the digits representing the given decimal values.
+     * @param array $decimals Decimal values to look up
+     * @return array Array of digits that represent the given decimal values
+     * @throws \InvalidArgumentException If any of the decimal values is invalid
+     */
     public function getDigits(array $decimals)
     {
         $digits = [];

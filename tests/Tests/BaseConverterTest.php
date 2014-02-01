@@ -37,7 +37,7 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
     public function testMissingNumberConversionMethod ()
     {
         $converter = new BaseConverter(2, 10);
-        $converter->setNumberConverters(['Method\Replace\DirectReplaceConverter']);
+        $converter->setNumberConverters(['Replace\DirectReplaceConverter']);
         $converter->convert([1, 1, 1]);
     }
 
@@ -47,7 +47,7 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
     public function testMissingFractionConversionMethod ()
     {
         $converter = new BaseConverter(2, 10);
-        $converter->setFractionConverters(['Method\Replace\DirectReplaceConverter']);
+        $converter->setFractionConverters(['Replace\DirectReplaceConverter']);
         $converter->convert(['.', 1, 1, 1]);
     }
 
@@ -96,5 +96,15 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
         $converter = new BaseConverter(13, 23);
         $converter->setNumberConverters(['Riimu\Kit\NumberConversion\Method\Decimal\InternalConverter']);
         $this->assertSame('LDE2D', $converter->convert('1337331'));
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testInvalidConverterLoading()
+    {
+        $converter = new BaseConverter(13, 23);
+        $converter->setNumberConverters(['ThisClassDoesNotExist']);
+        $converter->convert('1');
     }
 }

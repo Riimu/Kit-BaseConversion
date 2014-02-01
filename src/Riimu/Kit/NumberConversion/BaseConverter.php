@@ -7,7 +7,7 @@ use Riimu\Kit\NumberConversion\Method\ConversionException;
 /**
  * Number conversion library for numbers of arbitrary size.
  *
- * BaseConverter provides more comprehensive approach to converting number from
+ * BaseConverter provides more comprehensive approach to converting numbers from
  * base to another than PHP's built in base_convert. This library is not limited
  * by 32 bit integers in addition to being able to convert fractions. The
  * library also uses various conversion strategies to obtain optimal results
@@ -70,44 +70,60 @@ class BaseConverter
 
         $this->precision = -1;
         $this->numberConverters = [
-            'Method\Replace\StringReplaceConverter',
-            'Method\Replace\DirectReplaceConverter',
-            'Method\Decimal\GMPConverter',
-            'Method\Direct\DirectConverter',
-            'Method\Decimal\BCMathConverter',
-            'Method\Decimal\InternalConverter',
+            'Replace\StringReplaceConverter',
+            'Replace\DirectReplaceConverter',
+            'Decimal\GMPConverter',
+            'Direct\DirectConverter',
+            'Decimal\BCMathConverter',
+            'Decimal\InternalConverter',
         ];
 
         $this->fractionConverters = [
-            'Method\Replace\StringReplaceConverter',
-            'Method\Replace\DirectReplaceConverter',
-            'Method\Decimal\GMPConverter',
-            'Method\Decimal\BCMathConverter',
-            'Method\Decimal\InternalConverter',
+            'Replace\StringReplaceConverter',
+            'Replace\DirectReplaceConverter',
+            'Decimal\GMPConverter',
+            'Decimal\BCMathConverter',
+            'Decimal\InternalConverter',
         ];
     }
 
     /**
      * Sets the precision used when converting fractions.
-     * @param type $precision
+     *
+     * It's not always possible to convert fractions accurately from base to
+     * another. This method can be used to set the precision, i.e. the number
+     * of digits after the decimal separator in the returned numbers. A positive
+     * number indicates exact number of digits. A negative number indicates
+     * a number of digits in addition to what is required to have at least the
+     * same precision in the resulted number.
+     *
+     * @param integer $precision Precision used when converting fractions
      */
     public function setPrecision($precision)
     {
         $this->precision = (int) $precision;
     }
 
+    /**
+     * Sets the list objects used for integer conversion.
+     * @param array $converters Array of integer conversion objects.
+     */
     public function setNumberConverters(array $converters)
     {
         $this->numberConverters = $converters;
     }
 
+    /**
+     * Sets the list of objects used for fraction conversion.
+     * @param array $converters Array of fraction conversion objects.
+     */
     public function setFractionConverters(array $converters)
     {
         $this->fractionConverters = $converters;
     }
 
     /**
-     * Converts the given number while taking care of fractions and negativity.
+     * Converts the number from source base to target base.
      *
      * The number can be provided as either an array with least significant
      * digit first or as a string. The return value will be in the same format
@@ -162,16 +178,10 @@ class BaseConverter
     }
 
     /**
-     * Converts the provided integer using the best possible method.
-     *
-     * The conversion will be performed using the fastest method possible.
-     * Replace conversion will be preferred, if it is possible between the two
-     * number bases. If replacement is not available, then decimal conversion
-     * will be used, but only if the GMPConverter is available. Otherwise this
-     * method will fall back to using direct conversion.
-     *
+     * Converts the provided integer part using the provided conversion methods.
      * @param array $number Number to covert with most significant digit last
      * @return array The converted number with most significant digit last
+     * @throws \RuntimeException If no integer conversion library is applicable
      */
     public function convertNumber(array $number)
     {
@@ -187,23 +197,10 @@ class BaseConverter
     }
 
     /**
-     * Converts the provided fractional part using the best possible method.
-     *
-     * If replacement conversion is possible between the two number bases, that
-     * will be preferred. Otherwise decimal conversion is used. If no decimal
-     * conversion library is available, then an exception will be thrown as
-     * fraction conversion is not implemented without a decimal conversion
-     * library.
-     *
-     * To change the precision in the resulting number, use getDecimalConverter()
-     * to return the converter and DecimalConverter::setDefaultPrecision() to
-     * set the precision. Note that this precision is ignore if replacement
-     * conversion is used or the number can be accurately converted with less
-     * digits than required by the precision.
-     *
+     * Converts the provided fractional part using the provided conversion methods.
      * @param array $number Fractions to covert with most significant digit last
      * @return array The converted fractions with most significant digit last
-     * @throws \RuntimeException If no decimal conversion library is available
+     * @throws \RuntimeException If no fraction conversion library is applicable
      */
     public function convertFractions(array $number)
     {
@@ -221,16 +218,25 @@ class BaseConverter
         throw new \RuntimeException("No applicable conversion method available");
     }
 
+    /**
+     * Lazyloads the given converter.
+     * @param string $name Name of the converter
+     * @return \Riimu\Kit\NumberConversion\Method\Converter Loaded converter
+     * @throws \RuntimeException If the converter does not exist
+     */
     private function loadConverter(& $name)
     {
-        if (!($name instanceof Method\AbstractConverter)) {
-            $class = 'Riimu\Kit\NumberConversion\\' . $name;
+        if (!($name instanceof Method\Converter)) {
+            $class = 'Riimu\Kit\NumberConversion\Method\\' . $name;
 
-            if (class_exists($class)) {
-                $instance = new $class($this->sourceBase, $this->targetBase);
-            } else {
-                $instance = new $name($this->sourceBase, $this->targetBase);
+            if (!class_exists($class)) {
+                $class = $name;
             }
+            if (!is_a($class, 'Riimu\Kit\NumberConversion\Method\Converter', true)) {
+                throw new \RuntimeException("Invalid converter '$class'");
+            }
+
+            $instance = new $class($this->sourceBase, $this->targetBase);
 
             if ($instance instanceof Method\Decimal\AbstractDecimalConverter) {
                 $instance->setPrecision($this->precision);
@@ -241,23 +247,4 @@ class BaseConverter
 
         return $name;
     }
-
-
-
-    /**
-     * Converts number from base to another by simply replacing the numbers.
-     *
-     * If the radix of either number base is nth root for the other base, then
-     * conversion can be performed by simply replacing the digits with digits
-     * from the target base. No calculation logic is required, which makes this
-     * the fastest conversion method by far. A slight overhead is caused on the
-     * first conversion by generation of the number conversion table. An
-     * exception is thrown if replacement conversion cannot be performed between
-     * the two number bases.
-     *
-     * @param array $number Number to covert with most significant digit last
-     * @param boolean $fractions True if converting fractions, false if not
-     * @return array The converted number with most significant digit last
-     * @throws \InvalidArgumentException if replacement conversion is not possible
-     */
 }

@@ -1,7 +1,22 @@
 <?php
 
 namespace Riimu\Kit\NumberConversion\Method\Replace;
-
+    /**
+     * Converts number from base to another by simply replacing the numbers.
+     *
+     * If the radix of either number base is nth root for the other base, then
+     * conversion can be performed by simply replacing the digits with digits
+     * from the target base. No calculation logic is required, which makes this
+     * the fastest conversion method by far. A slight overhead is caused on the
+     * first conversion by generation of the number conversion table. An
+     * exception is thrown if replacement conversion cannot be performed between
+     * the two number bases.
+     *
+     * @param array $number Number to covert with most significant digit last
+     * @param boolean $fractions True if converting fractions, false if not
+     * @return array The converted number with most significant digit last
+     * @throws \InvalidArgumentException if replacement conversion is not possible
+     */
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
