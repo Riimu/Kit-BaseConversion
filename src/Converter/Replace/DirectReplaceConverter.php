@@ -1,6 +1,6 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\Method\Replace;
+namespace Riimu\Kit\NumberConversion\Converter\Replace;
     /**
      * Converts number from base to another by simply replacing the numbers.
      *
@@ -38,7 +38,7 @@ class DirectReplaceConverter extends AbstractReplaceConverter
 
             // Attempt to resolve case insensitivity
             if ($key === false) {
-                $chunk = $this->source->getDigits($this->getDecimals($chunk));
+                $chunk = $this->source->getDigits($this->getValues($chunk));
                 $key = array_search($chunk, $table[0]);
             }
 

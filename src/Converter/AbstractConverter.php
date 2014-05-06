@@ -1,6 +1,6 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\Method;
+namespace Riimu\Kit\NumberConversion\Converter;
 
 use Riimu\Kit\NumberConversion\NumberBase;
 
@@ -10,7 +10,7 @@ use Riimu\Kit\NumberConversion\NumberBase;
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-abstract class AbstractConverter implements Converter
+abstract class AbstractConverter
 {
     protected $source;
     protected $target;
@@ -21,22 +21,12 @@ abstract class AbstractConverter implements Converter
         $this->target = $targetBase;
     }
 
-    public function convertNumber(array $number)
-    {
-        throw new ConversionException("This converter does not support number conversion");
-    }
-
-    public function convertFractions(array $number)
-    {
-        throw new ConversionException("This converter does not support fraction conversion");
-    }
-
     /**
      * Canonizes the number and returns it's decimal values in source base.
      * @param array $number Digits of the number
      * @return array Decimal values for the digits in the number
      */
-    protected function getDecimals(array $number)
+    protected function getValues(array $number)
     {
         return empty($number) ? [0] : $this->source->getDecimals($number);
     }

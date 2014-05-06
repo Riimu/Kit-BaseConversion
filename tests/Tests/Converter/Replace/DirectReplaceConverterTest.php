@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Method\Replace;
+namespace Riimu\Kit\NumberConversion\Converter\Replace;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
@@ -9,5 +9,5 @@ namespace Tests\Method\Replace;
  */
 class DirectReplaceConverterTest extends ReplaceTestBase
 {
-    protected $className = 'Riimu\Kit\NumberConversion\Method\Replace\DirectReplaceConverter';
+    protected $className = 'Riimu\Kit\NumberConversion\Converter\Replace\DirectReplaceConverter';
 }

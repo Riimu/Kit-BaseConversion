@@ -1,6 +1,6 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\Method\Decimal;
+namespace Riimu\Kit\NumberConversion\Converter\Decimal;
 
 /**
  * Provides slow decimal conversion using arbitrary precision implementation.

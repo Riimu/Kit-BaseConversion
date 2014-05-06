@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\Method\Replace;
+namespace Riimu\Kit\NumberConversion\Converter\Replace;
 
-use Tests\Method\ConverterTestBase;
+use Riimu\Kit\NumberConversion\Converter\ConverterTestBase;
 use Riimu\Kit\NumberConversion\NumberBase;
 
 /**
@@ -22,11 +22,11 @@ abstract class ReplaceTestBase extends ConverterTestBase
     }
 
     /**
-     * @expectedException Riimu\Kit\NumberConversion\Method\ConversionException
+     * @expectedException Riimu\Kit\NumberConversion\Converter\ConversionException
      */
     public function testMissingCommonRoot()
     {
-        $this->getConverter(7, 13)->convertNumber(['1']);
+        $this->getConverter(7, 13)->convertInteger(['1']);
     }
 
     /**

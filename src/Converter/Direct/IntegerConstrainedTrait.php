@@ -1,8 +1,8 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\Method\Direct;
+namespace Riimu\Kit\NumberConversion\Converter\Direct;
 
-use Riimu\Kit\NumberConversion\Method\ConversionException;
+use Riimu\Kit\NumberConversion\Converter\ConversionException;
 
 /**
  * Provides checks to tell if integer overflow can occur during long division.

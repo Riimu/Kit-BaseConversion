@@ -1,6 +1,6 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\Method\Replace;
+namespace Riimu\Kit\NumberConversion\Converter\Replace;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>

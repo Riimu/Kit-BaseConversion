@@ -1,6 +1,6 @@
 <?php
 
-use Riimu\Kit\NumberConversion\BaseConverter;
+namespace Riimu\Kit\NumberConversion;
 
 /**
  * Tests for NumberConverter.
@@ -32,22 +32,22 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException \RuntimeException
      */
-    public function testMissingNumberConversionMethod ()
+    public function testMissingIntegerConversionMethod ()
     {
         $converter = new BaseConverter(2, 10);
-        $converter->setNumberConverters(['Replace\DirectReplaceConverter']);
+        $converter->setIntegerConverters([]);
         $converter->convert([1, 1, 1]);
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException \RuntimeException
      */
     public function testMissingFractionConversionMethod ()
     {
         $converter = new BaseConverter(2, 10);
-        $converter->setFractionConverters(['Replace\DirectReplaceConverter']);
+        $converter->setFractionConverters([]);
         $converter->convert(['.', 1, 1, 1]);
     }
 
@@ -94,17 +94,27 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
     public function testConverterLoadingByFullName()
     {
         $converter = new BaseConverter(13, 23);
-        $converter->setNumberConverters(['Riimu\Kit\NumberConversion\Method\Decimal\InternalConverter']);
+        $converter->setIntegerConverters(['Riimu\Kit\NumberConversion\Converter\Decimal\InternalConverter']);
         $this->assertSame('LDE2D', $converter->convert('1337331'));
     }
 
     /**
      * @expectedException \RuntimeException
      */
-    public function testInvalidConverterLoading()
+    public function testInvalidIntegerConverterLoading()
     {
         $converter = new BaseConverter(13, 23);
-        $converter->setNumberConverters(['ThisClassDoesNotExist']);
+        $converter->setIntegerConverters(['stdClass']);
         $converter->convert('1');
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testInvalidFractionConverterLoading()
+    {
+        $converter = new BaseConverter(13, 23);
+        $converter->setFractionConverters(['stdClass']);
+        $converter->convert('0.1');
     }
 }

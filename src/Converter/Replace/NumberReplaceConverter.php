@@ -1,6 +1,6 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\Method\Replace;
+namespace Riimu\Kit\NumberConversion\Converter\Replace;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
@@ -13,7 +13,7 @@ class NumberReplaceConverter extends AbstractReplaceConverter
 
     public function replace(array $number, $fractions = false)
     {
-        $number = $this->zeroPad($this->getDecimals($number), $fractions, 0);
+        $number = $this->zeroPad($this->getValues($number), $fractions, 0);
         $table = $this->getConversionTable();
         $log = max(1, log($this->target->getRadix(), $this->source->getRadix()));
         $replacements = [];

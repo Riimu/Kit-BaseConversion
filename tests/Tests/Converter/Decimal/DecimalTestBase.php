@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\Method\Decimal;
+namespace Riimu\Kit\NumberConversion\Converter\Decimal;
 
-use Tests\Method\ConverterTestBase;
+use Riimu\Kit\NumberConversion\Converter\ConverterTestBase;
 use Riimu\Kit\NumberConversion\NumberBase;
 
 /**
@@ -50,18 +50,18 @@ abstract class DecimalTestBase extends ConverterTestBase
     /* TEST LACK OF SUPPORT */
 
     /**
-     * @expectedException Riimu\Kit\NumberConversion\Method\ConversionException
+     * @expectedException Riimu\Kit\NumberConversion\Converter\ConversionException
      */
     public function testMissingNumberConversionSupport()
     {
         $obj = $this->getMock($this->className, ['isSupported'],
             [new NumberBase(4), new NumberBase(16)]);
         $obj->expects($this->once())->method('isSupported')->will($this->returnValue(false));
-        $obj->convertNumber(['1']);
+        $obj->convertInteger(['1']);
     }
 
     /**
-     * @expectedException Riimu\Kit\NumberConversion\Method\ConversionException
+     * @expectedException Riimu\Kit\NumberConversion\Converter\ConversionException
      */
     public function testMissingFractionConversionSupport()
     {

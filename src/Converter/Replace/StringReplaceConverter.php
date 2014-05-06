@@ -1,8 +1,8 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\Method\Replace;
+namespace Riimu\Kit\NumberConversion\Converter\Replace;
 
-use Riimu\Kit\NumberConversion\Method\ConversionException;
+use Riimu\Kit\NumberConversion\Converter\ConversionException;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
@@ -21,7 +21,7 @@ class StringReplaceConverter extends AbstractReplaceConverter
         // Verify and resolve case insensitivity
         foreach ($number as $digit) {
             if (!isset($digits[(string) $digit])) {
-                $number = $this->source->getDigits($this->getDecimals($number));
+                $number = $this->source->getDigits($this->getValues($number));
                 break;
             }
         }

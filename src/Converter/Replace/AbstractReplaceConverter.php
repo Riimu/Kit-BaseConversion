@@ -1,9 +1,11 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\Method\Replace;
+namespace Riimu\Kit\NumberConversion\Converter\Replace;
 
-use Riimu\Kit\NumberConversion\Method\AbstractConverter;
-use Riimu\Kit\NumberConversion\Method\ConversionException;
+use Riimu\Kit\NumberConversion\Converter\IntegerConverter;
+use Riimu\Kit\NumberConversion\Converter\FractionConverter;
+use Riimu\Kit\NumberConversion\Converter\AbstractConverter;
+use Riimu\Kit\NumberConversion\Converter\ConversionException;
 use Riimu\Kit\NumberConversion\NumberBase;
 
 /**
@@ -12,6 +14,7 @@ use Riimu\Kit\NumberConversion\NumberBase;
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
 abstract class AbstractReplaceConverter extends AbstractConverter
+    implements IntegerConverter, FractionConverter
 {
     private $root;
     private $sourceConverter;
@@ -26,7 +29,12 @@ abstract class AbstractReplaceConverter extends AbstractConverter
         $this->targetConverter = null;
     }
 
-    public function convertNumber(array $number)
+    public function setPrecision($precision)
+    {
+        ;
+    }
+
+    public function convertInteger(array $number)
     {
         return $this->convert($number, false);
     }
@@ -58,7 +66,7 @@ abstract class AbstractReplaceConverter extends AbstractConverter
         } elseif ($number === []) {
             return [$this->target->getDigit(0)];
         } elseif ($this->source->getRadix() == $this->target->getRadix()) {
-            return $this->getDigits($this->getDecimals($number));
+            return $this->getDigits($this->getValues($number));
         } elseif ($this->root == min($this->source->getRadix(), $this->target->getRadix())) {
             return $this->replace($number, $fractions);
         }

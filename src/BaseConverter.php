@@ -69,7 +69,7 @@ class BaseConverter
             ? $targetBase : new NumberBase($targetBase);
 
         $this->precision = -1;
-        $this->IntegerConverters = [
+        $this->integerConverters = [
             'Riimu\Kit\NumberConversion\Converter\Replace\StringReplaceConverter',
             'Riimu\Kit\NumberConversion\Converter\Replace\DirectReplaceConverter',
             'Riimu\Kit\NumberConversion\Converter\Decimal\GMPConverter',
@@ -110,7 +110,7 @@ class BaseConverter
      */
     public function setIntegerConverters(array $converters)
     {
-        $this->intgerConverters = $converters;
+        $this->integerConverters = $converters;
     }
 
     /**
@@ -151,7 +151,7 @@ class BaseConverter
             }
         }
         if (in_array('.', $source, true) && !$this->sourceBase->hasDigit('.')) {
-            $fractions = array_slice(1, array_splice($source, array_search($source, '.', true)));
+            $fractions = array_slice(array_splice($source, array_search('.', $source, true)), 1);
         }
 
         $result = $this->convertInteger($source);
@@ -178,7 +178,8 @@ class BaseConverter
         foreach ($this->integerConverters as $key => $converter) {
             try {
                 if (is_string($converter)) {
-                    $converter = $this->integerConverters[$key] = new $converter;
+                    $converter = $this->integerConverters[$key] =
+                        new $converter($this->sourceBase, $this->targetBase);
 
                     if (!($converter instanceof Converter\IntegerConverter)) {
                         throw new \RuntimeException('Invalid converter class ' . get_class($converter));
@@ -202,10 +203,11 @@ class BaseConverter
      */
     public function convertFractions(array $number)
     {
-        foreach ($this->fracitonConverters as $key => $converter) {
+        foreach ($this->fractionConverters as $key => $converter) {
             try {
                 if (is_string($converter)) {
-                    $converter = $this->fracitonConverters[$key] = new $converter;
+                    $converter = $this->fractionConverters[$key] =
+                        new $converter($this->sourceBase, $this->targetBase);
 
                     if (!($converter instanceof Converter\FractionConverter)) {
                         throw new \RuntimeException('Invalid converter class ' . get_class($converter));
@@ -213,7 +215,7 @@ class BaseConverter
                 }
 
                 $converter->setPrecision($this->precision);
-                return $converter->convertInteger($number);
+                return $converter->convertFractions($number);
             } catch (ConversionException $ex) {
                 // Just continue to next method
             }

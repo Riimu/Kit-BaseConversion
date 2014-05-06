@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Method;
+namespace Riimu\Kit\NumberConversion\Converter;
 
 use Riimu\Kit\NumberConversion\NumberBase;
 
@@ -16,14 +16,14 @@ abstract class ConverterTestBase extends \PHPUnit_Framework_TestCase
     public function testEmptyConversion()
     {
         $conv = $this->getConverter(4, 16);
-        $this->assertSame(['0'], $conv->convertNumber([]));
+        $this->assertSame(['0'], $conv->convertInteger([]));
     }
 
     public function testCaseInsensitiveConversion()
     {
         $conv = $this->getConverter(16, 2);
         $this->assertSame(str_split('10101100101011011110'),
-            $conv->convertNumber(str_split('ACadE')));
+            $conv->convertInteger(str_split('ACadE')));
     }
 
     /**
@@ -32,13 +32,13 @@ abstract class ConverterTestBase extends \PHPUnit_Framework_TestCase
     public function testInvalidInput()
     {
         $conv = $this->getConverter(4, 16);
-        $conv->convertNumber([-1]);
+        $conv->convertInteger([-1]);
     }
 
     public function testLooseValueTypeComparison()
     {
         $conv = $this->getConverter(2, 16);
-        $this->assertSame(['E'], $conv->convertNumber([true, '1', 1, false]));
+        $this->assertSame(['E'], $conv->convertInteger([true, '1', 1, false]));
     }
 
     /**
@@ -50,9 +50,9 @@ abstract class ConverterTestBase extends \PHPUnit_Framework_TestCase
         $result = is_array($result) ? $result : str_split($result);
 
         $this->assertSame($result, $this->getConverter($source, $target)
-            ->convertNumber($input));
+            ->convertInteger($input));
         $this->assertSame($input, $this->getConverter($target, $source)
-            ->convertNumber($result));
+            ->convertInteger($result));
     }
 
     public function getNumberConversionData ()

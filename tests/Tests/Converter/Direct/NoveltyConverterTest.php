@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Method\Direct;
+namespace Riimu\Kit\NumberConversion\Converter\Direct;
 
-use Riimu\Kit\NumberConversion\Method\Direct\NoveltyConverter;
-use Tests\Method\ConverterTestBase;
+use Riimu\Kit\NumberConversion\Converter\Direct\NoveltyConverter;
+use Riimu\Kit\NumberConversion\Converter\ConverterTestBase;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
@@ -14,7 +14,7 @@ class NoveltyConverterTest extends ConverterTestBase
 {
     use IntegerConstrainedTraitTester;
 
-    protected $className = 'Riimu\Kit\NumberConversion\Method\Direct\NoveltyConverter';
+    protected $className = 'Riimu\Kit\NumberConversion\Converter\Direct\NoveltyConverter';
 
     public function testInvalidBase()
     {

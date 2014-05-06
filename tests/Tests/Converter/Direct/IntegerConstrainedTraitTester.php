@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Method\Direct;
+namespace Riimu\Kit\NumberConversion\Converter\Direct;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
@@ -10,11 +10,11 @@ namespace Tests\Method\Direct;
 trait IntegerConstrainedTraitTester
 {
     /**
-     * @expectedException Riimu\Kit\NumberConversion\Method\Direct\PossibleOverflowException
+     * @expectedException Riimu\Kit\NumberConversion\Converter\Direct\PossibleOverflowException
      */
     public function testIntegerConstraintment()
     {
         $conv = $this->getConverter(46341, 46342);
-        $conv->convertNumber([1]);
+        $conv->convertInteger([1]);
     }
 }

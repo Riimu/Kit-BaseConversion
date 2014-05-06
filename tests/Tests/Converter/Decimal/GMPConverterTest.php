@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Method\Decimal;
+namespace Riimu\Kit\NumberConversion\Converter\Decimal;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
@@ -9,7 +9,7 @@ namespace Tests\Method\Decimal;
  */
 class GMPConverterTest extends DecimalTestBase
 {
-    protected $className = 'Riimu\Kit\NumberConversion\Method\Decimal\GMPConverter';
+    protected $className = 'Riimu\Kit\NumberConversion\Converter\Decimal\GMPConverter';
 
     public function setUp()
     {

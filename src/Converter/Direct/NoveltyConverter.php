@@ -1,8 +1,8 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\Method\Direct;
+namespace Riimu\Kit\NumberConversion\Converter\Direct;
 
-use Riimu\Kit\NumberConversion\Method\AbstractConverter;
+use Riimu\Kit\NumberConversion\Converter\AbstractConverter;
 
 /**
  * Proof of concept implementation of direct conversion using language constructs.
@@ -24,12 +24,12 @@ class NoveltyConverter extends AbstractConverter
 {
     use IntegerConstrainedTrait;
 
-    public function convertNumber(array $number)
+    public function convertInteger(array $number)
     {
         $this->verifyIntegerConstraint();
 
         return $this->getDigits(self::convert(
-            $this->getDecimals($number),
+            $this->getValues($number),
             range(0, $this->source->getRadix() - 1),
             range(0, $this->target->getRadix() - 1)
         ));

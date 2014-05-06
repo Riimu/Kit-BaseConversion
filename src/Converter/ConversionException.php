@@ -7,8 +7,4 @@ namespace Riimu\Kit\NumberConversion\Converter;
  * @copyright Copyright (c) 2014, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-interface FractionConverter
-{
-    public function convertFractions(array $number);
-    public function setPrecision($precision);
-}
+class ConversionException extends \RuntimeException { }

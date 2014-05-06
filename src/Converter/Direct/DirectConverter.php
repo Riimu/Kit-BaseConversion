@@ -1,8 +1,9 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\Method\Direct;
+namespace Riimu\Kit\NumberConversion\Converter\Direct;
 
-use Riimu\Kit\NumberConversion\Method\AbstractConverter;
+use Riimu\Kit\NumberConversion\Converter\IntegerConverter;
+use Riimu\Kit\NumberConversion\Converter\AbstractConverter;
 
 /**
  * Provides direct conversion strategy for integers.
@@ -20,7 +21,7 @@ use Riimu\Kit\NumberConversion\Method\AbstractConverter;
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class DirectConverter extends AbstractConverter
+class DirectConverter extends AbstractConverter implements IntegerConverter
 {
     use IntegerConstrainedTrait;
 
@@ -29,11 +30,11 @@ class DirectConverter extends AbstractConverter
      * @param array $number Number to covert with most significant digit last
      * @return array The converted number with most significant digit last
      */
-    public function convertNumber(array $number)
+    public function convertInteger(array $number)
     {
         $this->verifyIntegerConstraint();
 
-        $number = $this->getDecimals($number);
+        $number = $this->getValues($number);
         $sourceRadix = $this->source->getRadix();
         $targetRadix = $this->target->getRadix();
         $result = [];

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Method\Decimal;
+namespace Riimu\Kit\NumberConversion\Converter\Decimal;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
@@ -9,5 +9,5 @@ namespace Tests\Method\Decimal;
  */
 class InternalConverterTest extends DecimalTestBase
 {
-    protected $className = 'Riimu\Kit\NumberConversion\Method\Decimal\InternalConverter';
+    protected $className = 'Riimu\Kit\NumberConversion\Converter\Decimal\InternalConverter';
 }

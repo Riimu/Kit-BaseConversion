@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Method\Replace;
+namespace Riimu\Kit\NumberConversion\Converter\Replace;
 
 use Riimu\Kit\NumberConversion\NumberBase;
 
@@ -11,7 +11,7 @@ use Riimu\Kit\NumberConversion\NumberBase;
  */
 class StringReplaceConversionTest extends ReplaceTestBase
 {
-    protected $className = 'Riimu\Kit\NumberConversion\Method\Replace\StringReplaceConverter';
+    protected $className = 'Riimu\Kit\NumberConversion\Converter\Replace\StringReplaceConverter';
 
     public function getNumberConversionData ()
     {
@@ -32,10 +32,10 @@ class StringReplaceConversionTest extends ReplaceTestBase
     }
 
     /**
-     * @expectedException Riimu\Kit\NumberConversion\Method\ConversionException
+     * @expectedException Riimu\Kit\NumberConversion\Converter\ConversionException
      */
     public function testNonStaticNumberBase()
     {
-        $this->getConverter(['a', 'aa'], 4)->convertNumber(['a']);
+        $this->getConverter(['a', 'aa'], 4)->convertInteger(['a']);
     }
 }

@@ -1,9 +1,11 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion\Method\Decimal;
+namespace Riimu\Kit\NumberConversion\Converter\Decimal;
 
-use Riimu\Kit\NumberConversion\Method\AbstractConverter;
-use Riimu\Kit\NumberConversion\Method\ConversionException;
+use Riimu\Kit\NumberConversion\Converter\IntegerConverter;
+use Riimu\Kit\NumberConversion\Converter\FractionConverter;
+use Riimu\Kit\NumberConversion\Converter\AbstractConverter;
+use Riimu\Kit\NumberConversion\Converter\ConversionException;
 use Riimu\Kit\NumberConversion\NumberBase;
 
 /**
@@ -28,6 +30,7 @@ use Riimu\Kit\NumberConversion\NumberBase;
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
 abstract class AbstractDecimalConverter extends AbstractConverter
+    implements IntegerConverter, FractionConverter
 {
     /**
      * Default precision used in fraction conversion.
@@ -72,7 +75,7 @@ abstract class AbstractDecimalConverter extends AbstractConverter
      * @param integer $targetRadix Radix of the target base
      * @return array List of digit values for the converted number
      */
-    public function convertNumber(array $number)
+    public function convertInteger(array $number)
     {
         if (!$this->isSupported()) {
             throw new ConversionException("This decimal converter is not supported");
@@ -82,7 +85,7 @@ abstract class AbstractDecimalConverter extends AbstractConverter
         $target = $this->init($this->target->getRadix());
 
         return $this->getDigits($this->toBase($this->toDecimal(
-            $this->getDecimals($number), $source), $target));
+            $this->getValues($number), $source), $target));
     }
 
     /**
@@ -119,7 +122,7 @@ abstract class AbstractDecimalConverter extends AbstractConverter
         $precision = $this->precision;
         $source = $this->init($this->source->getRadix());
         $target = $this->init($this->target->getRadix());
-        $dividend = $this->toDecimal($this->getDecimals($number), $source);
+        $dividend = $this->toDecimal($this->getValues($number), $source);
         $divisor = $this->toDecimal([1] + array_fill(1, count($number), 0), $source);
         $digits = $precision > 0 ? $precision
             : $this->countDigits(count($number), $source, $target) + abs($precision);
