@@ -2,7 +2,7 @@
 
 namespace Riimu\Kit\NumberConversion;
 
-use Riimu\Kit\NumberConversion\Method\ConversionException;
+use Riimu\Kit\NumberConversion\Converter\ConversionException;
 
 /**
  * Number conversion library for numbers of arbitrary size.
@@ -36,7 +36,7 @@ class BaseConverter
      * List of number conversion methods.
      * @var array
      */
-    private $numberConverters;
+    private $integerConverters;
 
     /**
      * List of conversion methods used to convert fractions.
@@ -69,21 +69,21 @@ class BaseConverter
             ? $targetBase : new NumberBase($targetBase);
 
         $this->precision = -1;
-        $this->numberConverters = [
-            'Replace\StringReplaceConverter',
-            'Replace\DirectReplaceConverter',
-            'Decimal\GMPConverter',
-            'Direct\DirectConverter',
-            'Decimal\BCMathConverter',
-            'Decimal\InternalConverter',
+        $this->IntegerConverters = [
+            'Riimu\Kit\NumberConversion\Converter\Replace\StringReplaceConverter',
+            'Riimu\Kit\NumberConversion\Converter\Replace\DirectReplaceConverter',
+            'Riimu\Kit\NumberConversion\Converter\Decimal\GMPConverter',
+            'Riimu\Kit\NumberConversion\Converter\Direct\DirectConverter',
+            'Riimu\Kit\NumberConversion\Converter\Decimal\BCMathConverter',
+            'Riimu\Kit\NumberConversion\Converter\Decimal\InternalConverter',
         ];
 
         $this->fractionConverters = [
-            'Replace\StringReplaceConverter',
-            'Replace\DirectReplaceConverter',
-            'Decimal\GMPConverter',
-            'Decimal\BCMathConverter',
-            'Decimal\InternalConverter',
+            'Riimu\Kit\NumberConversion\Converter\Replace\StringReplaceConverter',
+            'Riimu\Kit\NumberConversion\Converter\Replace\DirectReplaceConverter',
+            'Riimu\Kit\NumberConversion\Converter\Decimal\GMPConverter',
+            'Riimu\Kit\NumberConversion\Converter\Decimal\BCMathConverter',
+            'Riimu\Kit\NumberConversion\Converter\Decimal\InternalConverter',
         ];
     }
 
@@ -108,9 +108,9 @@ class BaseConverter
      * Sets the list objects used for integer conversion.
      * @param array $converters Array of integer conversion objects.
      */
-    public function setNumberConverters(array $converters)
+    public function setIntegerConverters(array $converters)
     {
-        $this->numberConverters = $converters;
+        $this->intgerConverters = $converters;
     }
 
     /**
@@ -143,33 +143,23 @@ class BaseConverter
      */
     public function convert ($number)
     {
-        $source = is_array($number) ? $number
-            : ($number === '' ? [] : str_split($number));
-        $signed = isset($source[0]) && in_array($source[0], ['-', '+']);
-        $dot = array_search('.', $source);
+        $source = $number ? (is_array($number) ? $number : str_split($number)) : [];
 
-        if ($dot !== false) {
-            if ($this->sourceBase->hasDigit('.')) {
-                $dot = false;
-            } else {
-                $fractions = array_slice($source, $dot + 1);
-                $source = array_slice($source, 0, $dot);
-            }
-        }
-        if ($signed) {
-            if ($this->sourceBase->hasDigit($source[0])) {
-                $signed = false;
-            } else {
+        if (isset($source[0]) && ($source[0] === '-' || $source[0] === '+')) {
+            if (!$this->sourceBase->hasDigit($source[0])) {
                 $sign = array_shift($source);
             }
         }
+        if (in_array('.', $source, true) && !$this->sourceBase->hasDigit('.')) {
+            $fractions = array_slice(1, array_splice($source, array_search($source, '.', true)));
+        }
 
-        $result = $this->convertNumber($source);
+        $result = $this->convertInteger($source);
 
-        if ($signed) {
+        if (isset($sign)) {
             array_unshift($result, $sign);
         }
-        if ($dot !== false) {
+        if (isset($fractions)) {
             $result[] = '.';
             $result = array_merge($result, $this->convertFractions($fractions));
         }
@@ -183,11 +173,19 @@ class BaseConverter
      * @return array The converted number with most significant digit last
      * @throws \RuntimeException If no integer conversion library is applicable
      */
-    public function convertNumber(array $number)
+    public function convertInteger(array $number)
     {
-        foreach ($this->numberConverters as & $converter) {
+        foreach ($this->integerConverters as $key => $converter) {
             try {
-                return $this->loadConverter($converter)->convertNumber($number);
+                if (is_string($converter)) {
+                    $converter = $this->integerConverters[$key] = new $converter;
+
+                    if (!($converter instanceof Converter\IntegerConverter)) {
+                        throw new \RuntimeException('Invalid converter class ' . get_class($converter));
+                    }
+                }
+
+                return $converter->convertInteger($number);
             } catch (ConversionException $ex) {
                 // Just continue to next method
             }
@@ -204,47 +202,23 @@ class BaseConverter
      */
     public function convertFractions(array $number)
     {
-        foreach ($this->fractionConverters as & $converter) {
+        foreach ($this->fracitonConverters as $key => $converter) {
             try {
-                if ($converter instanceof Method\Decimal\AbstractDecimalConverter) {
-                    $converter->setPrecision($this->precision);
+                if (is_string($converter)) {
+                    $converter = $this->fracitonConverters[$key] = new $converter;
+
+                    if (!($converter instanceof Converter\FractionConverter)) {
+                        throw new \RuntimeException('Invalid converter class ' . get_class($converter));
+                    }
                 }
-                return $this->loadConverter($converter)->convertFractions($number);
+
+                $converter->setPrecision($this->precision);
+                return $converter->convertInteger($number);
             } catch (ConversionException $ex) {
                 // Just continue to next method
             }
         }
 
         throw new \RuntimeException("No applicable conversion method available");
-    }
-
-    /**
-     * Lazyloads the given converter.
-     * @param string $name Name of the converter
-     * @return \Riimu\Kit\NumberConversion\Method\Converter Loaded converter
-     * @throws \RuntimeException If the converter does not exist
-     */
-    private function loadConverter(& $name)
-    {
-        if (!($name instanceof Method\Converter)) {
-            $class = 'Riimu\Kit\NumberConversion\Method\\' . $name;
-
-            if (!class_exists($class)) {
-                $class = $name;
-            }
-            if (!is_a($class, 'Riimu\Kit\NumberConversion\Method\Converter', true)) {
-                throw new \RuntimeException("Invalid converter '$class'");
-            }
-
-            $instance = new $class($this->sourceBase, $this->targetBase);
-
-            if ($instance instanceof Method\Decimal\AbstractDecimalConverter) {
-                $instance->setPrecision($this->precision);
-            }
-
-            $name = $instance;
-        }
-
-        return $name;
     }
 }
