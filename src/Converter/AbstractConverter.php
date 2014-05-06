@@ -28,7 +28,7 @@ abstract class AbstractConverter
      */
     protected function getValues(array $number)
     {
-        return empty($number) ? [0] : $this->source->getDecimals($number);
+        return empty($number) ? [0] : $this->source->getValues($number);
     }
 
     /**

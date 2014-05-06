@@ -21,28 +21,28 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
         $base = new NumberBase(18);
         $this->assertEquals(18, $base->getRadix());
         $this->assertEquals('G', $base->getDigit(16));
-        $this->assertEquals(17, $base->getDecimal('H'));
+        $this->assertEquals(17, $base->getValue('H'));
     }
 
     public function testCreateBase64IntegerBase ()
     {
         $base = new NumberBase(64);
         $this->assertEquals('A', $base->getDigit(0));
-        $this->assertEquals(62, $base->getDecimal('+'));
+        $this->assertEquals(62, $base->getValue('+'));
     }
 
     public function testCreateByteIntegerBase ()
     {
         $base = new NumberBase(256);
         $this->assertEquals("\x64", $base->getDigit(0x64));
-        $this->assertEquals(032, $base->getDecimal("\032"));
+        $this->assertEquals(032, $base->getValue("\032"));
     }
 
     public function testCreateLargeIntegerBase ()
     {
         $base = new NumberBase(512);
         $this->assertEquals("#306", $base->getDigit(306));
-        $this->assertEquals(32, $base->getDecimal("#032"));
+        $this->assertEquals(32, $base->getValue("#032"));
     }
 
     /**
@@ -57,7 +57,7 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     {
         $base = new NumberBase('ABCDEF');
         $this->assertEquals(6, $base->getRadix());
-        $this->assertEquals(4, $base->getDecimal('E'));
+        $this->assertEquals(4, $base->getValue('E'));
     }
 
     /**
@@ -80,7 +80,7 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     {
         $base = new NumberBase(['foo', 'bar']);
         $this->assertEquals(2, $base->getRadix());
-        $this->assertEquals(0, $base->getDecimal('foo'));
+        $this->assertEquals(0, $base->getValue('foo'));
         $this->assertEquals('bar', $base->getDigit(1));
     }
 
@@ -117,8 +117,8 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
 
         $base = new NumberBase([$zero, $one]);
         $this->assertSame($one, $base->getDigit(1));
-        $this->assertSame(0, $base->getDecimal($zero));
-        $this->assertSame([$zero, $one], $base->getNumbers());
+        $this->assertSame(0, $base->getValue($zero));
+        $this->assertSame([$zero, $one], $base->getDigitList());
     }
 
     /**
@@ -136,7 +136,7 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     public function testGettingMissingCharacter ()
     {
         $base = new NumberBase(16);
-        $base->getDecimal('G');
+        $base->getValue('G');
     }
 
     public function testCaseSensitivity()
@@ -144,8 +144,8 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
         $base = new NumberBase(36);
         $this->assertTrue($base->hasDigit('A'));
         $this->assertTrue($base->hasDigit('a'));
-        $this->assertEquals(10, $base->getDecimal('A'));
-        $this->assertEquals(10, $base->getDecimal('a'));
+        $this->assertEquals(10, $base->getValue('A'));
+        $this->assertEquals(10, $base->getValue('a'));
 
         $base = new NumberBase('aAB');
         $this->assertFalse($base->hasDigit('b'));
@@ -171,13 +171,13 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
 
     public function testStaticBase()
     {
-        $this->assertTrue((new NumberBase(32))->isStatic());
-        $this->assertTrue((new NumberBase(64))->isStatic());
-        $this->assertTrue((new NumberBase(128))->isStatic());
-        $this->assertTrue((new NumberBase(1024))->isStatic());
-        $this->assertTrue((new NumberBase('abcd'))->isStatic());
-        $this->assertTrue((new NumberBase(['aa', 'ab', 'bb', 'ba']))->isStatic());
-        $this->assertFalse((new NumberBase(['a', 'aa']))->isStatic());
-        $this->assertFalse((new NumberBase([1, 2]))->isStatic());
+        $this->assertTrue((new NumberBase(32))->hasStaticLength());
+        $this->assertTrue((new NumberBase(64))->hasStaticLength());
+        $this->assertTrue((new NumberBase(128))->hasStaticLength());
+        $this->assertTrue((new NumberBase(1000))->hasStaticLength());
+        $this->assertTrue((new NumberBase('abcd'))->hasStaticLength());
+        $this->assertTrue((new NumberBase(['aa', 'ab', 'bb', 'ba']))->hasStaticLength());
+        $this->assertFalse((new NumberBase(['a', 'aa']))->hasStaticLength());
+        $this->assertFalse((new NumberBase([1, 2]))->hasStaticLength());
     }
 }

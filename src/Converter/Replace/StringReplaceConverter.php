@@ -16,7 +16,7 @@ class StringReplaceConverter extends AbstractReplaceConverter
     public function replace(array $number, $fractions = false)
     {
         $table = $this->getConversionTable();
-        $digits = array_flip($this->source->getNumbers());
+        $digits = array_flip($this->source->getDigitList());
 
         // Verify and resolve case insensitivity
         foreach ($number as $digit) {
@@ -43,7 +43,7 @@ class StringReplaceConverter extends AbstractReplaceConverter
 
     protected function buildConversionTable()
     {
-        if (!$this->source->isStatic() || !$this->target->isStatic()) {
+        if (!$this->source->hasStaticLength() || !$this->target->hasStaticLength()) {
             throw new ConversionException("Both number bases are not static");
         }
 

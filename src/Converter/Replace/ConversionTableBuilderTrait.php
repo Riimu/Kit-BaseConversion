@@ -26,8 +26,8 @@ trait ConversionTableBuilderTrait
         $max = $reduce ? $this->source : $this->target;
         $min = $reduce ? $this->target : $this->source;
 
-        $minDigits = $min->getNumbers();
-        $maxDigits = $max->getNumbers();
+        $minDigits = $min->getDigitList();
+        $maxDigits = $max->getDigitList();
         $last = $min->getRadix() - 1;
         $size = (int) log($max->getRadix(), $min->getRadix());
         $number = array_fill(0, $size, $minDigits[0]);
