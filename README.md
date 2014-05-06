@@ -252,5 +252,5 @@ used in most cases.
 
 ## Copyright ##
 
-This library is Copyright (c) 2013 to Riikka Kalliomäki. See LICENSE for
+This library is Copyright (c) 2013 - 2014 to Riikka Kalliomäki. See LICENSE for
 complete copyright notice.

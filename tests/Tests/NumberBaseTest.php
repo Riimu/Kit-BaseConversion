@@ -1,6 +1,6 @@
 <?php
 
-use Riimu\Kit\NumberConversion\NumberBase;
+namespace Riimu\Kit\NumberConversion;
 
 /**
  * Tests for NumberBase.
@@ -110,9 +110,9 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
 
     public function testBaseWithNonScalarValues()
     {
-        $zero = new stdClass();
+        $zero = new \stdClass();
         $zero->n = 0;
-        $one = new stdClass();
+        $one = new \stdClass();
         $one->n = 1;
 
         $base = new NumberBase([$zero, $one]);

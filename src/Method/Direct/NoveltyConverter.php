@@ -5,6 +5,17 @@ namespace Riimu\Kit\NumberConversion\Method\Direct;
 use Riimu\Kit\NumberConversion\Method\AbstractConverter;
 
 /**
+ * Proof of concept implementation of direct conversion using language constructs.
+ *
+ * This conversion strategy offers essentially the same functionality as the
+ * DirectConverter. The key different is that the actual conversion methods is
+ * a static call that can be used separately. In some rare cases this may
+ * provide speed boost as the conversion is implemented using language constructs,
+ * which results in minimal overhead.
+ *
+ * This class exists mostly for novelty reasons to provide an example of how
+ * strings and arrays can be accidentally used interchangeably.
+ *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
@@ -32,13 +43,6 @@ class NoveltyConverter extends AbstractConverter
      * '0123456789ABCDEF' as the source base and '01234567' as the target base
      * will return '2404777'. The method will return a string or an array
      * depending on the type of the input number.
-     *
-     * The logic of this method is essentially the same as convertDirectly(),
-     * except that there is no function call overhead as the method only uses
-     * language constructs. This makes it slightly faster than
-     * convertDirectly(), but it does not take advantage of the NumberBase
-     * class. This method exists mostly for vanity reasons providing a silly
-     * example of using strings and arrays interchangeably.
      *
      * @param string|array $number The number to convert
      * @param string|array $sourceBase The number base for the original number

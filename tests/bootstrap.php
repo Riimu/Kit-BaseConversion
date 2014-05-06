@@ -1,16 +1,11 @@
 <?php
 
-set_include_path(implode(PATH_SEPARATOR, [
-    get_include_path(),
-    dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src',
-    __DIR__
-]));
+require __DIR__ . '/../vendor/autoload.php';
 
-spl_autoload_register(function ($class) {
-    $file = implode(DIRECTORY_SEPARATOR, preg_split('/\\\\|_(?=[^\\\\]*$)/', $class));
-    if ($path = stream_resolve_include_path($file . '.php')) {
-        require $path;
-    }
-});
+$loader = new \Riimu\Kit\ClassLoader\ClassLoader();
+$loader->addPrefixPath(__DIR__ . '/../src', 'Riimu\Kit\NumberConversion');
+$loader->addPrefixPath(__DIR__ . '/Tests', 'Riimu\Kit\NumberConversion');
+
+$loader->register();
 
 ?>
