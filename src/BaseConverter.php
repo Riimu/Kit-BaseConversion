@@ -5,14 +5,16 @@ namespace Riimu\Kit\NumberConversion;
 use Riimu\Kit\NumberConversion\Converter\ConversionException;
 
 /**
- * Number conversion library for numbers of arbitrary size.
+ * Arbitrary precision number base conversion library.
  *
- * BaseConverter provides more comprehensive approach to converting numbers from
- * base to another than PHP's built in base_convert. This library is not limited
- * by 32 bit integers in addition to being able to convert fractions. The
- * library also uses various conversion strategies to obtain optimal results
- * when converting large numbers. Using NumberBase class, it is also possible
- * define highly customized number bases of any size.
+ * BaseConverter provides a convenient way to convert numbers of arbitrary size
+ * using the different base converters provided by this library. BaseConverter
+ * processes the number using appropriate converters and handles both integer
+ * and fraction parts provided in a string.
+ *
+ * BaseConverter can be easily used as a replacement for PHP's built in
+ * base_convert, except for that fact that BaseConverter's convert method is not
+ * limited by double precision and can also convert fractions.
  *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
@@ -21,31 +23,31 @@ use Riimu\Kit\NumberConversion\Converter\ConversionException;
 class BaseConverter
 {
     /**
-     * Number base used by provided numbers.
+     * Numeral system used by provided numbers.
      * @var NumberBase
      */
     private $sourceBase;
 
     /**
-     * Number base used by returned numbers.
+     * Numeral system used by returned numbers.
      * @var NumberBase
      */
     private $targetBase;
 
     /**
-     * List of number conversion methods.
+     * List of integer converters.
      * @var array
      */
     private $integerConverters;
 
     /**
-     * List of conversion methods used to convert fractions.
+     * List of fraction converters.
      * @var array
      */
     private $fractionConverters;
 
     /**
-     * The number precision for fraction conversion methods.
+     * The number precision for fraction converters.
      * @var integer
      */
     private $precision;
@@ -53,7 +55,7 @@ class BaseConverter
     /**
      * Creates a new instance of BaseConverter.
      *
-     * The source and target number bases can be provided as an instance of
+     * The source and target number base can be provided as an instance of
      * NumberBase or as a value provided to the NumberBase constructor. See the
      * NumberBase constructor for information about possible values.
      *
@@ -87,15 +89,20 @@ class BaseConverter
         ];
     }
 
+
+
     /**
      * Sets the precision used when converting fractions.
      *
-     * It's not always possible to convert fractions accurately from base to
-     * another. This method can be used to set the precision, i.e. the number
-     * of digits after the decimal separator in the returned numbers. A positive
-     * number indicates exact number of digits. A negative number indicates
-     * a number of digits in addition to what is required to have at least the
-     * same precision in the resulted number.
+     * If the precision is positive, it defines the maximum number of digits in
+     * fractions. If the value is 0, the converted numbers have at least as many
+     * digits as is required to represent the number in the same accuracy. A
+     * negative precision simply increases the number of digits in addition to
+     * what is required for same accuracy.
+     *
+     * The precision may be ignored if the converter can convert the fractions
+     * accurately. The purpose of precision is to limit the number of digits in
+     * cases where this is not possible.
      *
      * @param integer $precision Precision used when converting fractions
      */
@@ -105,8 +112,8 @@ class BaseConverter
     }
 
     /**
-     * Sets the list objects used for integer conversion.
-     * @param array $converters Array of integer conversion objects.
+     * Sets the list of integer converters to use.
+     * @param array $converters Array of integer converter class names.
      */
     public function setIntegerConverters(array $converters)
     {
@@ -114,8 +121,8 @@ class BaseConverter
     }
 
     /**
-     * Sets the list of objects used for fraction conversion.
-     * @param array $converters Array of fraction conversion objects.
+     * Sets the list of fraction converters to use.
+     * @param array $converters Array of fraction converter class names.
      */
     public function setFractionConverters(array $converters)
     {
@@ -127,8 +134,7 @@ class BaseConverter
      *
      * The number can be provided as either an array with least significant
      * digit first or as a string. The return value will be in the same format
-     * as the input value. Note that you may get unexpected results when using
-     * strings if the source or target number base contains multibyte digits.
+     * as the input value.
      *
      * This method will automatically handle negative numbers and fractions.
      * If the number is preceded by either '+' or '-', the appropriate sign will
@@ -143,7 +149,9 @@ class BaseConverter
      */
     public function convert ($number)
     {
-        $source = $number ? (is_array($number) ? $number : str_split($number)) : [];
+        $source = $number
+            ? (is_array($number) ? $number : $this->sourceBase->splitString($number))
+            : [];
 
         if (isset($source[0]) && ($source[0] === '-' || $source[0] === '+')) {
             if (!$this->sourceBase->hasDigit($source[0])) {
@@ -167,60 +175,58 @@ class BaseConverter
         return is_array($number) ? $result : implode('', $result);
     }
 
+
+
     /**
-     * Converts the provided integer part using the provided conversion methods.
-     * @param array $number Number to covert with most significant digit last
-     * @return array The converted number with most significant digit last
-     * @throws \RuntimeException If no integer conversion library is applicable
+     * Converts the provided integer from source base to target base.
+     * @param array $number Integer to covert with most significant digit last
+     * @return array The converted integer with most significant digit last
+     * @throws \RuntimeException If no applicable integer converter is available
      */
     public function convertInteger(array $number)
     {
         foreach ($this->integerConverters as $key => $converter) {
             try {
                 if (is_string($converter)) {
-                    $converter = $this->integerConverters[$key] =
-                        new $converter($this->sourceBase, $this->targetBase);
+                    $converter = $this->integerConverters[$key] = new $converter;
 
                     if (!($converter instanceof Converter\IntegerConverter)) {
-                        throw new \RuntimeException('Invalid converter class ' . get_class($converter));
+                        throw new \RuntimeException('Invalid integer converter ' . get_class($converter));
                     }
                 }
 
+                $converter->setNumberBases($this->sourceBase, $this->targetBase);
                 return $converter->convertInteger($number);
-            } catch (ConversionException $ex) {
-                // Just continue to next method
-            }
+            } catch (ConversionException $ex) { }
         }
 
-        throw new \RuntimeException("No applicable conversion method available");
+        throw new \RuntimeException("No applicable integer converter available");
     }
 
     /**
-     * Converts the provided fractional part using the provided conversion methods.
+     * Converts the provided fractions from source base to target base.
      * @param array $number Fractions to covert with most significant digit last
      * @return array The converted fractions with most significant digit last
-     * @throws \RuntimeException If no fraction conversion library is applicable
+     * @throws \RuntimeException If no applicable fraction converter is available
      */
     public function convertFractions(array $number)
     {
         foreach ($this->fractionConverters as $key => $converter) {
             try {
                 if (is_string($converter)) {
-                    $converter = $this->fractionConverters[$key] =
-                        new $converter($this->sourceBase, $this->targetBase);
+                    $converter = $this->fractionConverters[$key] = new $converter;
 
                     if (!($converter instanceof Converter\FractionConverter)) {
-                        throw new \RuntimeException('Invalid converter class ' . get_class($converter));
+                        throw new \RuntimeException('Invalid fraction converter ' . get_class($converter));
                     }
                 }
 
+                $converter->setNumberBases($this->sourceBase, $this->targetBase);
                 $converter->setPrecision($this->precision);
                 return $converter->convertFractions($number);
-            } catch (ConversionException $ex) {
-                // Just continue to next method
-            }
+            } catch (ConversionException $ex) { }
         }
 
-        throw new \RuntimeException("No applicable conversion method available");
+        throw new \RuntimeException("No applicable fraction converter available");
     }
 }

@@ -11,7 +11,7 @@ namespace Riimu\Kit\NumberConversion;
  * given values.
  *
  * NumberBase can be defined in multiple different ways. For more information,
- * see the details on the constructor. NumberBase is compeletely  agnostic to
+ * see the details on the constructor. NumberBase is compeletely agnostic to
  * the type of digits used to define the number base, but all comparison are
  * done using loose comparison operators. Thus, for example, the integer 0 and
  * the string "0" are considered to be the same digit.
@@ -52,6 +52,18 @@ class NumberBase
     private $caseSensitive;
 
     /**
+     * Tells if the numeral system supports string numbers.
+     * @var boolean
+     */
+    private $stringConflict;
+
+    /**
+     * Tells how to split strings according this numeral system.
+     * @var boolean|integer|string
+     */
+    private $splitter;
+
+    /**
      * List of digits used when the base is provided as a number.
      * @var string
      */
@@ -76,8 +88,8 @@ class NumberBase
      * are used fom series of 0-9A-Za-z. If the base is exactly 64, the
      * characters from base 64 encoding are used. For bases smaller or equal
      * to 256 the digits are represented by bytes of equal value. If the base is
-     * bigger than 256, then each digit is represented by #num; where 'num' is
-     * replace by the decimal value of the digit.
+     * bigger than 256, then each digit is represented by '#num' where 'num' is
+     * replaced by the decimal value of the digit.
      *
      * If a string is provided, then characters in that string are used as the
      * digits and their position in the string determine their decimal value.
@@ -140,6 +152,7 @@ class NumberBase
         }
 
         $this->valueMap = array_flip($this->digits);
+        $this->stringConflict = false;
         $this->radix = count($this->digits);
     }
 
@@ -158,6 +171,7 @@ class NumberBase
 
         $this->digits = str_split($string);
         $this->valueMap = array_flip($this->digits);
+        $this->stringConflict = false;
         $this->radix = count($this->digits);
         $this->caseSensitive =
             count(array_flip(array_map('strtolower', $this->digits))) != $this->radix;
@@ -204,17 +218,39 @@ class NumberBase
         $this->digits = $numbers;
         $this->valueMap = $mapped ? array_flip($numbers) : null;
         $this->caseSensitive = count($strings) != count(array_flip($strings));
+
+        if ($this->valueMap) {
+            $this->stringConflict = false;
+            $stringDigits = array_map('strval', $this->digits);
+            foreach ($stringDigits as $a => $needle) {
+                foreach ($stringDigits as $b => $haystack) {
+                    if ($a !== $b && strpos($haystack, $needle) !== false) {
+                        $this->stringConflict = true;
+                        break 2;
+                    }
+                }
+            }
+        } else {
+            $this->stringConflict = true;
+        }
     }
 
     /**
-     * Tells if each digit representation has the same byte length.
-     * @return boolean True if the digits are equal length, false if not
+     * Tells if the number using this numeral system can be represented as string.
+     * @return boolean True if possible, false if not
      */
-    public function hasStaticLength()
+    public function hasStringConflict()
     {
-        return $this->valueMap &&
-            count(array_filter($this->digits, 'is_string')) === $this->radix &&
-            count(array_flip(array_map('strlen', $this->digits))) === 1;
+        return $this->stringConflict;
+    }
+
+    /**
+     * Tells if this numeral system is case sensitive or not
+     * @return boolean True if case sensitive, false if not
+     */
+    public function isCaseSensitive()
+    {
+        return $this->caseSensitive;
     }
 
     /**
@@ -369,5 +405,59 @@ class NumberBase
     {
         for ($pow = 2; pow($root, $pow) < $number; $pow++);
         return pow($root, $pow) == $number;
+    }
+
+    /**
+     * Splits number string into digits.
+     * @param string $string String to split into array of digits
+     * @return array Array of digits
+     * @throws \RuntimeException If numeral system does not support strings
+     */
+    public function splitString($string)
+    {
+        if (!isset($this->splitter)) {
+            $this->splitter = $this->createSplitter();
+        }
+
+        if ($this->splitter === false) {
+            throw new \RuntimeException('Strings are not supported');
+        } elseif (is_int($this->splitter)) {
+            $digits = str_split($string, $this->splitter);
+        } else {
+            $digits = array_slice(preg_split($this->splitter, $string), 1);
+        }
+
+        foreach ($this->digits as $digit) {
+            if (!is_string($digit)) {
+                foreach (array_keys($digits, (string) $digit) as $key) {
+                    $digits[$key] = $digit;
+                }
+            }
+        }
+
+        return $digits;
+    }
+
+    /**
+     * Determines the rule on how to split number strings.
+     * @return boolean|integer|string Splitting rule for strings
+     */
+    private function createSplitter()
+    {
+        if ($this->stringConflict) {
+            return false;
+        }
+
+        $lengths = array_map('strlen', $this->digits);
+
+        if (count(array_flip($lengths)) === 1) {
+            return array_pop($lengths);
+        }
+
+        $string = implode('|', array_map(function ($value) {
+            return preg_quote((string) $value, '/');
+        }, $this->digits));
+
+        return "/(?=$string)/" . ($this->caseSensitive ? '' : 'i');
     }
 }

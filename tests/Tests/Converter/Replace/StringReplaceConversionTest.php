@@ -18,7 +18,7 @@ class StringReplaceConversionTest extends ReplaceTestBase
         return array_filter(parent::getNumberConversionData(), function ($data) {
             $a = new NumberBase($data[2]);
             $b = new NumberBase($data[3]);
-            return $a->hasStaticLength() && $b->hasStaticLength();
+            return !$a->hasStringConflict() && !$b->hasStringConflict();
         });
     }
 
@@ -27,7 +27,7 @@ class StringReplaceConversionTest extends ReplaceTestBase
         return array_filter(parent::getFractionConversionData(), function ($data) {
             $a = new NumberBase($data[2]);
             $b = new NumberBase($data[3]);
-            return $a->hasStaticLength() && $b->hasStaticLength();
+            return !$a->hasStringConflict() && !$b->hasStringConflict();
         });
     }
 

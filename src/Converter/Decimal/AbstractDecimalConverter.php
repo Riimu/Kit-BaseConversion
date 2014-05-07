@@ -6,7 +6,6 @@ use Riimu\Kit\NumberConversion\Converter\IntegerConverter;
 use Riimu\Kit\NumberConversion\Converter\FractionConverter;
 use Riimu\Kit\NumberConversion\Converter\AbstractConverter;
 use Riimu\Kit\NumberConversion\Converter\ConversionException;
-use Riimu\Kit\NumberConversion\NumberBase;
 
 /**
      * Converts number from base to another using arbitrary precision math.
@@ -41,10 +40,9 @@ abstract class AbstractDecimalConverter extends AbstractConverter
     /**
      * Creates new instance of the decimal converter.
      */
-    public function __construct(NumberBase $sourceBase, NumberBase $targetBase)
+    public function __construct()
     {
-        parent::__construct($sourceBase, $targetBase);
-
+        parent::__construct();
         $this->precision = -1;
     }
 

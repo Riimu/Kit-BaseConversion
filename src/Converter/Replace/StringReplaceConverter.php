@@ -26,9 +26,8 @@ class StringReplaceConverter extends AbstractReplaceConverter
             }
         }
 
-        return $this->zeroTrim(str_split(
-            strtr(implode('', $this->zeroPad($number, $fractions)), $table),
-            strlen($this->target->getDigit(0))
+        return $this->zeroTrim($this->target->splitString(
+            strtr(implode('', $this->zeroPad($number, $fractions)), $table)
         ), $fractions);
     }
 
@@ -43,8 +42,8 @@ class StringReplaceConverter extends AbstractReplaceConverter
 
     protected function buildConversionTable()
     {
-        if (!$this->source->hasStaticLength() || !$this->target->hasStaticLength()) {
-            throw new ConversionException("Both number bases are not static");
+        if ($this->source->hasStringConflict() || $this->target->hasStringConflict()) {
+            throw new ConversionException("Number bases must not have string conflicts");
         }
 
         return $this->buildTable();

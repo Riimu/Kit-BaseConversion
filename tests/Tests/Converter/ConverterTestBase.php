@@ -82,9 +82,8 @@ abstract class ConverterTestBase extends \PHPUnit_Framework_TestCase
 
     protected function getConverter($source, $target)
     {
-        return new $this->className(
-            new NumberBase($source),
-            new NumberBase($target)
-        );
+        $converter = new $this->className();
+        $converter->setNumberBases(new NumberBase($source), new NumberBase($target));
+        return $converter;
     }
 }

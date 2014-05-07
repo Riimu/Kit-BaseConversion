@@ -169,15 +169,44 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    public function testStaticBase()
+    public function testStringConflict()
     {
-        $this->assertTrue((new NumberBase(32))->hasStaticLength());
-        $this->assertTrue((new NumberBase(64))->hasStaticLength());
-        $this->assertTrue((new NumberBase(128))->hasStaticLength());
-        $this->assertTrue((new NumberBase(1000))->hasStaticLength());
-        $this->assertTrue((new NumberBase('abcd'))->hasStaticLength());
-        $this->assertTrue((new NumberBase(['aa', 'ab', 'bb', 'ba']))->hasStaticLength());
-        $this->assertFalse((new NumberBase(['a', 'aa']))->hasStaticLength());
-        $this->assertFalse((new NumberBase([1, 2]))->hasStaticLength());
+        $this->assertFalse((new NumberBase(32))->hasStringConflict());
+        $this->assertFalse((new NumberBase(64))->hasStringConflict());
+        $this->assertFalse((new NumberBase(128))->hasStringConflict());
+        $this->assertFalse((new NumberBase(1000))->hasStringConflict());
+        $this->assertFalse((new NumberBase('abcd'))->hasStringConflict());
+        $this->assertFalse((new NumberBase(['aa', 'ab', 'bb', 'ba']))->hasStringConflict());
+        $this->assertTrue((new NumberBase(['a', 'aa']))->hasStringConflict());
+        $this->assertTrue((new NumberBase(['a', 'ba']))->hasStringConflict());
+        $this->assertFalse((new NumberBase([1, 2]))->hasStringConflict());
+        $this->assertTrue((new NumberBase([1, 11]))->hasStringConflict());
+    }
+
+    public function testIsCaseSenstivie()
+    {
+        $this->assertFalse((new NumberBase('ab'))->isCaseSensitive());
+        $this->assertFalse((new NumberBase(['a', 'b']))->isCaseSensitive());
+        $this->assertTrue((new NumberBase('aA'))->isCaseSensitive());
+        $this->assertTrue((new NumberBase(['a', 'A']))->isCaseSensitive());
+    }
+
+    public function testStringSplitting()
+    {
+        $this->assertSame(['a', 'b', 'c', 'a'],
+            (new NumberBase('abc'))->splitString('abca'));
+        $this->assertSame(['ba', 'd', 'ab', 'ba', 'aca', 'ab'],
+            (new NumberBase(['d', 'ba', 'ab', 'aca']))->splitString('badabbaacaab'));
+        $this->assertSame([0, 1, 0, 1, 1, 0],
+            (new NumberBase([0, 1]))->splitString('010110'));
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testUnsupportedSplitting()
+    {
+        $base = new NumberBase(['a', 'aa']);
+        $base->splitString('aaa');
     }
 }

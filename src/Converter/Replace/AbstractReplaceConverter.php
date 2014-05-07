@@ -20,13 +20,15 @@ abstract class AbstractReplaceConverter extends AbstractConverter
     private $sourceConverter;
     private $targetConverter;
 
-    public function __construct(NumberBase $sourceBase, NumberBase $targetBase)
+    public function setNumberBases(NumberBase $source, NumberBase $target)
     {
-        parent::__construct($sourceBase, $targetBase);
+        if ($source !== $this->source || $target !== $this->target) {
+            $this->root = $source->findCommonRadixRoot($target);
+            $this->sourceConverter = null;
+            $this->targetConverter = null;
+        }
 
-        $this->root = $sourceBase->findCommonRadixRoot($targetBase);
-        $this->sourceConverter = null;
-        $this->targetConverter = null;
+        parent::setNumberBases($source, $target);
     }
 
     public function setPrecision($precision)
@@ -75,8 +77,10 @@ abstract class AbstractReplaceConverter extends AbstractConverter
             $class = get_class($this);
             $rootBase = new NumberBase($this->root);
 
-            $this->sourceConverter = new $class($this->source, $rootBase);
-            $this->targetConverter = new $class($rootBase, $this->target);
+            $this->sourceConverter = new $class();
+            $this->sourceConverter->setNumberBases($this->source, $rootBase);
+            $this->targetConverter = new $class();
+            $this->targetConverter->setNumberBases($rootBase, $this->target);
         }
 
         return $this->targetConverter->replace(

@@ -5,20 +5,38 @@ namespace Riimu\Kit\NumberConversion\Converter;
 use Riimu\Kit\NumberConversion\NumberBase;
 
 /**
- * Abstract conversion strategy that implements basic functionality.
+ * Abstract converters that implements basic functionality.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-abstract class AbstractConverter
+abstract class AbstractConverter implements Converter
 {
+    /**
+     * Numeral system for provided numbers.
+     * @var \Riimu\Kit\NumberConversion\NumberBase
+     */
     protected $source;
+
+    /**
+     * Numeral system for returned numbers.
+     * @var \Riimu\Kit\NumberConversion\NumberBase
+     */
     protected $target;
 
-    public function __construct(NumberBase $sourceBase, NumberBase $targetBase)
+    /**
+     * Initializes the abstract converter
+     */
+    public function __construct()
     {
-        $this->source = $sourceBase;
-        $this->target = $targetBase;
+        $this->source = null;
+        $this->target = null;
+    }
+
+    public function setNumberBases(NumberBase $source, NumberBase $target)
+    {
+        $this->source = $source;
+        $this->target = $target;
     }
 
     /**
