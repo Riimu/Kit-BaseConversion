@@ -132,59 +132,51 @@ class BaseConverter
     /**
      * Converts the number from source base to target base.
      *
+     * This method will automatically handle signed numbers and fractions.
+     * If the number is preceded by either '+' or '-', the appropriate sign will
+     * be added to the resulting number. Additionally, if the number contains
+     * the decimal separator '.', the digits after that will be converted as
+     * fractions.
+     *
+     * @param string $number The number to convert
+     * @return string The converted number
+     */
+    public function convert ($number)
+    {
+        $integer = (string) $number;
+        $dot = strpos($integer, '.');
+        $sign = substr($integer, 0, 1);
+
+        if ($dot !== false) {
+            $fractions = substr($integer, $dot + 1);
+            $integer = substr($integer, 0, $dot);
+        }
+        if ($sign === '+' || $sign === '-') {
+            $integer = substr($integer, 1);
+        }
+
+        return ($sign === '+' || $sign === '-' ? $sign : '') .
+            $this->convertInteger($integer) .
+            ($dot !== false ? '.' . $this->convertFractions($fractions) : '');
+    }
+
+    /**
+     * Converts the provided integer from source base to target base.
+     *
      * The number can be provided as either an array with least significant
      * digit first or as a string. The return value will be in the same format
      * as the input value.
      *
-     * This method will automatically handle negative numbers and fractions.
-     * If the number is preceded by either '+' or '-', the appropriate sign will
-     * be added to the resulting number. Additionally, if the number contains
-     * the decimal separator '.', the digits after that will be converted as
-     * fractions. The special meaning of these characters will be ignored,
-     * however, if the characters are digits in the source base (e.g '+' being
-     * part of base 64).
-     *
-     * @param array|string $number The number to convert
-     * @return array|string The converted number
-     */
-    public function convert ($number)
-    {
-        $source = $number
-            ? (is_array($number) ? $number : $this->sourceBase->splitString($number))
-            : [];
-
-        if (isset($source[0]) && ($source[0] === '-' || $source[0] === '+')) {
-            if (!$this->sourceBase->hasDigit($source[0])) {
-                $sign = array_shift($source);
-            }
-        }
-        if (in_array('.', $source, true) && !$this->sourceBase->hasDigit('.')) {
-            $fractions = array_slice(array_splice($source, array_search('.', $source, true)), 1);
-        }
-
-        $result = $this->convertInteger($source);
-
-        if (isset($sign)) {
-            array_unshift($result, $sign);
-        }
-        if (isset($fractions)) {
-            $result[] = '.';
-            $result = array_merge($result, $this->convertFractions($fractions));
-        }
-
-        return is_array($number) ? $result : implode('', $result);
-    }
-
-
-
-    /**
-     * Converts the provided integer from source base to target base.
-     * @param array $number Integer to covert with most significant digit last
-     * @return array The converted integer with most significant digit last
+     * @param array|string $number Integer to covert with least significant digit first
+     * @return array|string The converted integer with least significant digit first
      * @throws \RuntimeException If no applicable integer converter is available
      */
-    public function convertInteger(array $number)
+    public function convertInteger($number)
     {
+        $input = is_array($number)
+            ? $this->sourceBase->canonizeDigits($number)
+            : $this->sourceBase->splitString($number);
+
         foreach ($this->integerConverters as $key => $converter) {
             try {
                 if (is_string($converter)) {
@@ -196,7 +188,8 @@ class BaseConverter
                 }
 
                 $converter->setNumberBases($this->sourceBase, $this->targetBase);
-                return $converter->convertInteger($number);
+                $result = $converter->convertInteger($input);
+                return is_array($number) ? $result : implode('', $result);
             } catch (ConversionException $ex) { }
         }
 
@@ -205,12 +198,21 @@ class BaseConverter
 
     /**
      * Converts the provided fractions from source base to target base.
-     * @param array $number Fractions to covert with most significant digit last
-     * @return array The converted fractions with most significant digit last
+     *
+     * The number can be provided as either an array with least significant
+     * digit first or as a string. The return value will be in the same format
+     * as the input value.
+     *
+     * @param array|string $number Fractions to covert with least significant digit first
+     * @return array|string The converted fractions with least significant digit first
      * @throws \RuntimeException If no applicable fraction converter is available
      */
-    public function convertFractions(array $number)
+    public function convertFractions($number)
     {
+        $input = is_array($number)
+            ? $this->sourceBase->canonizeDigits($number)
+            : $this->sourceBase->splitString($number);
+
         foreach ($this->fractionConverters as $key => $converter) {
             try {
                 if (is_string($converter)) {
@@ -223,7 +225,8 @@ class BaseConverter
 
                 $converter->setNumberBases($this->sourceBase, $this->targetBase);
                 $converter->setPrecision($this->precision);
-                return $converter->convertFractions($number);
+                $result = $converter->convertFractions($input);
+                return is_array($number) ? $result : implode('', $result);
             } catch (ConversionException $ex) { }
         }
 

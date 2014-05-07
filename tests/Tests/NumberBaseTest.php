@@ -193,10 +193,12 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
 
     public function testStringSplitting()
     {
-        $this->assertSame(['a', 'b', 'c', 'a'],
-            (new NumberBase('abc'))->splitString('abca'));
-        $this->assertSame(['ba', 'd', 'ab', 'ba', 'aca', 'ab'],
-            (new NumberBase(['d', 'ba', 'ab', 'aca']))->splitString('badabbaacaab'));
+        $this->assertSame(['0'],
+            (new NumberBase('01'))->splitString(''));
+        $this->assertSame(['b', 'a', 'c', 'a', 'D'],
+            (new NumberBase('abcD'))->splitString('BaCad'));
+        $this->assertSame(['ba', 'C', 'ab', 'ba', 'aca', 'ab'],
+            (new NumberBase(['C', 'ba', 'ab', 'aca']))->splitString('baCabbaacaab'));
         $this->assertSame([0, 1, 0, 1, 1, 0],
             (new NumberBase([0, 1]))->splitString('010110'));
     }
@@ -206,7 +208,14 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
      */
     public function testUnsupportedSplitting()
     {
-        $base = new NumberBase(['a', 'aa']);
-        $base->splitString('aaa');
+        (new NumberBase(['a', 'aa']))->splitString('aaa');
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testMissingDigits()
+    {
+        (new NumberBase('01'))->splitString('2');
     }
 }

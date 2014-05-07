@@ -15,19 +15,10 @@ class StringReplaceConverter extends AbstractReplaceConverter
 
     public function replace(array $number, $fractions = false)
     {
-        $table = $this->getConversionTable();
-        $digits = array_flip($this->source->getDigitList());
-
-        // Verify and resolve case insensitivity
-        foreach ($number as $digit) {
-            if (!isset($digits[(string) $digit])) {
-                $number = $this->source->getDigits($this->getValues($number));
-                break;
-            }
-        }
-
         return $this->zeroTrim($this->target->splitString(
-            strtr(implode('', $this->zeroPad($number, $fractions)), $table)
+            strtr(implode('', $this->zeroPad(
+                $this->source->canonizeDigits($number), $fractions
+            )), $this->getConversionTable())
         ), $fractions);
     }
 

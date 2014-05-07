@@ -38,7 +38,7 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
     {
         $converter = new BaseConverter(2, 10);
         $converter->setIntegerConverters([]);
-        $converter->convert([1, 1, 1]);
+        $converter->convertInteger([1, 1, 1]);
     }
 
     /**
@@ -48,7 +48,7 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
     {
         $converter = new BaseConverter(2, 10);
         $converter->setFractionConverters([]);
-        $converter->convert(['.', 1, 1, 1]);
+        $converter->convertFractions([1, 1, 1]);
     }
 
     public function testEmptyNumber()
@@ -58,7 +58,7 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('-0', $converter->convert('-'));
         $this->assertSame('-0.0', $converter->convert('-.'));
         $this->assertSame('0.0', $converter->convert('.'));
-        $this->assertSame(['0'], $converter->convert([]));
+        $this->assertSame(['0'], $converter->convertInteger([]));
     }
 
     public function testSignedNumbers()
@@ -80,15 +80,6 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('42.42', $converter->convert('42.42'));
         $this->assertSame('0', $converter->convert('0'));
         $this->assertSame('0.0', $converter->convert('0.0'));
-    }
-
-    public function testConversionCharacterIgnorance()
-    {
-        $converter = new BaseConverter('.-', '01');
-        $this->assertSame('11001', $converter->convert('--..-'));
-
-        $converter = new BaseConverter('.+', '01');
-        $this->assertSame('11001', $converter->convert('++..+'));
     }
 
     public function testConverterLoadingByFullName()

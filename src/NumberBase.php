@@ -227,6 +227,8 @@ class NumberBase
                     if ($a !== $b && strpos($haystack, $needle) !== false) {
                         $this->stringConflict = true;
                         break 2;
+                    } elseif ($a !== $b && stripos($haystack, $needle) !== false) {
+                        $this->caseSensitive = true;
                     }
                 }
             }
@@ -407,6 +409,22 @@ class NumberBase
         return pow($root, $pow) == $number;
     }
 
+    public function canonizeDigits(array $digits)
+    {
+        foreach (array_values($digits) as $i => $digit) {
+            $value = $this->valueMap && isset($this->valueMap[$digit])
+                ? $this->valueMap[$digit] : $this->findDigit($digit);
+
+            if ($value === false) {
+                throw new \InvalidArgumentException("Invalid digit '$digit'");
+            }
+
+            $result[$i] = $this->digits[$value];
+        }
+
+        return isset($result) ? $result : [$this->digits[0]];
+    }
+
     /**
      * Splits number string into digits.
      * @param string $string String to split into array of digits
@@ -421,21 +439,15 @@ class NumberBase
 
         if ($this->splitter === false) {
             throw new \RuntimeException('Strings are not supported');
+        } elseif ((string) $string === '') {
+            $digits = [];
         } elseif (is_int($this->splitter)) {
             $digits = str_split($string, $this->splitter);
         } else {
             $digits = array_slice(preg_split($this->splitter, $string), 1);
         }
 
-        foreach ($this->digits as $digit) {
-            if (!is_string($digit)) {
-                foreach (array_keys($digits, (string) $digit) as $key) {
-                    $digits[$key] = $digit;
-                }
-            }
-        }
-
-        return $digits;
+        return $this->canonizeDigits($digits);
     }
 
     /**
