@@ -411,7 +411,7 @@ class NumberBase
 
     public function canonizeDigits(array $digits)
     {
-        foreach (array_values($digits) as $i => $digit) {
+        foreach ($digits as $key => $digit) {
             $value = $this->valueMap && isset($this->valueMap[$digit])
                 ? $this->valueMap[$digit] : $this->findDigit($digit);
 
@@ -419,10 +419,12 @@ class NumberBase
                 throw new \InvalidArgumentException("Invalid digit '$digit'");
             }
 
-            $result[$i] = $this->digits[$value];
+            if ($digit !== $this->digits[$value]) {
+                $digits[$key] = $this->digits[$value];
+            }
         }
 
-        return isset($result) ? $result : [$this->digits[0]];
+        return empty($digits) ? [$this->digits[0]] : $digits;
     }
 
     /**
