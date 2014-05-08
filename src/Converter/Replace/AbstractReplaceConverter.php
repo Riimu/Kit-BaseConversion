@@ -9,6 +9,14 @@ use Riimu\Kit\NumberConversion\Converter\ConversionException;
 use Riimu\Kit\NumberConversion\NumberBase;
 
 /**
+ * Replace converters simply replace the digits without using math.
+ *
+ * When the target base is either nth root or nth power of the source base,
+ * it's possible to converter numbers from base to another by simply replacing
+ * a set of digits with another. Replace converters advantage of this fact
+ * providing very fast number conversion but they cannot convert numbers, unless
+ * the condition is met.
+ *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
@@ -16,8 +24,22 @@ use Riimu\Kit\NumberConversion\NumberBase;
 abstract class AbstractReplaceConverter extends AbstractConverter
     implements IntegerConverter, FractionConverter
 {
+    /**
+     * The common root for both source and target base.
+     * @var integer
+     */
     private $root;
+
+    /**
+     * Converter that converts from source base to common root
+     * @var AbstractReplaceConverter
+     */
     private $sourceConverter;
+
+    /**
+     * Converter that converts from common root to target base
+     * @var AbstractReplaceConverter
+     */
     private $targetConverter;
 
     public function setNumberBases(NumberBase $source, NumberBase $target)

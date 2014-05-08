@@ -25,11 +25,6 @@ class DirectConverter extends AbstractConverter implements IntegerConverter
 {
     use IntegerConstrainedTrait;
 
-    /**
-     * Converts numbers directly from base to another.
-     * @param array $number Number to covert with most significant digit last
-     * @return array The converted number with most significant digit last
-     */
     public function convertInteger(array $number)
     {
         $this->verifyIntegerConstraint();

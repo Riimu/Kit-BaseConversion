@@ -8,22 +8,13 @@ use Riimu\Kit\NumberConversion\Converter\AbstractConverter;
 use Riimu\Kit\NumberConversion\Converter\ConversionException;
 
 /**
-     * Converts number from base to another using arbitrary precision math.
-     *
-     * Decimal conversion takes advantage of arbitrary precision libraries
-     * to first convert the source number into decimal and then converting that
-     * number into the target base. The speed of this method depends entirely
-     * on the integer library used. It is worth noting that the GMP library is
-     * few magnitudes faster than BCMath, which is several magnitudes faster
-     * than Internal implementation. Comparably, using GMP library, this method
-     * is only few times slower than replace conversion.
-     *
-     * @param array $number Number to covert with most significant digit last
-     * @param boolean $fractions True if converting fractions, false if not
-     * @return array The converted number with most significant digit last
-     */
-/**
  * Decimal converter converts numbers from radix to another using decimal logic.
+ *
+ * Decimal conversion takes advantage of arbitrary precision libraries
+ * to first convert the source number into decimal and then converting that
+ * number into the target base. The efficiency of this conversion method depends
+ * mostly on the speed of the arbitrary precision math libraries.
+ *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
@@ -32,7 +23,7 @@ abstract class AbstractDecimalConverter extends AbstractConverter
     implements IntegerConverter, FractionConverter
 {
     /**
-     * Default precision used in fraction conversion.
+     * Precision for fraction conversions.
      * @var integer
      */
     private $precision;
@@ -46,33 +37,11 @@ abstract class AbstractDecimalConverter extends AbstractConverter
         $this->precision = -1;
     }
 
-    /**
-     * Sets the default precision used in fraction conversion.
-     * @param integer $precision Default precision used in fraction conversion
-     */
     public function setPrecision($precision)
     {
         $this->precision = (int) $precision;
     }
 
-    /**
-     * Converts number from radix to another using decimal logic.
-     *
-     * When called, the method is given the original number as an array, where
-     * each value represents the decimal value of the digit in that position.
-     * The least significant digit is in the first index. For example, a HEX
-     * value of 'A09FF' would be given as [10, 0, 9, 15, 15]. The method will
-     * then convert the number from the source base indicated by the source
-     * radix to the target base indicated by the target radix and then return
-     * it as an array similar to the input array. For example, the
-     * aforementioned number coverted from radix 16 to radix 8 would be
-     * returned as [2, 4, 0, 4, 7, 7, 7].
-     *
-     * @param array $number List of digit values with least significant first
-     * @param integer $sourceRadix Radix of the source base
-     * @param integer $targetRadix Radix of the target base
-     * @return array List of digit values for the converted number
-     */
     public function convertInteger(array $number)
     {
         if (!$this->isSupported()) {
@@ -86,31 +55,6 @@ abstract class AbstractDecimalConverter extends AbstractConverter
             $this->getValues($number), $source), $target));
     }
 
-    /**
-     * Converts fractional part of the number from base to another.
-     *
-     * Problem with converting fractions is that you cannot always convert them
-     * accurately. The precision argument can be used to determine how
-     * accurately you want the result. Positive number indicates the number
-     * of digits you want. If you use 0, then the number of digits in the
-     * result is the smallest number of digits that can be used to represent
-     * number more accurate than the source number. For example, to represent
-     * 0.1 in base 2, you need at least 4 digits, because with 3 digits you
-     * only get 1/8 accuracy and it requires at least 1/10 accuracy. Using
-     * negative value will add the absolute value of the argument to this
-     * estimated digit count.
-     *
-     * The last digit is always rounded, unless the rounding would cause an
-     * overflow. Extranous zeroes from the end will not be trimmed, unless the
-     * number can be accurately converted to smaller amount of digits than
-     * indicated by the precision.
-     *
-     * @param array $number List of digit values with least significant first
-     * @param integer $sourceRadix Radix of the source base
-     * @param integer $targetRadix Radix of the target base
-     * @param type $precision Precision of the resulting number or false for default
-     * @return array List of digit values for the converted number
-     */
     public function convertFractions(array $number)
     {
         if (!$this->isSupported()) {
@@ -227,6 +171,10 @@ abstract class AbstractDecimalConverter extends AbstractConverter
         return $number;
     }
 
+    /**
+     * Tells if the PHP extensions required by this converter are available.
+     * @return boolean True if available, false if not
+     */
     abstract public function isSupported();
 
     /**
