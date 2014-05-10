@@ -7,17 +7,17 @@ namespace Riimu\Kit\NumberConversion;
  * @copyright Copyright (c) 2014, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class MathConverterTest extends \PHPUnit_Framework_TestCase
+class DecimalConverterTest extends \PHPUnit_Framework_TestCase
 {
     public function testCreatingValidConverter()
     {
-       $this->assertInstanceOf('Riimu\Kit\NumberConversion\MathConverter',
-           new MathConverter(new NumberBase(2), new NumberBase(16)));
+       $this->assertInstanceOf('Riimu\Kit\NumberConversion\DecimalConverter',
+           new DecimalConverter(new NumberBase(2), new NumberBase(16)));
     }
 
     public function testConvertingHigherToLower()
     {
-        $converter = new MathConverter(new NumberBase(16), new NumberBase(2));
+        $converter = new DecimalConverter(new NumberBase(16), new NumberBase(2));
         $this->assertSame(str_split('11000010011010010011111010'),
             $converter->convertInteger(str_split('309A4FA')));
         $this->assertSame(str_split('001100001001101001001111101'),
@@ -26,7 +26,7 @@ class MathConverterTest extends \PHPUnit_Framework_TestCase
 
     public function testConvertingLowerToHigher()
     {
-        $converter = new MathConverter(new NumberBase(2), new NumberBase(16));
+        $converter = new DecimalConverter(new NumberBase(2), new NumberBase(16));
         $this->assertSame(str_split('309A4FA'),
             $converter->convertInteger(str_split('11000010011010010011111010')));
         $this->assertSame(str_split('309A4FA'),
@@ -35,7 +35,7 @@ class MathConverterTest extends \PHPUnit_Framework_TestCase
 
     public function testConvertingWithSameRadix()
     {
-        $converter = new MathConverter(new NumberBase('0123'), new NumberBase('ABCD'));
+        $converter = new DecimalConverter(new NumberBase('0123'), new NumberBase('ABCD'));
         $this->assertSame(str_split('BDBBCACA'),
             $converter->convertInteger(str_split('013112020')));
         $this->assertSame(str_split('ABDBBCAC'),
@@ -44,35 +44,35 @@ class MathConverterTest extends \PHPUnit_Framework_TestCase
 
     public function testConvertingLargeNumber()
     {
-        $converter = new MathConverter(new NumberBase(16), new NumberBase(8));
+        $converter = new DecimalConverter(new NumberBase(16), new NumberBase(8));
         $this->assertSame(str_split('115047654244325677773'),
             $converter->convertInteger(str_split('1344FAC523577FFB')));
     }
 
     public function testEmptyConversion()
     {
-        $converter = new MathConverter(new NumberBase(16), new NumberBase(8));
+        $converter = new DecimalConverter(new NumberBase(16), new NumberBase(8));
         $this->assertSame(['0'], $converter->convertInteger([]));
         $this->assertSame(['0'], $converter->convertFractions([]));
     }
 
     public function testTypeCanonization()
     {
-        $converter = new MathConverter(new NumberBase([0, 1, 2, 3]), new NumberBase([0, 1]));
+        $converter = new DecimalConverter(new NumberBase([0, 1, 2, 3]), new NumberBase([0, 1]));
         $this->assertSame([1, 1, 0, 0, 0], $converter->convertInteger(str_split('120')));
-        $converter2 = new MathConverter(new NumberBase('AB'), new NumberBase([0, 1]));
+        $converter2 = new DecimalConverter(new NumberBase('AB'), new NumberBase([0, 1]));
         $this->assertSame([1, 0, 1], $converter2->convertInteger(str_split('BAB')));
     }
 
     public function testCaseSensitivity()
     {
-        $converter = new MathConverter(new NumberBase(16), new NumberBase(2));
+        $converter = new DecimalConverter(new NumberBase(16), new NumberBase(2));
         $this->assertSame(str_split('11000010011010010011111010'),
             $converter->convertInteger(str_split('309A4FA')));
         $this->assertSame(str_split('11000010011010010011111010'),
             $converter->convertInteger(str_split('309a4fa')));
 
-        $converter2 = new MathConverter(new NumberBase('aA'), new NumberBase(16));
+        $converter2 = new DecimalConverter(new NumberBase('aA'), new NumberBase(16));
         $this->assertSame(str_split('309A4FA'),
             $converter2->convertInteger(str_split('AAaaaaAaaAAaAaaAaaAAAAAaAa')));
     }
@@ -87,9 +87,9 @@ class MathConverterTest extends \PHPUnit_Framework_TestCase
         $source = new NumberBase($source);
         $target = new NumberBase($target);
 
-        $this->assertSame($result, (new MathConverter($source, $target))
+        $this->assertSame($result, (new DecimalConverter($source, $target))
             ->convertInteger($input));
-        $this->assertSame($input, (new MathConverter($target, $source))
+        $this->assertSame($input, (new DecimalConverter($target, $source))
             ->convertInteger($result));
     }
 
@@ -117,9 +117,9 @@ class MathConverterTest extends \PHPUnit_Framework_TestCase
         $source = new NumberBase($source);
         $target = new NumberBase($target);
 
-        $this->assertSame(str_split($result), (new MathConverter($source, $target))
+        $this->assertSame(str_split($result), (new DecimalConverter($source, $target))
             ->convertFractions(str_split($input)));
-        $this->assertSame(str_split($input), (new MathConverter($target, $source))
+        $this->assertSame(str_split($input), (new DecimalConverter($target, $source))
             ->convertFractions(str_split($result)));
     }
 
@@ -139,7 +139,7 @@ class MathConverterTest extends \PHPUnit_Framework_TestCase
      */
     public function testConversionPrecision($input, $result, $source, $target, $precision)
     {
-        $conv = new MathConverter(new NumberBase($source), new NumberBase($target));
+        $conv = new DecimalConverter(new NumberBase($source), new NumberBase($target));
         $conv->setPrecision($precision);
         $this->assertSame(str_split($result), $conv->convertFractions(str_split($input)));
     }

@@ -52,7 +52,7 @@ class BaseConverter
         try {
             $this->converter = new ReplaceConverter($this->source, $this->target);
         } catch (\InvalidArgumentException $ex) {
-            $this->converter = new MathConverter($this->source, $this->target);
+            $this->converter = new DecimalConverter($this->source, $this->target);
         }
 
         $this->precision = -1;
@@ -148,7 +148,7 @@ class BaseConverter
      */
     public function convertFractions(array $number)
     {
-        if ($this->converter instanceof MathConverter) {
+        if ($this->converter instanceof DecimalConverter) {
             $this->converter->setPrecision($this->precision);
         }
 

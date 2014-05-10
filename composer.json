@@ -15,9 +15,6 @@
     "require": {
         "php": ">=5.4.0"
     },
-    "require-dev": {
-        "riimu/kit-classloader": "4.*"
-    },
     "autoload": {
         "psr-4": {
             "Riimu\\Kit\\NumberConversion\\": "src/"

@@ -1,11 +1,8 @@
 <?php
 
-require __DIR__ . '/../vendor/autoload.php';
-
-$loader = new \Riimu\Kit\ClassLoader\ClassLoader();
-$loader->addPrefixPath(__DIR__ . '/../src', 'Riimu\Kit\NumberConversion');
-$loader->addPrefixPath(__DIR__ . '/Tests', 'Riimu\Kit\NumberConversion');
-
-$loader->register();
+require __DIR__ . '/../src/NumberBase.php';
+require __DIR__ . '/../src/DecimalConverter.php';
+require __DIR__ . '/../src/ReplaceConverter.php';
+require __DIR__ . '/../src/BaseConverter.php';
 
 ?>
