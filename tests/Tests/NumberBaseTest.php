@@ -218,4 +218,10 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     {
         (new NumberBase('01'))->splitString('2');
     }
+
+    public function testConflictingSplit()
+    {
+        $this->assertSame(['0100', '0100'],
+            (new NumberBase(['0100', '10001']))->splitString('01000100'));
+    }
 }

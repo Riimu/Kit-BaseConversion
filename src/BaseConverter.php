@@ -2,8 +2,6 @@
 
 namespace Riimu\Kit\NumberConversion;
 
-use Riimu\Kit\NumberConversion\Converter\ConversionException;
-
 /**
  * Arbitrary precision number base conversion library.
  *
@@ -22,35 +20,16 @@ use Riimu\Kit\NumberConversion\Converter\ConversionException;
  */
 class BaseConverter
 {
-    /**
-     * Numeral system used by provided numbers.
-     * @var NumberBase
-     */
-    private $sourceBase;
-
-    /**
-     * Numeral system used by returned numbers.
-     * @var NumberBase
-     */
-    private $targetBase;
-
-    /**
-     * List of integer converters.
-     * @var array
-     */
-    private $integerConverters;
-
-    /**
-     * List of fraction converters.
-     * @var array
-     */
-    private $fractionConverters;
+    private $converter;
 
     /**
      * The number precision for fraction converters.
      * @var integer
      */
     private $precision;
+
+    private $source;
+    private $target;
 
     /**
      * Creates a new instance of BaseConverter.
@@ -65,31 +44,19 @@ class BaseConverter
      */
     public function __construct ($sourceBase, $targetBase)
     {
-        $this->sourceBase = $sourceBase instanceof NumberBase
+        $this->source = $sourceBase instanceof NumberBase
             ? $sourceBase : new NumberBase($sourceBase);
-        $this->targetBase = $sourceBase instanceof NumberBase
+        $this->target = $sourceBase instanceof NumberBase
             ? $targetBase : new NumberBase($targetBase);
 
+        try {
+            $this->converter = new ReplaceConverter($this->source, $this->target);
+        } catch (\InvalidArgumentException $ex) {
+            $this->converter = new MathConverter($this->source, $this->target);
+        }
+
         $this->precision = -1;
-        $this->integerConverters = [
-            'Riimu\Kit\NumberConversion\Converter\Replace\StringReplaceConverter',
-            'Riimu\Kit\NumberConversion\Converter\Replace\DirectReplaceConverter',
-            'Riimu\Kit\NumberConversion\Converter\Decimal\GMPConverter',
-            'Riimu\Kit\NumberConversion\Converter\Direct\DirectConverter',
-            'Riimu\Kit\NumberConversion\Converter\Decimal\BCMathConverter',
-            'Riimu\Kit\NumberConversion\Converter\Decimal\InternalConverter',
-        ];
-
-        $this->fractionConverters = [
-            'Riimu\Kit\NumberConversion\Converter\Replace\StringReplaceConverter',
-            'Riimu\Kit\NumberConversion\Converter\Replace\DirectReplaceConverter',
-            'Riimu\Kit\NumberConversion\Converter\Decimal\GMPConverter',
-            'Riimu\Kit\NumberConversion\Converter\Decimal\BCMathConverter',
-            'Riimu\Kit\NumberConversion\Converter\Decimal\InternalConverter',
-        ];
     }
-
-
 
     /**
      * Sets the precision used when converting fractions.
@@ -109,24 +76,6 @@ class BaseConverter
     public function setPrecision($precision)
     {
         $this->precision = (int) $precision;
-    }
-
-    /**
-     * Sets the list of integer converters to use.
-     * @param array $converters Array of integer converter class names.
-     */
-    public function setIntegerConverters(array $converters)
-    {
-        $this->integerConverters = $converters;
-    }
-
-    /**
-     * Sets the list of fraction converters to use.
-     * @param array $converters Array of fraction converter class names.
-     */
-    public function setFractionConverters(array $converters)
-    {
-        $this->fractionConverters = $converters;
     }
 
     /**
@@ -155,9 +104,19 @@ class BaseConverter
             $integer = substr($integer, 1);
         }
 
+        try {
+            $integer = $this->source->splitString($integer);
+
+            if ($dot !== false) {
+                $fractions = $this->source->splitString($fractions);
+            }
+        } catch (\InvalidArgumentException $ex) {
+            return false;
+        }
+
         return ($sign === '+' || $sign === '-' ? $sign : '') .
-            $this->convertInteger($integer) .
-            ($dot !== false ? '.' . $this->convertFractions($fractions) : '');
+            implode('', $this->convertInteger($integer)) .
+            ($dot !== false ? '.' . implode('', $this->convertFractions($fractions)) : '');
     }
 
     /**
@@ -171,29 +130,9 @@ class BaseConverter
      * @return array|string The converted integer with least significant digit first
      * @throws \RuntimeException If no applicable integer converter is available
      */
-    public function convertInteger($number)
+    public function convertInteger(array $number)
     {
-        $input = is_array($number)
-            ? $this->sourceBase->canonizeDigits($number)
-            : $this->sourceBase->splitString($number);
-
-        foreach ($this->integerConverters as $key => $converter) {
-            try {
-                if (is_string($converter)) {
-                    $converter = $this->integerConverters[$key] = new $converter;
-
-                    if (!($converter instanceof Converter\IntegerConverter)) {
-                        throw new \RuntimeException('Invalid integer converter ' . get_class($converter));
-                    }
-                }
-
-                $converter->setNumberBases($this->sourceBase, $this->targetBase);
-                $result = $converter->convertInteger($input);
-                return is_array($number) ? $result : implode('', $result);
-            } catch (ConversionException $ex) { }
-        }
-
-        throw new \RuntimeException("No applicable integer converter available");
+        return $this->converter->convertInteger($number);
     }
 
     /**
@@ -207,29 +146,12 @@ class BaseConverter
      * @return array|string The converted fractions with least significant digit first
      * @throws \RuntimeException If no applicable fraction converter is available
      */
-    public function convertFractions($number)
+    public function convertFractions(array $number)
     {
-        $input = is_array($number)
-            ? $this->sourceBase->canonizeDigits($number)
-            : $this->sourceBase->splitString($number);
-
-        foreach ($this->fractionConverters as $key => $converter) {
-            try {
-                if (is_string($converter)) {
-                    $converter = $this->fractionConverters[$key] = new $converter;
-
-                    if (!($converter instanceof Converter\FractionConverter)) {
-                        throw new \RuntimeException('Invalid fraction converter ' . get_class($converter));
-                    }
-                }
-
-                $converter->setNumberBases($this->sourceBase, $this->targetBase);
-                $converter->setPrecision($this->precision);
-                $result = $converter->convertFractions($input);
-                return is_array($number) ? $result : implode('', $result);
-            } catch (ConversionException $ex) { }
+        if ($this->converter instanceof MathConverter) {
+            $this->converter->setPrecision($this->precision);
         }
 
-        throw new \RuntimeException("No applicable fraction converter available");
+        return $this->converter->convertFractions($number);
     }
 }

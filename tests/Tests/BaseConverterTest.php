@@ -8,50 +8,44 @@ namespace Riimu\Kit\NumberConversion;
  */
 class BaseConverterTest extends \PHPUnit_Framework_TestCase
 {
-    public function testBasicConversionFunctionality()
+    public function testCreatingWithReplaceBases()
     {
-        $converter = new BaseConverter(16, 2);
-        $this->assertSame('101010111100110111101111', $converter->convert('ABCDEF'));
+        $this->assertInstanceOf('Riimu\Kit\NumberConversion\BaseConverter',
+            new BaseConverter(new NumberBase(8), new NumberBase(16)));
     }
 
-    public function testConversionFallback ()
+    public function testCreatingWithMathBases()
     {
-        $converter = new BaseConverter(8, 10);
-        $this->assertSame('73', $converter->convert('111'));
+        $this->assertInstanceOf('Riimu\Kit\NumberConversion\BaseConverter',
+            new BaseConverter(new NumberBase(10), new NumberBase(2)));
+    }
+
+    public function testCreatingWithStringBases()
+    {
+        $this->assertInstanceOf('Riimu\Kit\NumberConversion\BaseConverter',
+            new BaseConverter(10, 2));
+    }
+
+    public function testIntegerConversion()
+    {
+        $this->assertSame(str_split('101010111100110111101111'),
+            (new BaseConverter(16, 2))->convertInteger(str_split('ABCDEF')));
+        $this->assertSame(str_split('11259375'),
+            (new BaseConverter(2, 10))->convertInteger(str_split('101010111100110111101111')));
     }
 
     public function testFractionConversion()
     {
         $converter = new BaseConverter(10, 2);
-
         $converter->setPrecision(10);
-        $this->assertEquals('11.0010001111', $converter->convert('3.14'));
-
+        $this->assertSame(str_split('0010001111'),
+            $converter->convertFractions(str_split('14')));
         $converter->setPrecision(9);
-        $this->assertEquals('11.001001000', $converter->convert('3.14'));
+        $this->assertSame(str_split('001000111'),
+            $converter->convertFractions(str_split('14')));
     }
 
-    /**
-     * @expectedException \RuntimeException
-     */
-    public function testMissingIntegerConversionMethod ()
-    {
-        $converter = new BaseConverter(2, 10);
-        $converter->setIntegerConverters([]);
-        $converter->convertInteger([1, 1, 1]);
-    }
-
-    /**
-     * @expectedException \RuntimeException
-     */
-    public function testMissingFractionConversionMethod ()
-    {
-        $converter = new BaseConverter(2, 10);
-        $converter->setFractionConverters([]);
-        $converter->convertFractions([1, 1, 1]);
-    }
-
-    public function testEmptyNumber()
+    public function testEmptyStringConversions()
     {
         $converter = new BaseConverter(8, 16);
         $this->assertSame('0', $converter->convert(''));
@@ -59,6 +53,7 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('-0.0', $converter->convert('-.'));
         $this->assertSame('0.0', $converter->convert('.'));
         $this->assertSame(['0'], $converter->convertInteger([]));
+        $this->assertSame(['0'], $converter->convertFractions([]));
     }
 
     public function testSignedNumbers()
@@ -66,12 +61,6 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
         $converter = new BaseConverter(10, 2);
         $this->assertEquals('-1010111', $converter->convert('-87'));
         $this->assertEquals('+1010111', $converter->convert('+87'));
-    }
-
-    public function testFractionConversionByReplace()
-    {
-        $converter = new BaseConverter(27, 9);
-        $this->assertEquals('22.7782135321061', $converter->convert('K.NH6CG2363'));
     }
 
     public function testConversionWithSameBase()
@@ -82,30 +71,26 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('0.0', $converter->convert('0.0'));
     }
 
-    public function testConverterLoadingByFullName()
+    public function testFractionConversionByReplace()
     {
-        $converter = new BaseConverter(13, 23);
-        $converter->setIntegerConverters(['Riimu\Kit\NumberConversion\Converter\Decimal\InternalConverter']);
-        $this->assertSame('LDE2D', $converter->convert('1337331'));
+        $this->assertEquals('-22.7782135321061',
+            (new BaseConverter(27, 9))->convert('-K.NH6CG2363'));
     }
 
-    /**
-     * @expectedException \RuntimeException
-     */
-    public function testInvalidIntegerConverterLoading()
+    public function testInvalidDigits()
     {
-        $converter = new BaseConverter(13, 23);
-        $converter->setIntegerConverters(['stdClass']);
-        $converter->convert('1');
+        $this->assertFalse((new BaseConverter(2, 16))->convert('2'));
     }
 
-    /**
-     * @expectedException \RuntimeException
-     */
-    public function testInvalidFractionConverterLoading()
+    public function testInvalidDigitsInIntegerConversion()
     {
-        $converter = new BaseConverter(13, 23);
-        $converter->setFractionConverters(['stdClass']);
-        $converter->convert('0.1');
+        $this->setExpectedException('\InvalidArgumentException');
+        $this->assertFalse((new BaseConverter(2, 16))->convertInteger(['2']));
+    }
+
+    public function testInvalidDigitsInFractionConversion()
+    {
+        $this->setExpectedException('\InvalidArgumentException');
+        $this->assertFalse((new BaseConverter(2, 16))->convertFractions(['2']));
     }
 }

@@ -411,20 +411,20 @@ class NumberBase
 
     public function canonizeDigits(array $digits)
     {
-        foreach ($digits as $key => $digit) {
+        $result = [];
+
+        foreach ($digits as $digit) {
             $value = $this->valueMap && isset($this->valueMap[$digit])
                 ? $this->valueMap[$digit] : $this->findDigit($digit);
 
             if ($value === false) {
-                throw new \InvalidArgumentException("Invalid digit '$digit'");
+                throw new \InvalidArgumentException("Invalid digit");
             }
 
-            if ($digit !== $this->digits[$value]) {
-                $digits[$key] = $this->digits[$value];
-            }
+            $result[] = $this->digits[$value];
         }
 
-        return empty($digits) ? [$this->digits[0]] : $digits;
+        return empty($result) ? [$this->digits[0]] : $result;
     }
 
     /**
@@ -446,7 +446,8 @@ class NumberBase
         } elseif (is_int($this->splitter)) {
             $digits = str_split($string, $this->splitter);
         } else {
-            $digits = array_slice(preg_split($this->splitter, $string), 1);
+            preg_match_all($this->splitter, $string, $match);
+            $digits = $match[0];
         }
 
         return $this->canonizeDigits($digits);
@@ -472,6 +473,6 @@ class NumberBase
             return preg_quote((string) $value, '/');
         }, $this->digits));
 
-        return "/(?=$string)/" . ($this->caseSensitive ? '' : 'i');
+        return "/($string|.+)/s" . ($this->caseSensitive ? '' : 'i');
     }
 }
