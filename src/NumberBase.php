@@ -58,7 +58,7 @@ class NumberBase
     private $stringConflict;
 
     /**
-     * Tells how to split strings according this numeral system.
+     * Tells how to split strings according to this numeral system.
      * @var boolean|integer|string
      */
     private $splitter;
@@ -318,9 +318,9 @@ class NumberBase
     }
 
     /**
-     * Return the value for the digit in the number base.
+     * Return the value for the digit in the numbereral system.
      * @param mixed $digit Digit to look up
-     * @return integer|false Decimal value for the digit or false if not found
+     * @return integer|boolean Decimal value for the digit or false if not found
      */
     private function findDigit($digit)
     {
@@ -409,6 +409,18 @@ class NumberBase
         return pow($root, $pow) == $number;
     }
 
+    /**
+     * Replaces digits in the list with digits of proper type in the numeral system.
+     *
+     * As all comparisons are done using loose comparisons, an array of digits
+     * may have different representations than in the numeral system. This
+     * method replaces all digits with the actual values and correct types used
+     * by the numeral system.
+     *
+     * @param array $digits List of digits to canonize
+     * @return array Canonized list of digits
+     * @throws \InvalidArgumentException If any of the digits does not exist
+     */
     public function canonizeDigits(array $digits)
     {
         $result = [];

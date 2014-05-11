@@ -3,11 +3,18 @@
 namespace Riimu\Kit\NumberConversion;
 
 /**
+ * Converts numbers using GMP extension.
+ *
+ * DecimalConverter employs arbitrary-precision integer arithmetic to convert
+ * digits to decimal system and then convert them to the target base. Due to
+ * speed of GMP, even fractions are calculated using an integer based
+ * algorithm to determine the digits.
+ *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2014, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class DecimalConverter
+class DecimalConverter implements Converter
 {
     /**
      * Precision for fraction conversions.
@@ -15,11 +22,22 @@ class DecimalConverter
      */
     private $precision;
 
+    /**
+     * Number base for provided numbers.
+     * @var NumberBase
+     */
     private $source;
+
+    /**
+     * Number base for returned numbers.
+     * @var NumberBase
+     */
     private $target;
 
     /**
-     * Creates new instance of the decimal converter.
+     * Creates new instance of the DecimalConverter.
+     * @param NumberBase $source Number base for provided numbers.
+     * @param NumberBase $target Number base for returned numbers.
      */
     public function __construct(NumberBase $source, NumberBase $target)
     {
@@ -58,10 +76,9 @@ class DecimalConverter
     }
 
     /**
-     * Converts the number from given radix to decimal resource.
+     * Converts the number from source base to gmp resource.
      * @param array $number List of digit values with least significant first
-     * @param resource $radix Radix of the given number as number resource
-     * @return resource resulting number as number resource
+     * @return resource resulting number as a gmp resource
      */
     private function toDecimal(array $number)
     {
@@ -82,9 +99,8 @@ class DecimalConverter
     }
 
     /**
-     * Converts decimal from number resource to target radix.
-     * @param resource $decimal Decimal number as number resource
-     * @param resource $radix Target radix as number resource
+     * Converts GMP resource to target base.
+     * @param resource $decimal Number as GMP resource
      * @return array List of digit values for the converted number
      */
     private function toBase($decimal)
@@ -106,10 +122,8 @@ class DecimalConverter
     }
 
     /**
-     * Counts the number of digits require in the target radix.
+     * Counts the number of digits required in target base.
      * @param integer $count Number of digits in the original number
-     * @param resource $source Source radix as number resource
-     * @param resource $target Target radix as number resource
      * @return integer Number of digits required in the target base
      */
     private function countDigits($count)

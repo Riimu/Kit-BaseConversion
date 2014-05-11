@@ -3,18 +3,71 @@
 namespace Riimu\Kit\NumberConversion;
 
 /**
+ * Converts numbers using character replacement.
+ *
+ * ReplaceConverter converts numbers from base to another using a simple string
+ * replacement strategy. In other words. The digits from one base is simply
+ * replaced with digits from other base. This strategy, however, is only
+ * possible if the two number bases share a common root or if the target number
+ * base is nth root of the source base. This is required, because it allows
+ * a sequence of digits to be simply replaced with an appropriate sequence of
+ * digits from the other number base.
+ *
+ * When possible, the replacement strategy offers considerable speed gains over
+ * strategies that employ arbitrary-precision arithmetics as there is no need
+ * to calculate anything.
+ *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2014, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class ReplaceConverter
+class ReplaceConverter implements Converter
 {
+    /**
+     * Number base for provided numbers.
+     * @var NumberBase
+     */
     private $source;
+
+    /**
+     * Number base for returned numbers.
+     * @var NumberBase
+     */
     private $target;
+
+    /**
+     * Converter used to convert into common root base.
+     * @var ReplaceConverter
+     */
     private $sourceConverter;
+
+    /**
+     * Converter used to convert from common root base.
+     * @var ReplaceConverter
+     */
     private $targetConverter;
+
+    /**
+     * String replacement table for converting strings.
+     * @var array
+     */
     private $conversionTable;
 
+    /**
+     * Create new instance of ReplaceConverter.
+     *
+     * ReplaceConverter only supports number base combinations that have a
+     * common root or if the target base is nth root of the source base. In
+     * addition, due to using string replacement, any number base that has
+     * conflicting string digits are not supported.
+     *
+     * If the number bases are not supported by ReplaceConverter, an exception
+     * will be thrown.
+     *
+     * @param NumberBase $source Number base for provided numbers.
+     * @param NumberBase $target Number base for returned numbers.
+     * @throws \InvalidArgumentException If the number base combination is not supported
+     */
     public function __construct(NumberBase $source, NumberBase $target)
     {
         $root = $source->findCommonRadixRoot($target);
@@ -34,6 +87,10 @@ class ReplaceConverter
         }
     }
 
+    /**
+     * Creates string replacement table between source base and target base.
+     * @return array|boolean String replacement table or true if the bases are equal.
+     */
     private function buildConversionTable()
     {
         if ($this->source->getRadix() === $this->target->getRadix()) {
@@ -73,6 +130,8 @@ class ReplaceConverter
         return $table;
     }
 
+    public function setPrecision($precision) { }
+
     public function convertInteger(array $number)
     {
         return $this->convert($number, false);
@@ -83,7 +142,13 @@ class ReplaceConverter
         return $this->convert($number, true);
     }
 
-    public function convert(array $number, $fractions = false)
+    /**
+     * Converts the digits from source base to target base.
+     * @param array $number The digits to convert.
+     * @param boolean $fractions True if converting fractions, false if not
+     * @return array The digits converted to target base.
+     */
+    private function convert(array $number, $fractions = false)
     {
         if ($this->conversionTable === true) {
             return $this->zeroTrim(
@@ -100,7 +165,13 @@ class ReplaceConverter
         return $this->replace($number, $fractions);
     }
 
-    public function replace(array $number, $fractions = false)
+    /**
+     * Replace digits using string replacement.
+     * @param array $number Digits to convert.
+     * @param boolean $fractions True if converting fractions, false if not
+     * @return array Digits converted to target base
+     */
+    private function replace(array $number, $fractions = false)
     {
         return $this->zeroTrim($this->target->splitString(
             strtr(implode('', $this->zeroPad(
@@ -109,7 +180,13 @@ class ReplaceConverter
         ), $fractions);
     }
 
-    protected function zeroPad(array $number, $right)
+    /**
+     * Pads the digits to correct count for string replacement.
+     * @param array $number Array of digits to pad
+     * @param boolean $right True to pad from right, false to pad from left
+     * @return array Padded array of digits
+     */
+    private function zeroPad(array $number, $right)
     {
         $log = (int) log($this->target->getRadix(), $this->source->getRadix());
 
@@ -121,7 +198,13 @@ class ReplaceConverter
         return $number;
     }
 
-    protected function zeroTrim(array $number, $right)
+    /**
+     * Trims extranous zeroes from the digit list.
+     * @param array $number Array of digits to trim
+     * @param boolean $right Whether to trim from right or from left
+     * @return array Trimmed array of digits
+     */
+    private function zeroTrim(array $number, $right)
     {
         $zero = $this->target->getDigit(0);
 
