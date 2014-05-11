@@ -63,10 +63,10 @@ of digits in these inaccurate conversions. For example:
 <?php
 $converter = new Riimu\Kit\BaseConversion\BaseConverter(10, 12);
 $converter->setPrecision(5);
-echo $converter->convert('-1337.1337') . PHP_EOL; // Outputs '-935.17305'
+echo $converter->convert('-1337.1337') . PHP_EOL; // Outputs '-935.17304'
 
 $converter->setPrecision(10);
-echo $converter->convert('-1337.1337') . PHP_EOL; // Outputs '-935.17304A0891'
+echo $converter->convert('-1337.1337') . PHP_EOL; // Outputs '-935.17304A0890'
 
 $converter->setPrecision(4);
 echo $converter->convert('-1337.1337') . PHP_EOL; // Outputs '-935.1730'
@@ -99,7 +99,7 @@ precision, the resulting number won't have trailing zeros.
 
 In general, the number bases are case insensitive whenever possible. For example,
 base 16 has digits 0-9A-F, which allows you to use either lower or upper case
-letters for the digits.0. However, for bases like base 62, the characters are
+letters for the digits. However, for bases like base 62, the characters are
 case sensitive, because the number base contains both 'a' and 'A' digits and
 they have different values. In numerical bases, the library prefers upper case
 letters in output. This may be easily overridden by providing the digits
@@ -113,9 +113,9 @@ echo $converter->convert('42'); // Will output '2a'
 
 ### Number Bases ###
 
-When creating new instances of BaseConverter, the arguments can be provided as
-instances of NumberBase or the constructor arguments passed to NumberBase. The
-constructor argument of NumberBase allows you to define number bases in couple
+When creating new instances of `BaseConverter`, the arguments can be provided as
+instances of `NumberBase` or the constructor arguments passed to `NumberBase`. The
+constructor argument of `NumberBase` allows you to define number bases in couple
 different ways.
 
 The easiest way is to provide a positive integer. If the integer is between 2
@@ -134,7 +134,7 @@ would be given as "012". Decimal would be "0123456789" and hexadecimal would be
 The third way to create a number base is to provide the digits as an array. In
 the array, the index indicates the value of the digit and the value is the digit
 itself. The number base is completely agnostic to the value types used in the
-array. However, it is worth noting that number base uses loose comparison to
+array. However, it is worth noting that `NumberBase` uses loose comparison to
 compare digit equality.
 
 ## Copyright ##
