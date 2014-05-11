@@ -1,6 +1,6 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion;
+namespace Riimu\Kit\BaseConversion;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
@@ -11,19 +11,19 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
 {
     public function testCreatingWithReplaceBases()
     {
-        $this->assertInstanceOf('Riimu\Kit\NumberConversion\BaseConverter',
+        $this->assertInstanceOf('Riimu\Kit\BaseConversion\BaseConverter',
             new BaseConverter(new NumberBase(8), new NumberBase(16)));
     }
 
     public function testCreatingWithMathBases()
     {
-        $this->assertInstanceOf('Riimu\Kit\NumberConversion\BaseConverter',
+        $this->assertInstanceOf('Riimu\Kit\BaseConversion\BaseConverter',
             new BaseConverter(new NumberBase(10), new NumberBase(2)));
     }
 
     public function testCreatingWithStringBases()
     {
-        $this->assertInstanceOf('Riimu\Kit\NumberConversion\BaseConverter',
+        $this->assertInstanceOf('Riimu\Kit\BaseConversion\BaseConverter',
             new BaseConverter(10, 2));
     }
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion;
+namespace Riimu\Kit\BaseConversion;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
@@ -11,7 +11,7 @@ class DecimalConverterTest extends \PHPUnit_Framework_TestCase
 {
     public function testCreatingValidConverter()
     {
-       $this->assertInstanceOf('Riimu\Kit\NumberConversion\DecimalConverter',
+       $this->assertInstanceOf('Riimu\Kit\BaseConversion\DecimalConverter',
            new DecimalConverter(new NumberBase(2), new NumberBase(16)));
     }
 

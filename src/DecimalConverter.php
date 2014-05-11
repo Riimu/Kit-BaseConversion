@@ -1,6 +1,6 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion;
+namespace Riimu\Kit\BaseConversion;
 
 /**
  * Converts numbers using GMP extension.

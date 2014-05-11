@@ -5,16 +5,16 @@ if ($argc < 4) {
     die;
 }
 
-set_include_path(__DIR__ . '/../src');
-spl_autoload_register();
+require __DIR__ . '/../src/Converter.php';
+require __DIR__ . '/../src/NumberBase.php';
+require __DIR__ . '/../src/DecimalConverter.php';
+require __DIR__ . '/../src/ReplaceConverter.php';
+require __DIR__ . '/../src/BaseConverter.php';
 
-use Riimu\Kit\NumberConversion\BaseConverter;
-use Riimu\Kit\NumberConversion\NumberBase;
+$source = new Riimu\Kit\BaseConversion\NumberBase(is_numeric($argv[2]) ? (int) $argv[2] : $argv[2]);
+$target = new Riimu\Kit\BaseConversion\NumberBase(is_numeric($argv[3]) ? (int) $argv[3] : $argv[3]);
 
-$source = new NumberBase(is_numeric($argv[2]) ? (int) $argv[2] : $argv[2]);
-$target = new NumberBase(is_numeric($argv[3]) ? (int) $argv[3] : $argv[3]);
-
-$converter = new BaseConverter($source, $target);
+$converter = new Riimu\Kit\BaseConversion\BaseConverter($source, $target);
 
 if ($argc > 4) {
     $converter->setPrecision($argv[4]);

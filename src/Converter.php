@@ -1,6 +1,6 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion;
+namespace Riimu\Kit\BaseConversion;
 
 /**
  * Interface for base converters.

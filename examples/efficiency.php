@@ -5,18 +5,19 @@ if ($argc < 3) {
     exit;
 }
 
-set_include_path(__DIR__ . '/../src');
-spl_autoload_register();
-
-use \Riimu\Kit\NumberConversion\Method\ConversionException;
+require __DIR__ . '/../src/Converter.php';
+require __DIR__ . '/../src/NumberBase.php';
+require __DIR__ . '/../src/DecimalConverter.php';
+require __DIR__ . '/../src/ReplaceConverter.php';
+require __DIR__ . '/../src/BaseConverter.php';
 
 echo "Test for efficiency of different algorithms available:" . PHP_EOL;
 
 $sbase = isset($argv[3]) ? (ctype_digit($argv[3]) ? intval($argv[3]) : $argv[3]) : 2;
 $tbase = isset($argv[4]) ? (ctype_digit($argv[4]) ? intval($argv[4]) : $argv[4]) : 16;
 
-$source = new Riimu\Kit\NumberConversion\NumberBase($sbase);
-$target = new Riimu\Kit\NumberConversion\NumberBase($tbase);
+$source = new Riimu\Kit\BaseConversion\NumberBase($sbase);
+$target = new Riimu\Kit\BaseConversion\NumberBase($tbase);
 
 $repeats = (int) $argv[1];
 $length = (int) $argv[2];
@@ -47,14 +48,14 @@ $common = null;
 $doTrial = function ($class) use ($source, $target, $repeats, $number, & $timer, & $common) {
     $one = new $class($source, $target);
     $two = new $class($target, $source);
-    $name = substr($class, 27);
+    $name = substr($class, 25);
     $timer = microtime(true);
 
     try {
         declare(ticks = 1) {
             for ($i = 0; $i < $repeats; $i++) {
-                $mid = $one->convertNumber($number);
-                $result = $two->convertNumber($mid);
+                $mid = $one->convertInteger($number);
+                $result = $two->convertInteger($mid);
 
                 if ($result !== $number) {
                     throw new RuntimeException('Result does not match the original');
@@ -67,8 +68,6 @@ $doTrial = function ($class) use ($source, $target, $repeats, $number, & $timer,
         }
     } catch (TimeoutException $ex) {
         return print "timeout - $name" . PHP_EOL;
-    } catch (ConversionException $ex) {
-        return print "    N/A - $name" . PHP_EOL;
     }
 
     echo number_format(microtime(true) - $timer, 4) . "s - $name" . PHP_EOL;
@@ -76,19 +75,6 @@ $doTrial = function ($class) use ($source, $target, $repeats, $number, & $timer,
 
 echo "\nReplace Conversion:\n\n";
 
-$doTrial('Riimu\Kit\NumberConversion\Method\Replace\DirectReplaceConverter');
-$doTrial('Riimu\Kit\NumberConversion\Method\Replace\MathReplaceConverter');
-$doTrial('Riimu\Kit\NumberConversion\Method\Replace\NumberReplaceConverter');
-$doTrial('Riimu\Kit\NumberConversion\Method\Replace\StringReplaceConverter');
-
-echo "\nDirect Conversion:\n\n";
-
-$doTrial('Riimu\Kit\NumberConversion\Method\Direct\NoveltyConverter');
-$doTrial('Riimu\Kit\NumberConversion\Method\Direct\DirectConverter');
-
-echo "\nDecimal Conversion:\n\n";
-
-$doTrial('Riimu\Kit\NumberConversion\Method\Decimal\GMPConverter');
-$doTrial('Riimu\Kit\NumberConversion\Method\Decimal\BCMathConverter');
-$doTrial('Riimu\Kit\NumberConversion\Method\Decimal\InternalConverter');
+$doTrial('Riimu\Kit\BaseConversion\ReplaceConverter');
+$doTrial('Riimu\Kit\BaseConversion\DecimalConverter');
 

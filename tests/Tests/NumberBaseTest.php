@@ -1,6 +1,6 @@
 <?php
 
-namespace Riimu\Kit\NumberConversion;
+namespace Riimu\Kit\BaseConversion;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>

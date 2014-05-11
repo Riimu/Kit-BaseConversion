@@ -1,5 +1,5 @@
 {
-    "name": "riimu/kit-numberconversion",
+    "name": "riimu/kit-baseconversion",
     "type": "library",
     "description": "Arbitrary precision number base conversion library",
     "keywords": ["math", "base", "conversion"],
@@ -17,7 +17,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Riimu\\Kit\\NumberConversion\\": "src/"
+            "Riimu\\Kit\\BaseConversion\\": "src/"
         }
     }
 }
