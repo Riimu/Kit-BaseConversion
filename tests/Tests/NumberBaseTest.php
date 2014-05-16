@@ -203,4 +203,10 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(['0100', '0100'],
             (new NumberBase(['0100', '10001']))->splitString('01000100'));
     }
+
+    public function testIntegerBaseCaseSensitivity()
+    {
+        $this->assertFalse((new NumberBase(97))->isCaseSensitive());
+        $this->assertTrue((new NumberBase(98))->isCaseSensitive());
+    }
 }

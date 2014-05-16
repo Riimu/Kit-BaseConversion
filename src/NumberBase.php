@@ -135,10 +135,8 @@ class NumberBase
 
         if ($integer <= strlen(self::$integerBase)) {
             $this->digits = str_split(substr(self::$integerBase, 0, $integer));
-            $this->caseSensitive = $integer > strpos(self::$integerBase, 'a');
         } elseif ($integer == 64) {
             $this->digits = str_split(self::$integerBase64);
-            $this->caseSensitive = true;
         } elseif ($integer <= 256) {
             for ($i = 0; $i < $integer; $i++) {
                 $this->digits[] = chr($i);
@@ -148,12 +146,12 @@ class NumberBase
             for ($i = 0; $i < $integer; $i++) {
                 $this->digits[] = sprintf($format, $i);
             }
-            $this->caseSensitive = false;
         }
 
-        $this->valueMap = array_flip($this->digits);
-        $this->stringConflict = false;
         $this->radix = count($this->digits);
+        $this->valueMap = array_flip($this->digits);
+        $this->caseSensitive = count(array_change_key_case($this->valueMap)) !== $this->radix;
+        $this->stringConflict = false;
     }
 
     /**
@@ -165,16 +163,15 @@ class NumberBase
     {
         if (strlen($string) < 2) {
             throw new \InvalidArgumentException("Number base needs at least 2 characters");
-        } elseif (array_keys(array_flip(count_chars($string, 1))) !== [1]) {
-            throw new \InvalidArgumentException("Duplicate characters in number base");
+        } elseif (strlen(count_chars($string, 3)) !== strlen($string)) {
+            throw new \InvalidArgumentException("Duplicate characters in the number base");
         }
 
+        $this->radix = strlen($string);
         $this->digits = str_split($string);
         $this->valueMap = array_flip($this->digits);
+        $this->caseSensitive = count(array_change_key_case($this->valueMap)) !== $this->radix;
         $this->stringConflict = false;
-        $this->radix = count($this->digits);
-        $this->caseSensitive =
-            count(array_flip(array_map('strtolower', $this->digits))) != $this->radix;
     }
 
     /**
@@ -185,7 +182,7 @@ class NumberBase
     private function setBaseArray (array $array)
     {
         if (count($array) < 2) {
-            throw new \InvalidArgumentException('Number base must have at least 2 values');
+            throw new \InvalidArgumentException('Number base must have at least 2 digits');
         }
 
         $numbers = [];
@@ -194,7 +191,7 @@ class NumberBase
 
         foreach ($array as $key => $value) {
             if (array_search($value, $numbers) !== false) {
-                throw new \InvalidArgumentException('Duplicate values in number base');
+                throw new \InvalidArgumentException('Duplicate digits in the number base');
             }
 
             $numbers[$key] = $value;
@@ -206,12 +203,8 @@ class NumberBase
             }
         }
 
-        $keys = array_keys($numbers);
-        sort($keys);
-
-        // Sorted array from 0 to n should have identical keys and values
-        if (array_flip($keys) !== $keys) {
-            throw new \InvalidArgumentException('Invalid indexes in the number base');
+        if (array_diff_key($numbers, range(0, count($numbers) - 1)) !== []) {
+            throw new \InvalidArgumentException('Invalid digit values in the number base');
         }
 
         $this->radix = count($numbers);
@@ -388,25 +381,13 @@ class NumberBase
     {
         $roots = [$this->radix];
 
-        for ($root = 2; $root * $root <= $this->radix; $root++) {
-            if ($this->isNthRootFor($this->radix, $root)) {
+        for ($i = 2; ($root = (int) pow($this->radix, 1 / $i)) > 1; $i++) {
+            if (pow($root, $i) === $this->radix) {
                 $roots[] = $root;
             }
         }
 
         return $roots;
-    }
-
-    /**
-     * Tests if given number is nth root for the number.
-     * @param integer $number Number to test against
-     * @param integer $root Root to test
-     * @return boolean True if the number is nth root and false if not
-     */
-    private function isNthRootFor ($number, $root)
-    {
-        for ($pow = 2; pow($root, $pow) < $number; $pow++);
-        return pow($root, $pow) == $number;
     }
 
     /**
@@ -485,6 +466,6 @@ class NumberBase
             return preg_quote((string) $value, '/');
         }, $this->digits));
 
-        return "/($string|.+)/s" . ($this->caseSensitive ? '' : 'i');
+        return "/$string|.+/s" . ($this->caseSensitive ? '' : 'i');
     }
 }
