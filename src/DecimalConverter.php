@@ -61,8 +61,8 @@ class DecimalConverter implements Converter
         $target = gmp_init($this->target->getRadix());
         $dividend = $this->toDecimal($this->source->getValues($number));
         $divisor = $this->toDecimal([1] + array_fill(1, max(count($number), 1), 0));
-        $digits = $this->precision > 0 ? $this->precision
-            : $this->countDigits(count($number)) + abs($this->precision);
+        $digits = $this->precision > 0
+            ? $this->precision : $this->countDigits(count($number)) + abs($this->precision);
         $zero = gmp_init('0');
         $result = [];
 

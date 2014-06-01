@@ -135,7 +135,7 @@ class NumberBase
 
         if ($integer <= strlen(self::$integerBase)) {
             $this->digits = str_split(substr(self::$integerBase, 0, $integer));
-        } elseif ($integer == 64) {
+        } elseif ($integer === 64) {
             $this->digits = str_split(self::$integerBase64);
         } elseif ($integer <= 256) {
             for ($i = 0; $i < $integer; $i++) {
@@ -162,9 +162,9 @@ class NumberBase
     private function setBaseString ($string)
     {
         if (strlen($string) < 2) {
-            throw new \InvalidArgumentException("Number base needs at least 2 characters");
+            throw new \InvalidArgumentException('Number base needs at least 2 characters');
         } elseif (strlen(count_chars($string, 3)) !== strlen($string)) {
-            throw new \InvalidArgumentException("Duplicate characters in the number base");
+            throw new \InvalidArgumentException('Duplicate characters in the number base');
         }
 
         $this->radix = strlen($string);

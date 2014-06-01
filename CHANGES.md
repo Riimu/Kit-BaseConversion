@@ -9,4 +9,3 @@
 ## v1.0.2 (2014-06-01) ##
 
   * Code cleanup and documentation fixes
-  

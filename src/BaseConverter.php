@@ -56,10 +56,8 @@ class BaseConverter implements Converter
      */
     public function __construct ($sourceBase, $targetBase)
     {
-        $this->source = $sourceBase instanceof NumberBase
-            ? $sourceBase : new NumberBase($sourceBase);
-        $this->target = $sourceBase instanceof NumberBase
-            ? $targetBase : new NumberBase($targetBase);
+        $this->source = $sourceBase instanceof NumberBase ? $sourceBase : new NumberBase($sourceBase);
+        $this->target = $sourceBase instanceof NumberBase ? $targetBase : new NumberBase($targetBase);
 
         try {
             $this->converter = new ReplaceConverter($this->source, $this->target);
@@ -86,36 +84,33 @@ class BaseConverter implements Converter
      * number base, false will be returned instead.
      *
      * @param string $number The number to convert
-     * @return string|boolean The converted number or false on error
+     * @return string|false The converted number or false on error
      */
     public function convert ($number)
     {
         $integer = (string) $number;
         $fractions = '';
-        $dot = strpos($integer, '.');
-        $sign = substr($integer, 0, 1);
+        $sign = '';
 
-        if ($dot !== false) {
-            $fractions = substr($integer, $dot + 1);
-            $integer = substr($integer, 0, $dot);
-        }
-        if ($sign === '+' || $sign === '-') {
+        if (isset($integer[0]) && in_array($integer[0], ['+', '-'])) {
+            $sign = $integer[0];
             $integer = substr($integer, 1);
         }
 
         try {
-            $integer = $this->source->splitString($integer);
-
-            if ($dot !== false) {
-                $fractions = $this->source->splitString($fractions);
+            if (($pos = strpos($integer, '.')) !== false) {
+                $fractions = '.' . implode('', $this->convertFractions(
+                    $this->source->splitString(substr($integer, $pos + 1))
+                ));
+                $integer = substr($integer, 0, $pos);
             }
+
+            $integer = implode('', $this->convertInteger($this->source->splitString($integer)));
         } catch (\InvalidArgumentException $ex) {
             return false;
         }
 
-        return ($sign === '+' || $sign === '-' ? $sign : '') .
-            implode('', $this->convertInteger($integer)) .
-            ($dot !== false ? '.' . implode('', $this->convertFractions($fractions)) : '');
+        return $sign . $integer . $fractions;
     }
 
     public function setPrecision($precision)

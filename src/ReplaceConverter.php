@@ -185,7 +185,7 @@ class ReplaceConverter implements Converter
 
         if ($log > 1 && count($number) % $log) {
             $pad = count($number) + ($log - count($number) % $log);
-            $number = array_pad($number, $right ? $pad: -$pad, $this->source->getDigit(0));
+            $number = array_pad($number, $right ? $pad : -$pad, $this->source->getDigit(0));
         }
 
         return $number;
