@@ -59,7 +59,7 @@ class NumberBase
 
     /**
      * Tells how to split strings according to this numeral system.
-     * @var boolean|integer|string
+     * @var false|integer|string
      */
     private $splitter;
 
