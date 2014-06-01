@@ -14,7 +14,12 @@ The `NumberBase` class also offers much more customization for number bases
 allowing you to define custom digits. It also provides support for bases as
 large as unsigned integers allow.
 
-API documentation for the classes can be generated using apigen.
+API documentation is [available](http://kit.riimu.net/api/baseconversion/) and it
+can be generated using ApiGen.
+
+[![Build Status](https://travis-ci.org/Riimu/Kit-BaseConversion.svg?branch=master)](https://travis-ci.org/Riimu/Kit-BaseConversion)
+[![Coverage Status](https://coveralls.io/repos/Riimu/Kit-BaseConversion/badge.png)](https://coveralls.io/r/Riimu/Kit-BaseConversion)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Riimu/Kit-BaseConversion/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Riimu/Kit-BaseConversion/?branch=master)
 
 ## Requirements ##
 
@@ -22,6 +27,22 @@ The arbitrary precision arithmetic in this library requires the following
 extension for fast calculations:
 
   * [GMP library](http://php.net/manual/en/book.gmp.php)
+
+## Installation ##
+
+This library can be easily installed using [Composer](http://getcomposer.org/)
+by including the following dependency in your `composer.json`:
+
+```json
+{
+    "require": {
+        "riimu/kit-baseconversion": "1.*"
+    }
+}
+```
+
+The library will be the installed by running `composer install` and the classes
+can be loaded with simply including the `vendor/autoload.php` file.
 
 ## Usage ##
 

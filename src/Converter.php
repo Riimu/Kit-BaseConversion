@@ -24,6 +24,7 @@ interface Converter
      * cases where this is not possible.
      *
      * @param int $precision Precision used for inaccurate conversions.
+     * @return void
      */
     public function setPrecision($precision);
 

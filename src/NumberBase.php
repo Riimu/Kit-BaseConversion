@@ -375,7 +375,7 @@ class NumberBase
 
     /**
      * Returns all integer roots for the radix.
-     * @return array Array of integer roots for the radix
+     * @return integer[] Array of integer roots for the radix
      */
     private function getRadixRoots ()
     {
@@ -404,19 +404,7 @@ class NumberBase
      */
     public function canonizeDigits(array $digits)
     {
-        $result = [];
-
-        foreach ($digits as $digit) {
-            $value = $this->valueMap && isset($this->valueMap[$digit])
-                ? $this->valueMap[$digit] : $this->findDigit($digit);
-
-            if ($value === false) {
-                throw new \InvalidArgumentException("Invalid digit");
-            }
-
-            $result[] = $this->digits[$value];
-        }
-
+        $result = $this->getDigits($this->getValues($digits));
         return empty($result) ? [$this->digits[0]] : $result;
     }
 
@@ -448,7 +436,7 @@ class NumberBase
 
     /**
      * Determines the rule on how to split number strings.
-     * @return boolean|integer|string Splitting rule for strings
+     * @return false|integer|string Splitting rule for strings
      */
     private function createSplitter()
     {

@@ -91,6 +91,7 @@ class BaseConverter implements Converter
     public function convert ($number)
     {
         $integer = (string) $number;
+        $fractions = '';
         $dot = strpos($integer, '.');
         $sign = substr($integer, 0, 1);
 

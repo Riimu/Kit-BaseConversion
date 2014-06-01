@@ -89,14 +89,10 @@ class ReplaceConverter implements Converter
 
     /**
      * Creates string replacement table between source base and target base.
-     * @return array|boolean String replacement table or true if the bases are equal.
+     * @return array|true String replacement table or true if the bases are equal.
      */
     private function buildConversionTable()
     {
-        if ($this->source->getRadix() === $this->target->getRadix()) {
-            return true;
-        }
-
         $reduce = $this->source->getRadix() > $this->target->getRadix();
         $max = $reduce ? $this->source : $this->target;
         $min = $reduce ? $this->target : $this->source;
@@ -153,12 +149,7 @@ class ReplaceConverter implements Converter
      */
     private function convert(array $number, $fractions = false)
     {
-        if ($this->conversionTable === true) {
-            return $this->zeroTrim(
-                $this->target->getDigits($this->source->getValues($number)),
-                $fractions
-            );
-        } elseif (!isset($this->conversionTable)) {
+        if (!isset($this->conversionTable)) {
             return $this->targetConverter->replace(
                 $this->sourceConverter->replace($number, $fractions),
                 $fractions
