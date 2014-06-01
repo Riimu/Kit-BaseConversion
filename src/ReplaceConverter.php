@@ -14,7 +14,7 @@ namespace Riimu\Kit\BaseConversion;
  * digits from the other number base.
  *
  * When possible, the replacement strategy offers considerable speed gains over
- * strategies that employ arbitrary-precision arithmetics as there is no need
+ * strategies that employ arbitrary-precision arithmetic as there is no need
  * to calculate anything.
  *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
@@ -130,7 +130,10 @@ class ReplaceConverter implements Converter
         return $table;
     }
 
-    public function setPrecision($precision) { }
+    public function setPrecision($precision)
+    {
+
+    }
 
     public function convertInteger(array $number)
     {
@@ -173,11 +176,10 @@ class ReplaceConverter implements Converter
      */
     private function replace(array $number, $fractions = false)
     {
-        return $this->zeroTrim($this->target->splitString(
-            strtr(implode('', $this->zeroPad(
-                $this->source->canonizeDigits($number), $fractions
-            )), $this->conversionTable)
-        ), $fractions);
+        return $this->zeroTrim($this->target->splitString(strtr(implode('', $this->zeroPad(
+            $this->source->canonizeDigits($number),
+            $fractions
+        )), $this->conversionTable)), $fractions);
     }
 
     /**
@@ -199,7 +201,7 @@ class ReplaceConverter implements Converter
     }
 
     /**
-     * Trims extranous zeroes from the digit list.
+     * Trims extraneous zeroes from the digit list.
      * @param array $number Array of digits to trim
      * @param boolean $right Whether to trim from right or from left
      * @return array Trimmed array of digits

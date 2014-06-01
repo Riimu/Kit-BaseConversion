@@ -11,20 +11,26 @@ class ReplaceConverterTest extends \PHPUnit_Framework_TestCase
 {
     public function testCreatingValidConverter()
     {
-       $this->assertInstanceOf('Riimu\Kit\BaseConversion\ReplaceConverter',
-           new ReplaceConverter(new NumberBase(2), new NumberBase(16)));
+        $this->assertInstanceOf(
+            'Riimu\Kit\BaseConversion\ReplaceConverter',
+            new ReplaceConverter(new NumberBase(2), new NumberBase(16))
+        );
     }
 
     public function testCreatingProxyConverter()
     {
-        $this->assertInstanceOf('Riimu\Kit\BaseConversion\ReplaceConverter',
-           new ReplaceConverter(new NumberBase(8), new NumberBase(16)));
+        $this->assertInstanceOf(
+            'Riimu\Kit\BaseConversion\ReplaceConverter',
+            new ReplaceConverter(new NumberBase(8), new NumberBase(16))
+        );
     }
 
     public function testCreatingWithSameRadix()
     {
-        $this->assertInstanceOf('Riimu\Kit\BaseConversion\ReplaceConverter',
-           new ReplaceConverter(new NumberBase('0123'), new NumberBase('ABCD')));
+        $this->assertInstanceOf(
+            'Riimu\Kit\BaseConversion\ReplaceConverter',
+            new ReplaceConverter(new NumberBase('0123'), new NumberBase('ABCD'))
+        );
     }
 
     public function testCreatingUnsupportedBases()
@@ -36,53 +42,57 @@ class ReplaceConverterTest extends \PHPUnit_Framework_TestCase
     public function testConvertingHigherToLower()
     {
         $converter = new ReplaceConverter(new NumberBase(16), new NumberBase(2));
-        $this->assertSame(str_split('11000010011010010011111010'),
-            $converter->convertInteger(str_split('309A4FA')));
-        $this->assertSame(str_split('001100001001101001001111101'),
-            $converter->convertFractions(str_split('309A4FA')));
+        $this->assertSame(
+            str_split('11000010011010010011111010'),
+            $converter->convertInteger(str_split('309A4FA'))
+        );
+        $this->assertSame(
+            str_split('001100001001101001001111101'),
+            $converter->convertFractions(str_split('309A4FA'))
+        );
     }
 
     public function testConvertingLowerToHigher()
     {
         $converter = new ReplaceConverter(new NumberBase(2), new NumberBase(16));
-        $this->assertSame(str_split('309A4FA'),
-            $converter->convertInteger(str_split('11000010011010010011111010')));
-        $this->assertSame(str_split('309A4FA'),
-            $converter->convertFractions(str_split('001100001001101001001111101')));
+        $this->assertSame(
+            str_split('309A4FA'),
+            $converter->convertInteger(str_split('11000010011010010011111010'))
+        );
+        $this->assertSame(
+            str_split('309A4FA'),
+            $converter->convertFractions(str_split('001100001001101001001111101'))
+        );
     }
 
     public function testConvertingWithSameRadix()
     {
         $converter = new ReplaceConverter(new NumberBase('0123'), new NumberBase('ABCD'));
-        $this->assertSame(str_split('BDBBCACA'),
-            $converter->convertInteger(str_split('013112020')));
-        $this->assertSame(str_split('ABDBBCAC'),
-            $converter->convertFractions(str_split('013112020')));
+        $this->assertSame(str_split('BDBBCACA'), $converter->convertInteger(str_split('013112020')));
+        $this->assertSame(str_split('ABDBBCAC'), $converter->convertFractions(str_split('013112020')));
     }
 
     public function testConvertingViaProxyToHigher()
     {
         $converter = new ReplaceConverter(new NumberBase(8), new NumberBase(16));
-        $this->assertSame(str_split('A7F48E'),
-            $converter->convertInteger(str_split('51772216')));
-        $this->assertSame(str_split('A7F48E'),
-            $converter->convertFractions(str_split('51772216')));
+        $this->assertSame(str_split('A7F48E'), $converter->convertInteger(str_split('51772216')));
+        $this->assertSame(str_split('A7F48E'), $converter->convertFractions(str_split('51772216')));
     }
 
     public function testConvertingViaProxyToLower()
     {
         $converter = new ReplaceConverter(new NumberBase(16), new NumberBase(8));
-        $this->assertSame(str_split('51772216'),
-            $converter->convertInteger(str_split('A7F48E')));
-        $this->assertSame(str_split('51772216'),
-            $converter->convertFractions(str_split('A7F48E')));
+        $this->assertSame(str_split('51772216'), $converter->convertInteger(str_split('A7F48E')));
+        $this->assertSame(str_split('51772216'), $converter->convertFractions(str_split('A7F48E')));
     }
 
     public function testConvertingLargeNumber()
     {
         $converter = new ReplaceConverter(new NumberBase(16), new NumberBase(8));
-        $this->assertSame(str_split('115047654244325677773'),
-            $converter->convertInteger(str_split('1344FAC523577FFB')));
+        $this->assertSame(
+            str_split('115047654244325677773'),
+            $converter->convertInteger(str_split('1344FAC523577FFB'))
+        );
     }
 
     public function testEmptyConversion()
@@ -103,14 +113,20 @@ class ReplaceConverterTest extends \PHPUnit_Framework_TestCase
     public function testCaseSensitivity()
     {
         $converter = new ReplaceConverter(new NumberBase(16), new NumberBase(2));
-        $this->assertSame(str_split('11000010011010010011111010'),
-            $converter->convertInteger(str_split('309A4FA')));
-        $this->assertSame(str_split('11000010011010010011111010'),
-            $converter->convertInteger(str_split('309a4fa')));
+        $this->assertSame(
+            str_split('11000010011010010011111010'),
+            $converter->convertInteger(str_split('309A4FA'))
+        );
+        $this->assertSame(
+            str_split('11000010011010010011111010'),
+            $converter->convertInteger(str_split('309a4fa'))
+        );
 
         $converter = new ReplaceConverter(new NumberBase('aA'), new NumberBase(16));
-        $this->assertSame(str_split('309A4FA'),
-            $converter->convertInteger(str_split('AAaaaaAaaAAaAaaAaaAAAAAaAa')));
+        $this->assertSame(
+            str_split('309A4FA'),
+            $converter->convertInteger(str_split('AAaaaaAaaAAaAaaAaaAAAAAaAa'))
+        );
     }
 
     /**
@@ -123,10 +139,8 @@ class ReplaceConverterTest extends \PHPUnit_Framework_TestCase
         $source = new NumberBase($source);
         $target = new NumberBase($target);
 
-        $this->assertSame($result, (new ReplaceConverter($source, $target))
-            ->convertInteger($input));
-        $this->assertSame($input, (new ReplaceConverter($target, $source))
-            ->convertInteger($result));
+        $this->assertSame($result, (new ReplaceConverter($source, $target))->convertInteger($input));
+        $this->assertSame($input, (new ReplaceConverter($target, $source))->convertInteger($result));
     }
 
     public function getIntegerConversionData ()
@@ -153,10 +167,14 @@ class ReplaceConverterTest extends \PHPUnit_Framework_TestCase
         $source = new NumberBase($source);
         $target = new NumberBase($target);
 
-        $this->assertSame(str_split($result), (new ReplaceConverter($source, $target))
-            ->convertFractions(str_split($input)));
-        $this->assertSame(str_split($input), (new ReplaceConverter($target, $source))
-            ->convertFractions(str_split($result)));
+        $this->assertSame(
+            str_split($result),
+            (new ReplaceConverter($source, $target))->convertFractions(str_split($input))
+        );
+        $this->assertSame(
+            str_split($input),
+            (new ReplaceConverter($target, $source))->convertFractions(str_split($result))
+        );
     }
 
     public function getFractionConversionData ()

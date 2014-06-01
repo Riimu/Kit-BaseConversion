@@ -166,7 +166,7 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue((new NumberBase([1, 11]))->hasStringConflict());
     }
 
-    public function testIsCaseSenstivie()
+    public function testIsCaseSensitive()
     {
         $this->assertFalse((new NumberBase('ab'))->isCaseSensitive());
         $this->assertFalse((new NumberBase(['a', 'b']))->isCaseSensitive());
@@ -176,14 +176,16 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
 
     public function testStringSplitting()
     {
-        $this->assertSame(['0'],
-            (new NumberBase('01'))->splitString(''));
-        $this->assertSame(['b', 'a', 'c', 'a', 'D'],
-            (new NumberBase('abcD'))->splitString('BaCad'));
-        $this->assertSame(['ba', 'C', 'ab', 'ba', 'aca', 'ab'],
-            (new NumberBase(['C', 'ba', 'ab', 'aca']))->splitString('baCabbaacaab'));
-        $this->assertSame([0, 1, 0, 1, 1, 0],
-            (new NumberBase([0, 1]))->splitString('010110'));
+        $this->assertSame(['0'], (new NumberBase('01'))->splitString(''));
+        $this->assertSame(['b', 'a', 'c', 'a', 'D'], (new NumberBase('abcD'))->splitString('BaCad'));
+        $this->assertSame(
+            ['ba', 'C', 'ab', 'ba', 'aca', 'ab'],
+            (new NumberBase(['C', 'ba', 'ab', 'aca']))->splitString('baCabbaacaab')
+        );
+        $this->assertSame(
+            [0, 1, 0, 1, 1, 0],
+            (new NumberBase([0, 1]))->splitString('010110')
+        );
     }
 
     public function testUnsupportedSplitting()
@@ -200,8 +202,7 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
 
     public function testConflictingSplit()
     {
-        $this->assertSame(['0100', '0100'],
-            (new NumberBase(['0100', '10001']))->splitString('01000100'));
+        $this->assertSame(['0100', '0100'], (new NumberBase(['0100', '10001']))->splitString('01000100'));
     }
 
     public function testIntegerBaseCaseSensitivity()

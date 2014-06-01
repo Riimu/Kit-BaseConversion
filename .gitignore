@@ -1,4 +1,2 @@
-nbproject
-tests/coverage
+.idea
 apidoc
-vendor

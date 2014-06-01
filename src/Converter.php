@@ -45,7 +45,7 @@ interface Converter
      *
      * The fractions should be provided as an array with least significant digit
      * first. Any invalid digit in the array will cause an exception to be
-     * thrown. The return value is a similary array of digits.
+     * thrown. The return value is a similarly array of digits.
      *
      * @param array $number The fractions to convert to target base
      * @return array The fractions converted to target base

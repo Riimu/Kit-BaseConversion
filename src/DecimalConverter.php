@@ -53,8 +53,7 @@ class DecimalConverter implements Converter
 
     public function convertInteger(array $number)
     {
-        return $this->target->getDigits($this->toBase(
-            $this->toDecimal($this->source->getValues($number))));
+        return $this->target->getDigits($this->toBase($this->toDecimal($this->source->getValues($number))));
     }
 
     public function convertFractions(array $number)
@@ -91,8 +90,7 @@ class DecimalConverter implements Converter
         $radix = gmp_init($this->source->getRadix());
 
         for ($i = 0; $i < $count; $i++) {
-            $decimal = gmp_add($decimal, gmp_mul(gmp_init($number[$i]),
-                gmp_pow($radix, $count - $i - 1)));
+            $decimal = gmp_add($decimal, gmp_mul(gmp_init($number[$i]), gmp_pow($radix, $count - $i - 1)));
         }
 
         return $decimal;
@@ -130,7 +128,12 @@ class DecimalConverter implements Converter
     {
         $target = gmp_init($this->target->getRadix());
         $maxFraction = gmp_pow(gmp_init($this->source->getRadix()), $count);
-        for ($i = 1; gmp_cmp(gmp_pow($target, $i), $maxFraction) < 0; $i++);
-        return $i;
+        $digits = 1;
+
+        while (gmp_cmp(gmp_pow($target, $digits), $maxFraction) < 0) {
+            $digits++;
+        }
+
+        return $digits;
     }
 }

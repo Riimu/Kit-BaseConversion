@@ -11,39 +11,47 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
 {
     public function testCreatingWithReplaceBases()
     {
-        $this->assertInstanceOf('Riimu\Kit\BaseConversion\BaseConverter',
-            new BaseConverter(new NumberBase(8), new NumberBase(16)));
+        $this->assertInstanceOf(
+            'Riimu\Kit\BaseConversion\BaseConverter',
+            new BaseConverter(new NumberBase(8), new NumberBase(16))
+        );
     }
 
     public function testCreatingWithMathBases()
     {
-        $this->assertInstanceOf('Riimu\Kit\BaseConversion\BaseConverter',
-            new BaseConverter(new NumberBase(10), new NumberBase(2)));
+        $this->assertInstanceOf(
+            'Riimu\Kit\BaseConversion\BaseConverter',
+            new BaseConverter(new NumberBase(10), new NumberBase(2))
+        );
     }
 
     public function testCreatingWithStringBases()
     {
-        $this->assertInstanceOf('Riimu\Kit\BaseConversion\BaseConverter',
-            new BaseConverter(10, 2));
+        $this->assertInstanceOf(
+            'Riimu\Kit\BaseConversion\BaseConverter',
+            new BaseConverter(10, 2)
+        );
     }
 
     public function testIntegerConversion()
     {
-        $this->assertSame(str_split('101010111100110111101111'),
-            (new BaseConverter(16, 2))->convertInteger(str_split('ABCDEF')));
-        $this->assertSame(str_split('11259375'),
-            (new BaseConverter(2, 10))->convertInteger(str_split('101010111100110111101111')));
+        $this->assertSame(
+            str_split('101010111100110111101111'),
+            (new BaseConverter(16, 2))->convertInteger(str_split('ABCDEF'))
+        );
+        $this->assertSame(
+            str_split('11259375'),
+            (new BaseConverter(2, 10))->convertInteger(str_split('101010111100110111101111'))
+        );
     }
 
     public function testFractionConversion()
     {
         $converter = new BaseConverter(10, 2);
         $converter->setPrecision(10);
-        $this->assertSame(str_split('0010001111'),
-            $converter->convertFractions(str_split('14')));
+        $this->assertSame(str_split('0010001111'), $converter->convertFractions(str_split('14')));
         $converter->setPrecision(9);
-        $this->assertSame(str_split('001000111'),
-            $converter->convertFractions(str_split('14')));
+        $this->assertSame(str_split('001000111'), $converter->convertFractions(str_split('14')));
     }
 
     public function testEmptyStringConversions()
@@ -74,8 +82,7 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
 
     public function testFractionConversionByReplace()
     {
-        $this->assertEquals('-22.7782135321061',
-            (new BaseConverter(27, 9))->convert('-K.NH6CG2363'));
+        $this->assertEquals('-22.7782135321061', (new BaseConverter(27, 9))->convert('-K.NH6CG2363'));
     }
 
     public function testInvalidDigits()
@@ -86,12 +93,12 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
     public function testInvalidDigitsInIntegerConversion()
     {
         $this->setExpectedException('\InvalidArgumentException');
-        $this->assertFalse((new BaseConverter(2, 16))->convertInteger(['2']));
+        (new BaseConverter(2, 16))->convertInteger(['2']);
     }
 
     public function testInvalidDigitsInFractionConversion()
     {
         $this->setExpectedException('\InvalidArgumentException');
-        $this->assertFalse((new BaseConverter(2, 16))->convertFractions(['2']));
+        (new BaseConverter(2, 16))->convertFractions(['2']);
     }
 }

@@ -11,7 +11,7 @@ namespace Riimu\Kit\BaseConversion;
  * given values.
  *
  * NumberBase can be defined in multiple different ways. For more information,
- * see the details on the constructor. NumberBase is compeletely agnostic to
+ * see the details on the constructor. NumberBase is completely agnostic to
  * the type of digits used to define the number base, but all comparison are
  * done using loose comparison operators. Thus, for example, the integer 0 and
  * the string "0" are considered to be the same digit.
@@ -311,7 +311,7 @@ class NumberBase
     }
 
     /**
-     * Return the value for the digit in the numbereral system.
+     * Return the value for the digit in the numeral system.
      * @param mixed $digit Digit to look up
      * @return integer|boolean Decimal value for the digit or false if not found
      */
