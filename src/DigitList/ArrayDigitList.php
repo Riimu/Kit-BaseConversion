@@ -45,14 +45,10 @@ class ArrayDigitList extends AbstractDigitList
 
     private function detectDuplicates(array $digits)
     {
-        $list = [];
-
-        foreach ($digits as $digit) {
-            if (array_search($digit, $list) !== false) {
+        while (count($digits) > 0) {
+            if (array_search(array_pop($digits), $digits) !== false) {
                 return true;
             }
-
-            $list[] = $digit;
         }
 
         return false;
