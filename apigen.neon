@@ -1,5 +1,10 @@
-source: src
-destination: apidoc
-charset: UTF-8
-title: kit-numberconversion
-report: apidoc/report.txt
+source:
+	- src
+
+destination: api
+charset:
+	- UTF-8
+
+main: Riimu\Kit\BaseConversion
+title: BaseConversion
+php: false

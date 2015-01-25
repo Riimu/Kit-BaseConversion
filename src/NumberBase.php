@@ -27,55 +27,14 @@ namespace Riimu\Kit\BaseConversion;
  */
 class NumberBase
 {
-    /**
-     * The number of unique digits in the numeral system.
-     * @var integer
-     */
-    private $radix;
-
-    /**
-     * Lists different digits in the numeral system by their values.
-     * @var array
-     */
+    /** @var DigitList\DigitList List of digits */
     private $digits;
-
-    /**
-     * Maps digits to their values, when possible.
-     * @var array
-     */
-    private $valueMap;
-
-    /**
-     * Tells if the numeral system is case sensitive or not.
-     * @var boolean
-     */
-    private $caseSensitive;
-
-    /**
-     * Tells if the numeral system supports string numbers.
-     * @var boolean
-     */
-    private $stringConflict;
 
     /**
      * Tells how to split strings according to this numeral system.
      * @var false|integer|string
      */
     private $splitter;
-
-    /**
-     * List of digits used when the base is provided as a number.
-     * @var string
-     */
-    private static $integerBase =
-        '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-
-    /**
-     * List of digits to use when base 64 is used.
-     * @var string
-     */
-    private static $integerBase64 =
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
     /**
      * Creates a new instance of NumberBase.
@@ -102,132 +61,26 @@ class NumberBase
      * exception. Any missing decimal value in the indexes will also cause an
      * exception.
      *
-     * @param integer|string|array $numberBase The numeral system to use
-     * @throws \InvalidArgumentException If the given numeral system is invalid
+     * @param DigitList\DigitList|integer|string|array $digitList List of digits
+     * @throws \InvalidArgumentException If the list of digits is invalid
      */
-    public function __construct ($numberBase)
+    public function __construct($digitList)
     {
-        if (is_int($numberBase) || is_float($numberBase)) {
-            $this->setBaseInteger($numberBase);
-        } elseif (is_string($numberBase)) {
-            $this->setBaseString($numberBase);
-        } elseif (is_array($numberBase)) {
-            $this->setBaseArray($numberBase);
-        } else {
-            throw new \InvalidArgumentException('Unexpected number base type');
-        }
+        $this->digits = $digitList instanceof DigitList\DigitList
+            ? $digitList : $this->buildDigitList($digitList);
     }
 
-    /**
-     * Sets the digits according to the given number base.
-     * @param integer $integer Radix for the numeral system
-     * @throws \InvalidArgumentException If the radix is too small
-     */
-    private function setBaseInteger ($integer)
+    private function buildDigitList($digitList)
     {
-        $integer = (int) $integer;
-
-        if ($integer < 2) {
-            throw new \InvalidArgumentException('Radix must be bigger than 2');
+        if (is_int($digitList)) {
+            return new DigitList\IntegerDigitList($digitList);
+        } elseif (is_string($digitList)) {
+            return new DigitList\StringDigitList($digitList);
+        } elseif (is_array($digitList)) {
+            return new DigitList\ArrayDigitList($digitList);
         }
 
-        $this->digits = [];
-
-        if ($integer <= strlen(self::$integerBase)) {
-            $this->digits = str_split(substr(self::$integerBase, 0, $integer));
-        } elseif ($integer === 64) {
-            $this->digits = str_split(self::$integerBase64);
-        } elseif ($integer <= 256) {
-            for ($i = 0; $i < $integer; $i++) {
-                $this->digits[] = chr($i);
-            }
-        } else {
-            $format = '#%0' . strlen($integer - 1) . 'd';
-            for ($i = 0; $i < $integer; $i++) {
-                $this->digits[] = sprintf($format, $i);
-            }
-        }
-
-        $this->radix = count($this->digits);
-        $this->valueMap = array_flip($this->digits);
-        $this->caseSensitive = count(array_change_key_case($this->valueMap)) !== $this->radix;
-        $this->stringConflict = false;
-    }
-
-    /**
-     * Uses the characters in the given string as digits in the numeral system.
-     * @param string $string Digits for the numeral system
-     * @throws \InvalidArgumentException If there are too few or duplicate characters
-     */
-    private function setBaseString ($string)
-    {
-        if (strlen($string) < 2) {
-            throw new \InvalidArgumentException('Number base needs at least 2 characters');
-        } elseif (strlen(count_chars($string, 3)) !== strlen($string)) {
-            throw new \InvalidArgumentException('Duplicate characters in the number base');
-        }
-
-        $this->radix = strlen($string);
-        $this->digits = str_split($string);
-        $this->valueMap = array_flip($this->digits);
-        $this->caseSensitive = count(array_change_key_case($this->valueMap)) !== $this->radix;
-        $this->stringConflict = false;
-    }
-
-    /**
-     * Uses the values in the array to represent the digits.
-     * @param array $array Digits for the numeral system.
-     * @throws \InvalidArgumentException If too few or duplicate values exist or indexes are not valid
-     */
-    private function setBaseArray (array $array)
-    {
-        if (count($array) < 2) {
-            throw new \InvalidArgumentException('Number base must have at least 2 digits');
-        }
-
-        $numbers = [];
-        $strings = [];
-        $mapped = true;
-
-        foreach ($array as $key => $value) {
-            if (array_search($value, $numbers) !== false) {
-                throw new \InvalidArgumentException('Duplicate digits in the number base');
-            }
-
-            $numbers[$key] = $value;
-
-            if (is_string($value)) {
-                $strings[] = strtolower($value);
-            } elseif (!is_int($value)) {
-                $mapped = false;
-            }
-        }
-
-        if (array_diff_key($numbers, range(0, count($numbers) - 1)) !== []) {
-            throw new \InvalidArgumentException('Invalid digit values in the number base');
-        }
-
-        $this->radix = count($numbers);
-        $this->digits = $numbers;
-        $this->valueMap = $mapped ? array_flip($numbers) : null;
-        $this->caseSensitive = count($strings) != count(array_flip($strings));
-
-        if ($this->valueMap) {
-            $this->stringConflict = false;
-            $stringDigits = array_map('strval', $this->digits);
-            foreach ($stringDigits as $a => $needle) {
-                foreach ($stringDigits as $b => $haystack) {
-                    if ($a !== $b && strpos($haystack, $needle) !== false) {
-                        $this->stringConflict = true;
-                        break 2;
-                    } elseif ($a !== $b && stripos($haystack, $needle) !== false) {
-                        $this->caseSensitive = true;
-                    }
-                }
-            }
-        } else {
-            $this->stringConflict = true;
-        }
+        throw new \InvalidArgumentException('Unexpected number base type');
     }
 
     /**
@@ -236,7 +89,7 @@ class NumberBase
      */
     public function hasStringConflict()
     {
-        return $this->stringConflict;
+        return $this->digits->hasStringConflict();
     }
 
     /**
@@ -245,16 +98,16 @@ class NumberBase
      */
     public function isCaseSensitive()
     {
-        return $this->caseSensitive;
+        return $this->digits->isCaseSensitive();
     }
 
     /**
      * Returns the radix (i.e. base) of the numeral system.
      * @return integer Radix of the numeral system
      */
-    public function getRadix ()
+    public function getRadix()
     {
-        return $this->radix;
+        return count($this->digits);
     }
 
     /**
@@ -263,7 +116,7 @@ class NumberBase
      */
     public function getDigitList()
     {
-        return $this->digits;
+        return $this->digits->getDigits();
     }
 
     /**
@@ -273,7 +126,13 @@ class NumberBase
      */
     public function hasDigit($digit)
     {
-        return $this->findDigit($digit) !== false;
+        try {
+            $this->digits->getValue($digit);
+        } catch (\InvalidArgumentException $ex) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -284,7 +143,7 @@ class NumberBase
      */
     public function getValue($digit)
     {
-        return $this->getValues([$digit])[0];
+        return $this->digits->getValue($digit);
     }
 
     /**
@@ -295,39 +154,7 @@ class NumberBase
      */
     public function getValues(array $digits)
     {
-        $decimals = [];
-
-        foreach ($digits as $digit) {
-            if ($this->valueMap && isset($this->valueMap[$digit])) {
-                $decimals[] = $this->valueMap[$digit];
-            } elseif (($decimal = $this->findDigit($digit)) !== false) {
-                $decimals[] = $decimal;
-            } else {
-                throw new \InvalidArgumentException("The digit '$digit' does not exist");
-            }
-        }
-
-        return $decimals;
-    }
-
-    /**
-     * Return the value for the digit in the numeral system.
-     * @param mixed $digit Digit to look up
-     * @return integer|boolean Decimal value for the digit or false if not found
-     */
-    private function findDigit($digit)
-    {
-        $value = array_search($digit, $this->digits);
-
-        if ($value === false && !$this->caseSensitive && is_string($digit)) {
-            foreach ($this->digits as $key => $cmp) {
-                if (is_string($cmp) && strcasecmp($cmp, $digit) === 0) {
-                    return $key;
-                }
-            }
-        }
-
-        return $value;
+        return array_map([$this->digits, 'getValue'], $digits);
     }
 
     /**
@@ -338,7 +165,7 @@ class NumberBase
      */
     public function getDigit($decimal)
     {
-        return $this->getDigits([$decimal])[0];
+        return $this->digits->getDigit($decimal);
     }
 
     /**
@@ -349,17 +176,7 @@ class NumberBase
      */
     public function getDigits(array $decimals)
     {
-        $digits = [];
-
-        foreach ($decimals as $decimal) {
-            if (!isset($this->digits[$decimal])) {
-                throw new \InvalidArgumentException("The decimal value '$decimal' does not exist");
-            }
-
-            $digits[] = $this->digits[$decimal];
-        }
-
-        return $digits;
+        return array_map([$this->digits, 'getDigit'], $decimals);
     }
 
     /**
@@ -367,7 +184,7 @@ class NumberBase
      * @param NumberBase $base Numeral system to compare against
      * @return integer|false Highest common integer root or false if none
      */
-    public function findCommonRadixRoot (NumberBase $base)
+    public function findCommonRadixRoot(NumberBase $base)
     {
         $common = array_intersect($this->getRadixRoots(), $base->getRadixRoots());
         return count($common) > 0 ? max($common) : false;
@@ -377,12 +194,13 @@ class NumberBase
      * Returns all integer roots for the radix.
      * @return integer[] Array of integer roots for the radix
      */
-    private function getRadixRoots ()
+    private function getRadixRoots()
     {
-        $roots = [$this->radix];
+        $radix = count($this->digits);
+        $roots = [$radix];
 
-        for ($i = 2; ($root = (int) pow($this->radix, 1 / $i)) > 1; $i++) {
-            if (pow($root, $i) === $this->radix) {
+        for ($i = 2; ($root = (int) pow($radix, 1 / $i)) > 1; $i++) {
+            if (pow($root, $i) === $radix) {
                 $roots[] = $root;
             }
         }
@@ -405,7 +223,7 @@ class NumberBase
     public function canonizeDigits(array $digits)
     {
         $result = $this->getDigits($this->getValues($digits));
-        return empty($result) ? [$this->digits[0]] : $result;
+        return empty($result) ? [$this->digits->getDigit(0)] : $result;
     }
 
     /**
@@ -440,11 +258,11 @@ class NumberBase
      */
     private function createSplitter()
     {
-        if ($this->stringConflict) {
+        if ($this->digits->hasStringConflict()) {
             return false;
         }
 
-        $lengths = array_map('strlen', $this->digits);
+        $lengths = array_map('strlen', $this->digits->getDigits());
 
         if (count(array_flip($lengths)) === 1) {
             return array_pop($lengths);
@@ -452,8 +270,8 @@ class NumberBase
 
         $string = implode('|', array_map(function ($value) {
             return preg_quote((string) $value, '/');
-        }, $this->digits));
+        }, $this->digits->getDigits()));
 
-        return "/$string|.+/s" . ($this->caseSensitive ? '' : 'i');
+        return "/$string|.+/s" . ($this->digits->isCaseSensitive() ? '' : 'i');
     }
 }

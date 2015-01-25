@@ -210,4 +210,10 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse((new NumberBase(97))->isCaseSensitive());
         $this->assertTrue((new NumberBase(98))->isCaseSensitive());
     }
+
+    public function testArrayOnScalarBase()
+    {
+        $this->setExpectedException('\InvalidArgumentException');
+        (new NumberBase('ab'))->getValue([]);
+    }
 }
