@@ -54,7 +54,7 @@ class BaseConverter implements Converter
      * @param Mixed $sourceBase Number base used by the provided numbers.
      * @param Mixed $targetBase Number base used by the returned numbers.
      */
-    public function __construct ($sourceBase, $targetBase)
+    public function __construct($sourceBase, $targetBase)
     {
         $this->source = $sourceBase instanceof NumberBase ? $sourceBase : new NumberBase($sourceBase);
         $this->target = $sourceBase instanceof NumberBase ? $targetBase : new NumberBase($targetBase);
@@ -86,7 +86,7 @@ class BaseConverter implements Converter
      * @param string $number The number to convert
      * @return string|false The converted number or false on error
      */
-    public function convert ($number)
+    public function convert($number)
     {
         $integer = (string) $number;
         $fractions = '';
@@ -97,20 +97,27 @@ class BaseConverter implements Converter
             $integer = substr($integer, 1);
         }
 
-        try {
-            if (($pos = strpos($integer, '.')) !== false) {
-                $fractions = '.' . implode('', $this->convertFractions(
-                    $this->source->splitString(substr($integer, $pos + 1))
-                ));
-                $integer = substr($integer, 0, $pos);
-            }
+        if (($pos = strpos($integer, '.')) !== false) {
+            $fractions = substr($integer, $pos + 1);
+            $integer = substr($integer, 0, $pos);
+        }
 
-            $integer = implode('', $this->convertInteger($this->source->splitString($integer)));
+        return $this->convertNumber($sign, $integer, $fractions);
+    }
+
+    private function convertNumber($sign, $integer, $fractions)
+    {
+        try {
+            $result = implode('', $this->convertInteger($this->source->splitString($integer)));
+
+            if ($fractions !== '') {
+                $result .= '.' . implode('', $this->convertFractions($this->source->splitString($fractions)));
+            }
         } catch (\InvalidArgumentException $ex) {
             return false;
         }
 
-        return $sign . $integer . $fractions;
+        return $sign . $result;
     }
 
     public function setPrecision($precision)
