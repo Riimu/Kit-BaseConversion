@@ -34,7 +34,7 @@ class NumberBase
      * Tells how to split strings according to this numeral system.
      * @var false|integer|string
      */
-    private $splitter;
+    private $digitPattern;
 
     /**
      * Creates a new instance of NumberBase.
@@ -234,18 +234,18 @@ class NumberBase
      */
     public function splitString($string)
     {
-        if (!isset($this->splitter)) {
-            $this->splitter = $this->createSplitter();
+        if ($this->digits->hasStringConflict()) {
+            throw new \RuntimeException('The number base does not support string presentation');
         }
 
-        if ($this->splitter === false) {
-            throw new \RuntimeException('Strings are not supported');
-        } elseif ((string) $string === '') {
+        $pattern = $this->getDigitPattern();
+
+        if ((string) $string === '') {
             $digits = [];
-        } elseif (is_int($this->splitter)) {
-            $digits = str_split($string, $this->splitter);
+        } elseif (is_int($pattern)) {
+            $digits = str_split($string, $this->digitPattern);
         } else {
-            preg_match_all($this->splitter, $string, $match);
+            preg_match_all($pattern, $string, $match);
             $digits = $match[0];
         }
 
@@ -256,22 +256,19 @@ class NumberBase
      * Determines the rule on how to split number strings.
      * @return false|integer|string Splitting rule for strings
      */
-    private function createSplitter()
+    private function getDigitPattern()
     {
-        if ($this->digits->hasStringConflict()) {
-            return false;
+        if (!isset($this->digitPattern)) {
+            $lengths = array_map('strlen', $this->digits->getDigits());
+
+            if (count(array_flip($lengths)) === 1) {
+                $this->digitPattern = array_pop($lengths);
+            } else {
+                $string = implode('|', array_map('preg_quote', $this->digits->getDigits()));
+                $this->digitPattern = "($string|.+)s" . ($this->digits->isCaseSensitive() ? '' : 'i');
+            }
         }
 
-        $lengths = array_map('strlen', $this->digits->getDigits());
-
-        if (count(array_flip($lengths)) === 1) {
-            return array_pop($lengths);
-        }
-
-        $string = implode('|', array_map(function ($value) {
-            return preg_quote((string) $value, '/');
-        }, $this->digits->getDigits()));
-
-        return "/$string|.+/s" . ($this->digits->isCaseSensitive() ? '' : 'i');
+        return $this->digitPattern;
     }
 }
