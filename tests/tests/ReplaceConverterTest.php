@@ -33,10 +33,16 @@ class ReplaceConverterTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testCreatingUnsupportedBases()
+    public function testCreatingNoCommonRadixRoot()
     {
         $this->setExpectedException('\InvalidArgumentException');
         new ReplaceConverter(new NumberBase(2), new NumberBase(3));
+    }
+
+    public function testCreatingStringConflict()
+    {
+        $this->setExpectedException('\InvalidArgumentException');
+        new ReplaceConverter(new NumberBase(['A', 'AA']), new NumberBase(4));
     }
 
     public function testConvertingHigherToLower()

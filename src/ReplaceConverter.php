@@ -70,11 +70,7 @@ class ReplaceConverter implements Converter
      */
     public function __construct(NumberBase $source, NumberBase $target)
     {
-        $root = $source->findCommonRadixRoot($target);
-
-        if ($root === false || $source->hasStringConflict() || $target->hasStringConflict()) {
-            throw new \InvalidArgumentException('Number bases not supported');
-        }
+        $root = $this->getRoot($source, $target);
 
         if ($root != $source->getRadix() && $root != $target->getRadix()) {
             $proxy = new NumberBase($root);
@@ -87,6 +83,21 @@ class ReplaceConverter implements Converter
         }
     }
 
+    private function getRoot(NumberBase $source, NumberBase $target)
+    {
+        if ($source->hasStringConflict() || $target->hasStringConflict()) {
+            throw new \InvalidArgumentException('Number bases do not support string presentation');
+        }
+
+        $root = $source->findCommonRadixRoot($target);
+
+        if ($root === false) {
+            throw new \InvalidArgumentException('No common root exists between number bases');
+        }
+
+        return $root;
+    }
+
     /**
      * Creates string replacement table between source base and target base.
      * @return array|true String replacement table or true if the bases are equal.
@@ -94,8 +105,7 @@ class ReplaceConverter implements Converter
     private function buildConversionTable()
     {
         $reduce = $this->source->getRadix() > $this->target->getRadix();
-        $max = $reduce ? $this->source : $this->target;
-        $min = $reduce ? $this->target : $this->source;
+        list($max, $min) = $reduce ? [$this->source, $this->target] : [$this->target, $this->source];
 
         $minDigits = $min->getDigitList();
         $maxDigits = $max->getDigitList();
@@ -104,26 +114,19 @@ class ReplaceConverter implements Converter
         $number = array_fill(0, $size, $minDigits[0]);
         $next = array_fill(0, $size, 0);
         $limit = $max->getRadix();
-        $table = [];
+        $table = [$maxDigits[0] => implode('', $number)];
 
-        for ($i = 0; $i < $limit; $i++) {
-            if ($i > 0) {
-                for ($j = $size - 1; $next[$j] == $last; $j--) {
-                    $number[$j] = $minDigits[0];
-                    $next[$j] = 0;
-                }
-
-                $number[$j] = $minDigits[++$next[$j]];
+        for ($i = 1; $i < $limit; $i++) {
+            for ($j = $size - 1; $next[$j] == $last; $j--) {
+                $number[$j] = $minDigits[0];
+                $next[$j] = 0;
             }
 
-            if ($reduce) {
-                $table[$maxDigits[$i]] = implode('', $number);
-            } else {
-                $table[implode('', $number)] = $maxDigits[$i];
-            }
+            $number[$j] = $minDigits[++$next[$j]];
+            $table[$maxDigits[$i]] = implode('', $number);
         }
 
-        return $table;
+        return $reduce ? $table : array_flip($table);
     }
 
     public function setPrecision($precision)
