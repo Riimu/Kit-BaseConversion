@@ -104,29 +104,33 @@ class ReplaceConverter implements Converter
      */
     private function buildConversionTable()
     {
-        $reduce = $this->source->getRadix() > $this->target->getRadix();
-        list($max, $min) = $reduce ? [$this->source, $this->target] : [$this->target, $this->source];
+        if ($this->source->getRadix() > $this->target->getRadix()) {
+            return $this->createTable($this->source->getDigitList(), $this->target->getDigitList());
+        }
 
-        $minDigits = $min->getDigitList();
-        $maxDigits = $max->getDigitList();
-        $last = $min->getRadix() - 1;
-        $size = (int) log($max->getRadix(), $min->getRadix());
-        $number = array_fill(0, $size, $minDigits[0]);
+        return array_flip($this->createTable($this->target->getDigitList(), $this->source->getDigitList()));
+    }
+
+    private function createTable($source, $target)
+    {
+        $last = count($target) - 1;
+        $size = (int) log(count($source), count($target));
+        $number = array_fill(0, $size, $target[0]);
         $next = array_fill(0, $size, 0);
-        $limit = $max->getRadix();
-        $table = [$maxDigits[0] => implode('', $number)];
+        $limit = count($source);
+        $table = [$source[0] => implode('', $number)];
 
         for ($i = 1; $i < $limit; $i++) {
             for ($j = $size - 1; $next[$j] == $last; $j--) {
-                $number[$j] = $minDigits[0];
+                $number[$j] = $target[0];
                 $next[$j] = 0;
             }
 
-            $number[$j] = $minDigits[++$next[$j]];
-            $table[$maxDigits[$i]] = implode('', $number);
+            $number[$j] = $target[++$next[$j]];
+            $table[$source[$i]] = implode('', $number);
         }
 
-        return $reduce ? $table : array_flip($table);
+        return $table;
     }
 
     public function setPrecision($precision)
