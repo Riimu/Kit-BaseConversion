@@ -92,7 +92,7 @@ class BaseConverter implements Converter
         $fractions = '';
         $sign = '';
 
-        if (isset($integer[0]) && in_array($integer[0], ['+', '-'])) {
+        if (in_array(substr($integer, 0, 1), ['+', '-'], true)) {
             $sign = $integer[0];
             $integer = substr($integer, 1);
         }
