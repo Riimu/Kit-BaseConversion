@@ -86,13 +86,13 @@ class ReplaceConverter implements Converter
     private function getRoot(NumberBase $source, NumberBase $target)
     {
         if ($source->hasStringConflict() || $target->hasStringConflict()) {
-            throw new \InvalidArgumentException('Number bases do not support string presentation');
+            throw new InvalidNumberBaseException('Number bases do not support string presentation');
         }
 
         $root = $source->findCommonRadixRoot($target);
 
         if ($root === false) {
-            throw new \InvalidArgumentException('No common root exists between number bases');
+            throw new InvalidNumberBaseException('No common root exists between number bases');
         }
 
         return $root;

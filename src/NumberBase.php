@@ -128,7 +128,7 @@ class NumberBase
     {
         try {
             $this->digits->getValue($digit);
-        } catch (\InvalidArgumentException $ex) {
+        } catch (InvalidDigitException $ex) {
             return false;
         }
 

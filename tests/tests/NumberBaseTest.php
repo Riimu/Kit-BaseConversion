@@ -196,7 +196,7 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
 
     public function testMissingDigits()
     {
-        $this->setExpectedException('\InvalidArgumentException');
+        $this->setExpectedException('Riimu\Kit\BaseConversion\InvalidDigitException');
         (new NumberBase('01'))->splitString('2');
     }
 
@@ -213,7 +213,7 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
 
     public function testArrayOnScalarBase()
     {
-        $this->setExpectedException('\InvalidArgumentException');
+        $this->setExpectedException('Riimu\Kit\BaseConversion\InvalidDigitException');
         (new NumberBase('ab'))->getValue([]);
     }
 }

@@ -35,13 +35,13 @@ class ReplaceConverterTest extends \PHPUnit_Framework_TestCase
 
     public function testCreatingNoCommonRadixRoot()
     {
-        $this->setExpectedException('\InvalidArgumentException');
+        $this->setExpectedException('Riimu\Kit\BaseConversion\InvalidNumberBaseException');
         new ReplaceConverter(new NumberBase(2), new NumberBase(3));
     }
 
     public function testCreatingStringConflict()
     {
-        $this->setExpectedException('\InvalidArgumentException');
+        $this->setExpectedException('Riimu\Kit\BaseConversion\InvalidNumberBaseException');
         new ReplaceConverter(new NumberBase(['A', 'AA']), new NumberBase(4));
     }
 

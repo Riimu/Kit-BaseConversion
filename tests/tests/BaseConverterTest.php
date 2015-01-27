@@ -9,6 +9,11 @@ namespace Riimu\Kit\BaseConversion;
  */
 class BaseConverterTest extends \PHPUnit_Framework_TestCase
 {
+    public function testStaticMethod()
+    {
+        $this->assertSame('101000110111001100110100', BaseConverter::baseConvert('A37334', 16, 2));
+    }
+
     public function testCreatingWithReplaceBases()
     {
         $this->assertInstanceOf(
@@ -92,13 +97,13 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
 
     public function testInvalidDigitsInIntegerConversion()
     {
-        $this->setExpectedException('\InvalidArgumentException');
+        $this->setExpectedException('Riimu\Kit\BaseConversion\InvalidDigitException');
         (new BaseConverter(2, 16))->convertInteger(['2']);
     }
 
     public function testInvalidDigitsInFractionConversion()
     {
-        $this->setExpectedException('\InvalidArgumentException');
+        $this->setExpectedException('Riimu\Kit\BaseConversion\InvalidDigitException');
         (new BaseConverter(2, 16))->convertFractions(['2']);
     }
 }

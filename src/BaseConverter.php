@@ -5,13 +5,17 @@ namespace Riimu\Kit\BaseConversion;
 /**
  * Arbitrary precision number base converter.
  *
- * BaseConverter provides convenient number base conversion by accepting string
- * input, choosing the appropriate conversion strategy and creating the
- * number bases for you.
+ * BaseConverter provides convenience to number conversion by providing a method
+ * that accepts numbers as strings in addition to selecting the appropriate
+ * number conversion strategy based on the provided number bases (which may also
+ * be provided as constructor arguments for NumberBase instead of instances of
+ * the said class).
  *
- * BaseConverter can be used as an easy replacement for PHP's built in
- * base_convert in addition to providing more features such as converting
- * fractions and not being limited by internal floating point calculations.
+ * BaseConverter can also be used as a simple replacement for PHP's built in
+ * `base_convert()` via the provided static method that accepts arguments
+ * similar to the built in function in addition to providing the extra features
+ * of this library (such as arbitrary precision conversion and support for
+ * fractions).
  *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
@@ -19,40 +23,31 @@ namespace Riimu\Kit\BaseConversion;
  */
 class BaseConverter implements Converter
 {
-    /**
-     * Converter used to convert the numbers from base to another.
-     * @var Converter
-     */
+    /** @var Converter Selected converter for base conversion */
     private $converter;
 
-    /**
-     * The number precision for fraction converters.
-     * @var integer
-     */
+    /** @var integer Precision provided for the fraction conversions */
     private $precision;
 
-    /**
-     * Number base for provided numbers.
-     * @var NumberBase
-     */
+    /** @var NumberBase Number base used by provided numbers */
     private $source;
 
-    /**
-     * Number base for returned numbers.
-     * @var NumberBase
-     */
+    /** @var NumberBase Number base used by returned numbers */
     private $target;
 
     /**
      * Creates a new instance of BaseConverter.
      *
-     * The source and target number bases can be provided as an instance of
-     * NumberBase or as a value provided to the NumberBase constructor. See the
-     * NumberBase constructor for information about possible values.
+     * The source and target number bases can be provided either as an instance
+     * of the NumberBase class or as constructor arguments that are provided to
+     * the NumberBase class.
+     *
+     * The constructor will select the most optimal conversion strategy based
+     * on the provided number bases.
      *
      * @see NumberBase::__construct
-     * @param Mixed $sourceBase Number base used by the provided numbers.
-     * @param Mixed $targetBase Number base used by the returned numbers.
+     * @param mixed $sourceBase Number base used by the provided numbers.
+     * @param mixed $targetBase Number base used by the returned numbers.
      */
     public function __construct($sourceBase, $targetBase)
     {
@@ -61,7 +56,7 @@ class BaseConverter implements Converter
 
         try {
             $this->converter = new ReplaceConverter($this->source, $this->target);
-        } catch (\InvalidArgumentException $ex) {
+        } catch (InvalidNumberBaseException $ex) {
             $this->converter = new DecimalConverter($this->source, $this->target);
         }
 
@@ -69,19 +64,41 @@ class BaseConverter implements Converter
     }
 
     /**
-     * Converts number string from source base to target base.
+     * Converts the provided number from base to another.
      *
-     * This method takes the number as a string that can contain both the
-     * integer part and fractional part separated by the decimal operator '.'.
-     * Additionally, this method will handle signed numbers (preceded by either
-     * '+' or '-') by adding the appropriate sign to the returned number.
+     * This method provides a convenient replacement to PHP's built in
+     * `base_convert()`. The number bases are simply passed along to the
+     * constructor, which means they can be instances of NumberBase class or
+     * constructor parameters for that class.
      *
-     * Note that number bases that contain any of these characters as digits
-     * (such as base64) may not work as intended due to special meaning added
-     * to these characters.
+     * Note that due to the way the constructor parameters for NumberBase work,
+     * this method can be used exactly the same way as `base_convert()`.
      *
-     * If the provided number contains any digits that are not part of the
-     * number base, false will be returned instead.
+     * @param string $number The number to convert
+     * @param mixed $fromBase Number base used by the provided number
+     * @param mixed $toBase Number base used by the returned number
+     * @return string|false The converted number or false on error
+     */
+    public static function baseConvert($number, $fromBase, $toBase)
+    {
+        $converter = new BaseConverter($fromBase, $toBase);
+        return $converter->convert($number);
+    }
+
+    /**
+     * Converts the number provided as a string from source base to target base.
+     *
+     * This method provides convenient conversions by accepting the number as
+     * a string. The number may optionally be preceded by a plus or minus sign
+     * which is prepended to the result as well. The number may also have a
+     * period, which separates the integer part and the fractional part.
+     *
+     * Due to the special meaning of `+`, `-` and `.`, it is not recommended to
+     * use this method to convert numbers when using number bases that have a
+     * meaning for these characters (such as base64).
+     *
+     * If the number contains invalid characters, the method will return false
+     * instead.
      *
      * @param string $number The number to convert
      * @return string|false The converted number or false on error
@@ -105,6 +122,13 @@ class BaseConverter implements Converter
         return $this->convertNumber($sign, $integer, $fractions);
     }
 
+    /**
+     * Converts the different parts of the number and handles invalid digits.
+     * @param string $sign Sign that preceded the number or an empty string
+     * @param string $integer The integer part of the number
+     * @param string $fractions The fractional part of the number or an empty string
+     * @return string|false The converted number or false on error
+     */
     private function convertNumber($sign, $integer, $fractions)
     {
         try {
@@ -113,7 +137,7 @@ class BaseConverter implements Converter
             if ($fractions !== '') {
                 $result .= '.' . implode('', $this->convertFractions($this->source->splitString($fractions)));
             }
-        } catch (\InvalidArgumentException $ex) {
+        } catch (InvalidDigitException $ex) {
             return false;
         }
 

@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/exceptions.php';
+
 // Autoloader for loading the library when composer is not available
 spl_autoload_register(function ($class) {
     if (strncmp($class, $ns = 'Riimu\\Kit\\BaseConversion\\', strlen($ns)) === 0) {

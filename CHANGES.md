@@ -1,5 +1,15 @@
 # Changelog #
 
+## v1.1.0 (?) ##
+
+  * Improvements in code quality and documentation
+  * The NumberBase now uses an instance of DigitList\DigitList to represent the
+    list of digits used by the number base.
+  * Added BaseConverter::baseConvert() static method as a convenient replacement
+    for base_convert()
+  * InvalidDigitException is now thrown, if the numbers contain invalid digits
+    (extends from InvalidArgumentException).
+
 ## v1.0.1 (2014-05-16) ##
 
   * Some clean up and optimization of the NumberBase class

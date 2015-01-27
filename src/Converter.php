@@ -3,7 +3,7 @@
 namespace Riimu\Kit\BaseConversion;
 
 /**
- * Interface for base converters.
+ * Interface for different number base conversion strategies.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2014, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
@@ -13,44 +13,51 @@ interface Converter
     /**
      * Sets the precision for inaccurate fraction conversions.
      *
+     * The fractions cannot always be accurately converted from base to another,
+     * since they may represent a fraction that cannot be represented in another
+     * number base. The precision value is used to determine the number of
+     * digits in the fractional part, if the number cannot be accurately
+     * converted or if it is not feasible to determine that.
+     *
      * If the precision is positive, it defines the maximum number of digits in
-     * fractions. If the value is 0, the converted numbers have at least as many
-     * digits as is required to represent the number in the same accuracy. A
-     * negative precision simply increases the number of digits in addition to
-     * what is required for same accuracy.
+     * the fractional part. If the value is 0, the converted number will have
+     * at least as many digits in the fractional part as it takes to represent
+     * the number in the same accuracy as the original number. A negative number
+     * will simply increase the number of digits.
      *
-     * The precision may be ignored if the converter can convert the fractions
-     * accurately. The purpose of precision is to limit the number of digits in
-     * cases where this is not possible.
+     * Note that the fractional part may have fewer digits than what is required
+     * by the precision if it can be accurately represented using fewer digits.
      *
-     * @param int $precision Precision used for inaccurate conversions.
+     * @param integer $precision Precision used for inaccurate conversions.
      * @return void
      */
     public function setPrecision($precision);
 
     /**
-     * Converts integer portion of a number.
+     * Converts the integer part of a number.
      *
-     * The number should be provided as an array with least significant digit
-     * first. Any invalid digit in the array will cause an exception to be
-     * thrown. The return value is a similar array of digits.
+     * The integer part should be provided as an array of digits with least
+     * significant digit first. Any invalid digit in the array will cause an
+     * exception to be thrown. The return value will be a similar array of
+     * digits, except converted to the target number base.
      *
-     * @param array $number The number to convert to target base
-     * @return array The number converted to target base
-     * @throw \InvalidArgumentException If the number contains invalid digits
+     * @param array $number Array of digits representing the integer part
+     * @return array Array of digits of the converted number
+     * @throws InvalidDigitException If the integer part contains invalid digits
      */
     public function convertInteger(array $number);
 
     /**
-     * Converts fraction portion of a number.
+     * Converts the fractional part of a number.
      *
-     * The fractions should be provided as an array with least significant digit
-     * first. Any invalid digit in the array will cause an exception to be
-     * thrown. The return value is a similarly array of digits.
+     * The fractional part should be provided as an array of digits with least
+     * significant digit first. Any invalid digit in the array will cause an
+     * exception to be thrown. The return value will be a similar array of
+     * digits, except converted to the target number base.
      *
-     * @param array $number The fractions to convert to target base
-     * @return array The fractions converted to target base
-     * @throw \InvalidArgumentException If the fractions contain invalid digits.
+     * @param array $number Array of digits representing the fractional part
+     * @return array Array of digits of the converted number
+     * @throws InvalidDigitException If the fractional part contain invalid digits.
      */
     public function convertFractions(array $number);
 }

@@ -158,6 +158,8 @@ itself. The number base is completely agnostic to the value types used in the
 array. However, it is worth noting that `NumberBase` uses loose comparison to
 compare digit equality.
 
-## Copyright ##
+## Credits ##
 
-This library is Copyright (c) 2013 - 2014 to Riikka Kalliomäki.
+This library is copyright 2013 - 2015 to Riikka Kalliomäki.
+
+See LICENSE for license and copying information.

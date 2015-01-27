@@ -1,6 +1,7 @@
 <?php
 
 namespace Riimu\Kit\BaseConversion\DigitList;
+use Riimu\Kit\BaseConversion\InvalidDigitException;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
@@ -57,13 +58,13 @@ abstract class AbstractDigitList implements DigitList
     public function getValue($digit)
     {
         if (!is_scalar($digit)) {
-            throw new \InvalidArgumentException('Invalid digit');
+            throw new InvalidDigitException('Invalid digit');
         }
 
         $digit = $this->caseSensitive ? (string) $digit : strtolower($digit);
 
         if (!isset($this->valueMap[$digit])) {
-            throw new \InvalidArgumentException('Invalid digit');
+            throw new InvalidDigitException('Invalid digit');
         }
 
         return $this->valueMap[$digit];
