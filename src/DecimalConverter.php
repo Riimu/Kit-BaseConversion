@@ -128,6 +128,6 @@ class DecimalConverter implements Converter
             $digits++;
         }
 
-        return $digits + abs($this->precision);
+        return $digits - $this->precision;
     }
 }

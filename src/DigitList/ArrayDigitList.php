@@ -65,7 +65,7 @@ class ArrayDigitList extends AbstractDigitList
      */
     private function detectDuplicates(array $digits)
     {
-        while (count($digits) > 0) {
+        for ($i = count($digits); $i > 0; $i--) {
             if (array_search(array_pop($digits), $digits) !== false) {
                 return true;
             }
