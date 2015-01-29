@@ -1,9 +1,11 @@
 <?php
 
 namespace Riimu\Kit\BaseConversion\DigitList;
+
 use Riimu\Kit\BaseConversion\InvalidDigitException;
 
 /**
+ * Provides common functionality for different digit lists.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2015, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
@@ -22,6 +24,17 @@ abstract class AbstractDigitList implements DigitList
     /** @var boolean Tells if the numeral system can be written using strings */
     protected $stringConflict;
 
+    /**
+     * Sets the value map and determines if it's case sensitive.
+     * @param integer[] $map List of values for digits
+     */
+    protected function setValueMap(array $map)
+    {
+        $lower = array_change_key_case($map);
+        $this->caseSensitive = count($lower) !== count($map);
+        $this->valueMap = $this->caseSensitive ? $map : $lower;
+    }
+
     public function hasStringConflict()
     {
         return $this->stringConflict;
@@ -30,13 +43,6 @@ abstract class AbstractDigitList implements DigitList
     public function isCaseSensitive()
     {
         return $this->caseSensitive;
-    }
-
-    protected function setValueMap(array $map)
-    {
-        $lower = array_change_key_case($map);
-        $this->caseSensitive = count($lower) !== count($map);
-        $this->valueMap = $this->caseSensitive ? $map : $lower;
     }
 
     public function getDigits()
@@ -61,7 +67,7 @@ abstract class AbstractDigitList implements DigitList
             throw new InvalidDigitException('Invalid digit');
         }
 
-        $digit = $this->caseSensitive ? (string) $digit : strtolower($digit);
+        $digit = $this->caseSensitive ? (string) $digit : strtolower((string) $digit);
 
         if (!isset($this->valueMap[$digit])) {
             throw new InvalidDigitException('Invalid digit');

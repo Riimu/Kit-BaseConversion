@@ -26,7 +26,7 @@ class BaseConverter implements Converter
     /** @var Converter Selected converter for base conversion */
     private $converter;
 
-    /** @var integer Precision provided for the fraction conversions */
+    /** @var integer Precision provided to the fraction converter */
     private $precision;
 
     /** @var NumberBase Number base used by provided numbers */
@@ -46,8 +46,8 @@ class BaseConverter implements Converter
      * on the provided number bases.
      *
      * @see NumberBase::__construct
-     * @param mixed $sourceBase Number base used by the provided numbers.
-     * @param mixed $targetBase Number base used by the returned numbers.
+     * @param mixed $sourceBase Number base used by the provided numbers
+     * @param mixed $targetBase Number base used by the returned numbers
      */
     public function __construct($sourceBase, $targetBase)
     {

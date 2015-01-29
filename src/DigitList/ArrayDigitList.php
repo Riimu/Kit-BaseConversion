@@ -2,7 +2,10 @@
 
 namespace Riimu\Kit\BaseConversion\DigitList;
 
+use Riimu\Kit\BaseConversion\InvalidDigitException;
+
 /**
+ * Handles a list of digits provided as an array.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2015, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
@@ -11,25 +14,37 @@ class ArrayDigitList extends AbstractDigitList
 {
     /**
      * Creates a new instance of ArrayDigitList.
-     * @param array $array Digits for the numeral system.
-     * @throws \InvalidArgumentException If too few or duplicate values exist or indexes are not valid
+     *
+     * The list of digits is provided as an array. The index provides value for
+     * the digits and the values provide the digits themselves. Any kind of
+     * value is an acceptable digit, but note that the digits are considered
+     * duplicate if their values are equal using a loose comparison.
+     *
+     * @param array $digits The list of digits for the numeral system.
+     * @throws \InvalidArgumentException If the list of digits is invalid
      */
     public function __construct(array $digits)
     {
         $this->validateDigits($digits);
 
         $this->digits = $digits;
-        $this->valueMap = array_flip(array_filter($digits, [$this, 'isMapped']));
-        $this->stringConflict = count($this->valueMap) === count($this->digits)
-            ? $this->detectConflict($this->digits, 'strpos') : true;
 
-        $this->caseSensitive = $this->detectConflict(array_flip($this->valueMap), 'stripos');
+        $mapped = array_map('strval', array_filter($digits, [$this, 'isMapped']));
+        $this->valueMap = array_flip($mapped);
+        $this->stringConflict = count($mapped) === count($this->digits)
+            ? $this->detectConflict($mapped, 'strpos') : true;
+
+        $this->caseSensitive = $this->detectConflict($mapped, 'stripos');
 
         if (!$this->caseSensitive) {
             array_change_key_case($this->valueMap);
         }
     }
 
+    /**
+     * Validates and sorts the list of digits.
+     * @param array $digits The list of digits for the numeral system.
+     */
     private function validateDigits(& $digits)
     {
         ksort($digits);
@@ -43,6 +58,11 @@ class ArrayDigitList extends AbstractDigitList
         }
     }
 
+    /**
+     * Tells if the list of digits has duplicate values.
+     * @param array $digits The list of digits for the numeral system.
+     * @return boolean True if the list contains duplicate digits, false if not
+     */
     private function detectDuplicates(array $digits)
     {
         while (count($digits) > 0) {
@@ -54,15 +74,24 @@ class ArrayDigitList extends AbstractDigitList
         return false;
     }
 
+    /**
+     * Tells if the digit can be mapped using a value map.
+     * @param mixed $digit The digit to test
+     * @return boolean True if the digit can be mapped, false if not
+     */
     private function isMapped($digit)
     {
         return is_string($digit) || is_int($digit);
     }
 
+    /**
+     * Tells if a conflict exists between string values.
+     * @param string[] $digits The list of digits for the numeral system.
+     * @param callable $detect Function used to detect the conflict
+     * @return boolean True if a conflict exists, false if not
+     */
     private function detectConflict(array $digits, callable $detect)
     {
-        $digits = array_map('strval', $digits);
-
         foreach ($digits as $digit) {
             if ($this->inDigits($digit, $digits, $detect)) {
                 return true;
@@ -72,6 +101,13 @@ class ArrayDigitList extends AbstractDigitList
         return false;
     }
 
+    /**
+     * Tells if a conflict exists for a digit in a list of digits.
+     * @param string $digit A single digit to test
+     * @param string[] $digits The list of digits for the numeral system.
+     * @param callable $detect Function used to detect the conflict
+     * @return boolean True if a conflict exists, false if not
+     */
     private function inDigits($digit, array $digits, callable $detect)
     {
         foreach ($digits as $haystack) {
@@ -85,7 +121,16 @@ class ArrayDigitList extends AbstractDigitList
 
     public function getValue($digit)
     {
-        $key = array_search($digit, $this->digits);
-        return $key === false ? parent::getValue($digit) : $key;
+        if ($this->isMapped($digit)) {
+            return parent::getValue($digit);
+        }
+
+        $value = array_search($digit, $this->digits);
+
+        if ($value === false) {
+            throw new InvalidDigitException('Invalid digit');
+        }
+
+        return $value;
     }
 }

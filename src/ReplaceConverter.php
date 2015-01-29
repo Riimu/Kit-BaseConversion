@@ -7,7 +7,7 @@ namespace Riimu\Kit\BaseConversion;
  *
  * ReplaceConverter converts numbers from base to another using a simple string
  * replacement strategy. In other words. The digits from one base is simply
- * replaced with digits from other base. This strategy, however, is only
+ * replaced with digits from the other base. This strategy, however, is only
  * possible if the two number bases share a common root or if the target number
  * base is nth root of the source base. This is required, because it allows
  * a sequence of digits to be simply replaced with an appropriate sequence of
@@ -17,40 +17,29 @@ namespace Riimu\Kit\BaseConversion;
  * strategies that employ arbitrary-precision arithmetic as there is no need
  * to calculate anything.
  *
+ * Note the replacement conversion strategy can always convert fractions
+ * accurately. Setting the precision for ReplaceConverter has no effect at all
+ * on the conversion results.
+ *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2014, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
 class ReplaceConverter implements Converter
 {
-    /**
-     * Number base for provided numbers.
-     * @var NumberBase
-     */
+    /** @var NumberBase Number base used by provided numbers */
     private $source;
 
-    /**
-     * Number base for returned numbers.
-     * @var NumberBase
-     */
+    /** @var NumberBase Number base used by returned numbers */
     private $target;
 
-    /**
-     * Converter used to convert into common root base.
-     * @var ReplaceConverter
-     */
+    /** @var ReplaceConverter Converter used to convert into common root base */
     private $sourceConverter;
 
-    /**
-     * Converter used to convert from common root base.
-     * @var ReplaceConverter
-     */
+    /** @var ReplaceConverter Converter used to convert from common root base */
     private $targetConverter;
 
-    /**
-     * String replacement table for converting strings.
-     * @var array
-     */
+    /** @var string[] String replacement table for converting numbers */
     private $conversionTable;
 
     /**
@@ -61,12 +50,9 @@ class ReplaceConverter implements Converter
      * addition, due to using string replacement, any number base that has
      * conflicting string digits are not supported.
      *
-     * If the number bases are not supported by ReplaceConverter, an exception
-     * will be thrown.
-     *
-     * @param NumberBase $source Number base for provided numbers.
-     * @param NumberBase $target Number base for returned numbers.
-     * @throws \InvalidArgumentException If the number base combination is not supported
+     * @param NumberBase $source Number base used by the provided numbers
+     * @param NumberBase $target Number base used by the returned numbers
+     * @throws InvalidNumberBaseException If the number bases are not supported
      */
     public function __construct(NumberBase $source, NumberBase $target)
     {
@@ -83,6 +69,13 @@ class ReplaceConverter implements Converter
         }
     }
 
+    /**
+     * Determines the common root for the number bases.
+     * @param NumberBase $source Number base used by the provided numbers
+     * @param NumberBase $target Number base used by the returned numbers
+     * @return integer The common root for the number bases
+     * @throws InvalidNumberBaseException If the number bases are not supported
+     */
     private function getRoot(NumberBase $source, NumberBase $target)
     {
         if ($source->hasStringConflict() || $target->hasStringConflict()) {
@@ -100,7 +93,7 @@ class ReplaceConverter implements Converter
 
     /**
      * Creates string replacement table between source base and target base.
-     * @return array|true String replacement table or true if the bases are equal.
+     * @return string[] String replacement table for converting numbers
      */
     private function buildConversionTable()
     {
@@ -111,6 +104,12 @@ class ReplaceConverter implements Converter
         return array_flip($this->createTable($this->target->getDigitList(), $this->source->getDigitList()));
     }
 
+    /**
+     * Creates a conversion table between two lists of digits.
+     * @param string[] $source Digits for the number base with larger number of digits
+     * @param string[] $target Digits for the number base with smaller number of digits
+     * @return string[] String replacement table for converting numbers
+     */
     private function createTable($source, $target)
     {
         $last = count($target) - 1;
@@ -135,7 +134,7 @@ class ReplaceConverter implements Converter
 
     public function setPrecision($precision)
     {
-
+        // Replace converter always converts accurately
     }
 
     public function convertInteger(array $number)
@@ -168,9 +167,9 @@ class ReplaceConverter implements Converter
 
     /**
      * Replace digits using string replacement.
-     * @param array $number Digits to convert.
+     * @param array $number The digits to convert.
      * @param boolean $fractions True if converting fractions, false if not
-     * @return array Digits converted to target base
+     * @return array The digits converted to target base.
      */
     private function replace(array $number, $fractions = false)
     {
@@ -201,7 +200,7 @@ class ReplaceConverter implements Converter
     /**
      * Trims extraneous zeroes from the digit list.
      * @param array $number Array of digits to trim
-     * @param boolean $right Whether to trim from right or from left
+     * @param boolean $right True to trim from right, false to trim from left
      * @return array Trimmed array of digits
      */
     private function zeroTrim(array $number, $right)

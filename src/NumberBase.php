@@ -5,21 +5,9 @@ namespace Riimu\Kit\BaseConversion;
 /**
  * Represents a positional numeral system with a specific number base.
  *
- * A positional numeral system consists of radix (the number of unique digits in
- * the numeral system) and the list of digits. NumberBase provides methods for
- * finding values for digits in the numeral system and the digits representing
- * given values.
- *
- * NumberBase can be defined in multiple different ways. For more information,
- * see the details on the constructor. NumberBase is completely agnostic to
- * the type of digits used to define the number base, but all comparison are
- * done using loose comparison operators. Thus, for example, the integer 0 and
- * the string "0" are considered to be the same digit.
- *
- * NumberBase will, however, treat any numeral system as case insensitive if
- * possible. Only if the numeral system has lower and upper case version of the
- * same character as different digits, will it get treated in case sensitive
- * manner.
+ * NumberBase provides convenience when dealing numbers that are represented by
+ * a specific list of digits. NumberBase can interpret numbers presented as
+ * strings and also provides convenience when creating lists of digits.
  *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
@@ -30,36 +18,17 @@ class NumberBase
     /** @var DigitList\DigitList List of digits */
     private $digits;
 
-    /**
-     * Tells how to split strings according to this numeral system.
-     * @var false|integer|string
-     */
+    /** @var string|integer|false Pattern for splitting strings into digits */
     private $digitPattern;
 
     /**
      * Creates a new instance of NumberBase.
      *
-     * The digits in the numeral system can be provided as an array, string
-     * or integer.
-     *
-     * If an integer is provided, then the digits in the numeral system
-     * depend on the value of the integer. For bases of 62 and smaller, digits
-     * are used fom series of 0-9A-Za-z. If the base is exactly 64, the
-     * characters from base 64 encoding are used. For bases smaller or equal
-     * to 256 the digits are represented by bytes of equal value. If the base is
-     * bigger than 256, then each digit is represented by '#num' where 'num' is
-     * replaced by the decimal value of the digit.
-     *
-     * If a string is provided, then characters in that string are used as the
-     * digits and their position in the string determine their decimal value.
-     * For example hexadecimal base would be given as '0123456789ABCDEF'.
-     * Duplicate characters in the number base will cause an exception.
-     *
-     * If an array is provided, then values in the array are used as the digits
-     * and their indexes as their decimal values. Any type of values may be
-     * used, but duplicate values (with loose comparison) will cause an
-     * exception. Any missing decimal value in the indexes will also cause an
-     * exception.
+     * The constructor takes a list of digits for the numeral system as the
+     * constructor parameter. This can either be an instance of DigitList or
+     * it can be a string, an integer or an array that is used to construct a
+     * the appropriate type of DigitList. See the constructors for appropriate
+     * classes for how to define those digit lists.
      *
      * @param DigitList\DigitList|integer|string|array $digitList List of digits
      * @throws \InvalidArgumentException If the list of digits is invalid
@@ -70,6 +39,11 @@ class NumberBase
             ? $digitList : $this->buildDigitList($digitList);
     }
 
+    /**
+     * Returns an appropriate type of digit list based on the parameter.
+     * @param integer|string|array $digitList List of digits
+     * @return DigitList\DigitList Appropriate type of digit list
+     */
     private function buildDigitList($digitList)
     {
         if (is_int($digitList)) {
@@ -84,8 +58,8 @@ class NumberBase
     }
 
     /**
-     * Tells if the number using this numeral system can be represented as string.
-     * @return boolean True if possible, false if not
+     * Tells if numbers using this numeral system cannot be represented using a string.
+     * @return boolean True if string representation is not supported, false if it is
      */
     public function hasStringConflict()
     {
@@ -139,7 +113,7 @@ class NumberBase
      * Returns the decimal value represented by the given digit.
      * @param mixed $digit The digit to look up
      * @return integer The decimal value for the provided digit
-     * @throws \InvalidArgumentException If the given digit does not exist
+     * @throws InvalidDigitException If the given digit is invalid
      */
     public function getValue($digit)
     {
@@ -149,8 +123,8 @@ class NumberBase
     /**
      * Returns the decimal values for given digits.
      * @param array $digits Array of digits to look up
-     * @return array Array of digit values
-     * @throws \InvalidArgumentException If some digit does not exist
+     * @return integer[] Array of digit values
+     * @throws InvalidDigitException If any of the digits is invalid
      */
     public function getValues(array $digits)
     {
@@ -170,7 +144,7 @@ class NumberBase
 
     /**
      * Returns the digits representing the given decimal values.
-     * @param array $decimals Decimal values to look up
+     * @param integer[] $decimals Decimal values to look up
      * @return array Array of digits that represent the given decimal values
      * @throws \InvalidArgumentException If any of the decimal values is invalid
      */
@@ -209,16 +183,15 @@ class NumberBase
     }
 
     /**
-     * Replaces digits in the list with digits of proper type in the numeral system.
+     * Replaces all values in the array with actual digits from the digit list.
      *
-     * As all comparisons are done using loose comparisons, an array of digits
-     * may have different representations than in the numeral system. This
-     * method replaces all digits with the actual values and correct types used
-     * by the numeral system.
+     * This method takes a list of digits and returns the digits properly
+     * capitalized and typed. This can be used to canonize numbers when dealing
+     * with case insensitive and loosely typed number bases.
      *
      * @param array $digits List of digits to canonize
      * @return array Canonized list of digits
-     * @throws \InvalidArgumentException If any of the digits does not exist
+     * @throws InvalidDigitException If any of the digits are invalid
      */
     public function canonizeDigits(array $digits)
     {
@@ -227,7 +200,7 @@ class NumberBase
     }
 
     /**
-     * Splits number string into digits.
+     * Splits number string into individual digits.
      * @param string $string String to split into array of digits
      * @return array Array of digits
      * @throws \RuntimeException If numeral system does not support strings
@@ -253,8 +226,8 @@ class NumberBase
     }
 
     /**
-     * Determines the rule on how to split number strings.
-     * @return false|integer|string Splitting rule for strings
+     * Creates and returns the pattern for splitting strings into digits.
+     * @return string|integer Pattern to split strings into digits
      */
     private function getDigitPattern()
     {

@@ -3,12 +3,12 @@
 namespace Riimu\Kit\BaseConversion;
 
 /**
- * Converts numbers using GMP extension.
+ * Converts numbers by using a mathematical algorithm that relies on integers.
  *
- * DecimalConverter employs arbitrary-precision integer arithmetic to convert
- * digits to decimal system and then convert them to the target base. Due to
- * speed of GMP, even fractions are calculated using an integer based
- * algorithm to determine the digits.
+ * DecimalConverter employs arbitrary-precision integer arithmetic to first
+ * convert the digits to decimal system and then to convert the digits to the
+ * target base. DecimalConverter depends on the GMP extension to perform the
+ * required arbitrary precision integer calculations.
  *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2014, Riikka Kalliomäki
@@ -16,28 +16,19 @@ namespace Riimu\Kit\BaseConversion;
  */
 class DecimalConverter implements Converter
 {
-    /**
-     * Precision for fraction conversions.
-     * @var integer
-     */
+    /** @var integer Precision for fraction conversions */
     private $precision;
 
-    /**
-     * Number base for provided numbers.
-     * @var NumberBase
-     */
+    /** @var NumberBase Number base used by provided numbers */
     private $source;
 
-    /**
-     * Number base for returned numbers.
-     * @var NumberBase
-     */
+    /** @var NumberBase Number base used by returned numbers */
     private $target;
 
     /**
-     * Creates new instance of the DecimalConverter.
-     * @param NumberBase $source Number base for provided numbers.
-     * @param NumberBase $target Number base for returned numbers.
+     * Creates a new instance of DecimalConverter.
+     * @param NumberBase $source Number base used by the provided numbers
+     * @param NumberBase $target Number base used by the returned numbers
      */
     public function __construct(NumberBase $source, NumberBase $target)
     {
@@ -74,9 +65,9 @@ class DecimalConverter implements Converter
     }
 
     /**
-     * Converts the number from source base to gmp resource.
-     * @param array $number List of digit values with least significant first
-     * @return resource resulting number as a gmp resource
+     * Converts the number from source base to GMP resource.
+     * @param integer[] $number List of digit values with least significant digit first
+     * @return resource resulting number as a GMP resource
      */
     private function toDecimal(array $number)
     {
@@ -98,7 +89,7 @@ class DecimalConverter implements Converter
     /**
      * Converts GMP resource to target base.
      * @param resource $decimal Number as GMP resource
-     * @return array List of digit values for the converted number
+     * @return integer[] List of digit values for the converted number
      */
     private function toBase($decimal)
     {
@@ -119,7 +110,7 @@ class DecimalConverter implements Converter
     }
 
     /**
-     * Counts the number of digits required in target base.
+     * Determines the number of digits required in the target base.
      * @param integer $count Number of digits in the original number
      * @return integer Number of digits required in the target base
      */

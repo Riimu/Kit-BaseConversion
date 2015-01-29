@@ -3,6 +3,7 @@
 namespace Riimu\Kit\BaseConversion\DigitList;
 
 /**
+ * Handles a list of digits provided as a string.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2015, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
@@ -11,6 +12,12 @@ class StringDigitList extends AbstractDigitList
 {
     /**
      * Creates a new instance of StringDigitList.
+     *
+     * The list of digits must be provided as a string. Each character
+     * represents a single digit and the position in the string represents the
+     * value for that digit. For example, base 16 could be defined as
+     * `0123456789ABCDEF`.
+     *
      * @param string $digits Digits for the numeral system
      * @throws \InvalidArgumentException If the list of digits is invalid
      */

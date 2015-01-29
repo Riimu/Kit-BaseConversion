@@ -9,13 +9,13 @@ namespace Riimu\Kit\BaseConversion;
  */
 class NumberBaseTest extends \PHPUnit_Framework_TestCase
 {
-    public function testInvalidBaseType ()
+    public function testInvalidBaseType()
     {
         $this->setExpectedException('\InvalidArgumentException');
         new NumberBase(true);
     }
 
-    public function testCreateDefaultIntegerBase ()
+    public function testCreateDefaultIntegerBase()
     {
         $base = new NumberBase(18);
         $this->assertEquals(18, $base->getRadix());
@@ -23,53 +23,53 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(17, $base->getValue('H'));
     }
 
-    public function testCreateBase64IntegerBase ()
+    public function testCreateBase64IntegerBase()
     {
         $base = new NumberBase(64);
         $this->assertEquals('A', $base->getDigit(0));
         $this->assertEquals(62, $base->getValue('+'));
     }
 
-    public function testCreateByteIntegerBase ()
+    public function testCreateByteIntegerBase()
     {
         $base = new NumberBase(256);
         $this->assertEquals("\x64", $base->getDigit(0x64));
         $this->assertEquals(032, $base->getValue("\032"));
     }
 
-    public function testCreateLargeIntegerBase ()
+    public function testCreateLargeIntegerBase()
     {
         $base = new NumberBase(512);
         $this->assertEquals("#306", $base->getDigit(306));
         $this->assertEquals(32, $base->getValue("#032"));
     }
 
-    public function testCreateWithTooSmallInteger ()
+    public function testCreateWithTooSmallInteger()
     {
         $this->setExpectedException('\InvalidArgumentException');
         new NumberBase(1);
     }
 
-    public function testCreateWithString ()
+    public function testCreateWithString()
     {
         $base = new NumberBase('ABCDEF');
         $this->assertEquals(6, $base->getRadix());
         $this->assertEquals(4, $base->getValue('E'));
     }
 
-    public function testBaseWithTooFewCharacters ()
+    public function testBaseWithTooFewCharacters()
     {
         $this->setExpectedException('\InvalidArgumentException');
         new NumberBase('0');
     }
 
-    public function testBaseWithDuplicateCharacters ()
+    public function testBaseWithDuplicateCharacters()
     {
         $this->setExpectedException('\InvalidArgumentException');
         new NumberBase('00');
     }
 
-    public function testCreateWithArray ()
+    public function testCreateWithArray()
     {
         $base = new NumberBase(['foo', 'bar']);
         $this->assertEquals(2, $base->getRadix());
@@ -77,30 +77,28 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('bar', $base->getDigit(1));
     }
 
-    public function testBaseWithSingleNumber ()
+    public function testBaseWithSingleNumber()
     {
         $this->setExpectedException('\InvalidArgumentException');
         new NumberBase([0]);
     }
 
-    public function testBaseWithDuplicateNumbers ()
+    public function testBaseWithDuplicateNumbers()
     {
         $this->setExpectedException('\InvalidArgumentException');
         new NumberBase([0, 0, 1]);
     }
 
-    public function testBaseWithMissingValues ()
+    public function testBaseWithMissingValues()
     {
         $this->setExpectedException('\InvalidArgumentException');
         new NumberBase([0 => 0, 2 => 1]);
     }
 
-    public function testBaseWithNonScalarValues()
+    public function testNonScalarDigits()
     {
-        $zero = new \stdClass();
-        $zero->n = 0;
-        $one = new \stdClass();
-        $one->n = 1;
+        $zero = (object) ['n' => 0];
+        $one = (object) ['n' => 1];
 
         $base = new NumberBase([$zero, $one]);
         $this->assertSame($one, $base->getDigit(1));
@@ -108,14 +106,37 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
         $this->assertSame([$zero, $one], $base->getDigitList());
     }
 
-    public function testGettingMissingDecimalValue ()
+    public function testDuplicateNonScalarDigits()
+    {
+        $zeroA = (object) ['n' => 0];
+        $zeroB = (object) ['n' => 0];
+
+        $this->assertNotEquals(spl_object_hash($zeroA), spl_object_hash($zeroB));
+
+        $this->setExpectedException('InvalidArgumentException');
+        new NumberBase([$zeroA, $zeroB]);
+    }
+
+    public function testInvalidNonScalarDigit()
+    {
+        $zero = (object) ['n' => 0];
+        $one = (object) ['n' => 1];
+        $two = (object) ['n' => 2];
+
+        $base = new NumberBase([$zero, $one]);
+
+        $this->setExpectedException('Riimu\Kit\BaseConversion\InvalidDigitException');
+        $base->getValue($two);
+    }
+
+    public function testGettingMissingDecimalValue()
     {
         $this->setExpectedException('\InvalidArgumentException');
         $base = new NumberBase(16);
         $base->getDigit(17);
     }
 
-    public function testGettingMissingCharacter ()
+    public function testGettingMissingCharacter()
     {
         $this->setExpectedException('\InvalidArgumentException');
         $base = new NumberBase(16);
@@ -137,14 +158,14 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider getFindCommonRadixRootTestValues
      */
-    public function testFindCommonRadixRoot ($a, $b, $common)
+    public function testFindCommonRadixRoot($a, $b, $common)
     {
         $aBase = new NumberBase($a);
         $bBase = new NumberBase($b);
         $this->assertEquals($common, $aBase->findCommonRadixRoot($bBase));
     }
 
-    public function getFindCommonRadixRootTestValues ()
+    public function getFindCommonRadixRootTestValues()
     {
         return [
             [4, 8, 2],
