@@ -3,12 +3,12 @@
 ## v1.1.0 (?) ##
 
   * Improvements in code quality and documentation
+  * DecimalConverter now uses GMP for conversion when possible
   * The NumberBase now uses an instance of DigitList\DigitList to represent the
     list of digits used by the number base.
   * Added BaseConverter::baseConvert() static method as a convenient replacement
     for base_convert()
-  * InvalidDigitException is now thrown, if the numbers contain invalid digits
-    (extends from InvalidArgumentException).
+  * Invalid digits now cause an InvalidDigitException to be thrown
 
 ## v1.0.1 (2014-05-16) ##
 

@@ -47,14 +47,29 @@ class DecimalConverter implements Converter
 
     public function convertInteger(array $number)
     {
-        return $this->toBase($this->toDecimal($number));
+        $decimal = $this->getDecimal($number);
+
+        if ($this->isStandardBase($this->target->getDigitList())) {
+            return $this->target->canonizeDigits(str_split(gmp_strval($decimal, $this->target->getRadix())));
+        }
+
+        $zero = gmp_init('0');
+        $radix = gmp_init($this->target->getRadix());
+        $result = [];
+
+        while (gmp_cmp($decimal, $zero) > 0) {
+            list($decimal, $modulo) = gmp_div_qr($decimal, $radix);
+            $result[] = gmp_intval($modulo);
+        }
+
+        return $this->target->getDigits(empty($result) ? [0] : array_reverse($result));
     }
 
     public function convertFractions(array $number)
     {
         $target = gmp_init($this->target->getRadix());
-        $dividend = $this->toDecimal($number);
-        $divisor = $this->toDecimal(
+        $dividend = $this->getDecimal($number);
+        $divisor = $this->getDecimal(
             [$this->source->getDigit(1)] + array_fill(1, max(count($number), 1), $this->source->getDigit(0))
         );
         $digits = $this->getFractionDigitCount(count($number));
@@ -70,11 +85,11 @@ class DecimalConverter implements Converter
     }
 
     /**
-     * Converts the number from source base to GMP resource.
-     * @param integer[] $number List of digit values with least significant digit first
+     * Converts the number from source base to a decimal GMP resource.
+     * @param array $number Digits for the number to convert
      * @return resource resulting number as a GMP resource
      */
-    private function toDecimal(array $number)
+    private function getDecimal(array $number)
     {
         if ($this->isStandardBase($this->source->getDigitList())) {
             return gmp_init(implode('', $this->source->canonizeDigits($number)), $this->source->getRadix());
@@ -93,36 +108,13 @@ class DecimalConverter implements Converter
     }
 
     /**
-     * Converts GMP resource to target base.
-     * @param resource $decimal Number as GMP resource
-     * @return integer[] List of digit values for the converted number
-     */
-    private function toBase($decimal)
-    {
-        if ($this->isStandardBase($this->target->getDigitList())) {
-            return $this->target->canonizeDigits(str_split(gmp_strval($decimal, $this->target->getRadix())));
-        }
-
-        $zero = gmp_init('0');
-        $radix = gmp_init($this->target->getRadix());
-        $result = [];
-
-        while (gmp_cmp($decimal, $zero) > 0) {
-            list($decimal, $modulo) = gmp_div_qr($decimal, $radix);
-            $result[] = gmp_intval($modulo);
-        }
-
-        return $this->target->getDigits(empty($result) ? [0] : array_reverse($result));
-    }
-
-    /**
-     * Tells if the digits match those used by GMP.
+     * Tells if the list of digits match those used by GMP.
      * @param array $digits List of digits for the number base
      * @return boolean True if the digits match, false if they do not
      */
     private function isStandardBase(array $digits)
     {
-        if (count($digits) > 62) {
+        if (count($digits) > strlen(self::$standardBase)) {
             return false;
         }
 
