@@ -102,7 +102,7 @@ class NumberBase
     {
         try {
             $this->digits->getValue($digit);
-        } catch (InvalidDigitException $ex) {
+        } catch (DigitList\InvalidDigitException $ex) {
             return false;
         }
 

@@ -1,9 +1,6 @@
 <?php
 
 namespace Riimu\Kit\BaseConversion\DigitList;
-
-use Riimu\Kit\BaseConversion\InvalidDigitException;
-
 /**
  * Provides common functionality for different digit lists.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>

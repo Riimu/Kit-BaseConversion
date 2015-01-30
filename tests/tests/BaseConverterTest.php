@@ -97,13 +97,13 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
 
     public function testInvalidDigitsInIntegerConversion()
     {
-        $this->setExpectedException('Riimu\Kit\BaseConversion\InvalidDigitException');
+        $this->setExpectedException('Riimu\Kit\BaseConversion\DigitList\InvalidDigitException');
         (new BaseConverter(2, 16))->convertInteger(['2']);
     }
 
     public function testInvalidDigitsInFractionConversion()
     {
-        $this->setExpectedException('Riimu\Kit\BaseConversion\InvalidDigitException');
+        $this->setExpectedException('Riimu\Kit\BaseConversion\DigitList\InvalidDigitException');
         (new BaseConverter(2, 16))->convertFractions(['2']);
     }
 }

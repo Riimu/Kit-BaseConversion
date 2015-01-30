@@ -8,7 +8,7 @@
     list of digits used by the number base.
   * Added BaseConverter::baseConvert() static method as a convenient replacement
     for base_convert()
-  * Invalid digits now cause an InvalidDigitException to be thrown
+  * Invalid digits now cause an DigitList\InvalidDigitException to be thrown
 
 ## v1.0.1 (2014-05-16) ##
 

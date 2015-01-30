@@ -2,8 +2,6 @@
 
 namespace Riimu\Kit\BaseConversion\DigitList;
 
-use Riimu\Kit\BaseConversion\InvalidDigitException;
-
 /**
  * Handles a list of digits provided as an array.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>

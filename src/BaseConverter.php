@@ -137,7 +137,7 @@ class BaseConverter implements Converter
             if ($fractions !== '') {
                 $result .= '.' . implode('', $this->convertFractions($this->source->splitString($fractions)));
             }
-        } catch (InvalidDigitException $ex) {
+        } catch (DigitList\InvalidDigitException $ex) {
             return false;
         }
 
