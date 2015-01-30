@@ -25,6 +25,9 @@ class DecimalConverter implements Converter
     /** @var NumberBase Number base used by returned numbers */
     private $target;
 
+    /** @var string Number base used by GMP for standard conversions */
+    private static $standardBase = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
     /**
      * Creates a new instance of DecimalConverter.
      * @param NumberBase $source Number base used by the provided numbers
@@ -44,14 +47,16 @@ class DecimalConverter implements Converter
 
     public function convertInteger(array $number)
     {
-        return $this->target->getDigits($this->toBase($this->toDecimal($this->source->getValues($number))));
+        return $this->toBase($this->toDecimal($number));
     }
 
     public function convertFractions(array $number)
     {
         $target = gmp_init($this->target->getRadix());
-        $dividend = $this->toDecimal($this->source->getValues($number));
-        $divisor = $this->toDecimal([1] + array_fill(1, max(count($number), 1), 0));
+        $dividend = $this->toDecimal($number);
+        $divisor = $this->toDecimal(
+            [$this->source->getDigit(1)] + array_fill(1, max(count($number), 1), $this->source->getDigit(0))
+        );
         $digits = $this->getFractionDigitCount(count($number));
         $zero = gmp_init('0');
         $result = [];
@@ -71,10 +76,11 @@ class DecimalConverter implements Converter
      */
     private function toDecimal(array $number)
     {
-        if ($this->source->getRadix() === 10) {
-            return gmp_init(implode('', $number));
+        if ($this->isStandardBase($this->source->getDigitList())) {
+            return gmp_init(implode('', $this->source->canonizeDigits($number)), $this->source->getRadix());
         }
 
+        $number = $this->source->getValues($number);
         $decimal = gmp_init('0');
         $count = count($number);
         $radix = gmp_init($this->source->getRadix());
@@ -93,8 +99,8 @@ class DecimalConverter implements Converter
      */
     private function toBase($decimal)
     {
-        if ($this->target->getRadix() === 10) {
-            return array_map('intval', str_split(gmp_strval($decimal)));
+        if ($this->isStandardBase($this->target->getDigitList())) {
+            return $this->target->canonizeDigits(str_split(gmp_strval($decimal, $this->target->getRadix())));
         }
 
         $zero = gmp_init('0');
@@ -106,7 +112,21 @@ class DecimalConverter implements Converter
             $result[] = gmp_intval($modulo);
         }
 
-        return empty($result) ? [0] : array_reverse($result);
+        return $this->target->getDigits(empty($result) ? [0] : array_reverse($result));
+    }
+
+    /**
+     * Tells if the digits match those used by GMP.
+     * @param array $digits List of digits for the number base
+     * @return boolean True if the digits match, false if they do not
+     */
+    private function isStandardBase(array $digits)
+    {
+        if (count($digits) > 62) {
+            return false;
+        }
+
+        return $digits == str_split(substr(self::$standardBase, 0, count($digits)));
     }
 
     /**
