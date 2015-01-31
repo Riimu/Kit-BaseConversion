@@ -1,6 +1,6 @@
 # Changelog #
 
-## v1.1.0 (?) ##
+## v1.1.0 (2015-01-31) ##
 
   * Improvements in code quality and documentation
   * DecimalConverter now uses GMP for conversion when possible
