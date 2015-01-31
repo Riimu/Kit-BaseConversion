@@ -46,7 +46,7 @@ interface DigitList extends \Countable
      * Returns the value for the given digit.
      * @param mixed $digit Digit to search for
      * @return integer The value of the digit
-     * @throws Riimu\Kit\BaseConversion\InvalidDigitException if the digit is invalid
+     * @throws InvalidDigitException if the digit is invalid
      */
     public function getValue($digit);
 

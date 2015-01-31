@@ -1,6 +1,7 @@
 <?php
 
 namespace Riimu\Kit\BaseConversion\DigitList;
+
 /**
  * Provides common functionality for different digit lists.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>

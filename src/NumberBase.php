@@ -26,7 +26,7 @@ class NumberBase
      *
      * The constructor takes a list of digits for the numeral system as the
      * constructor parameter. This can either be an instance of DigitList or
-     * it can be a string, an integer or an array that is used to construct a
+     * it can be a string, an integer or an array that is used to construct
      * the appropriate type of DigitList. See the constructors for appropriate
      * classes for how to define those digit lists.
      *
@@ -113,7 +113,7 @@ class NumberBase
      * Returns the decimal value represented by the given digit.
      * @param mixed $digit The digit to look up
      * @return integer The decimal value for the provided digit
-     * @throws InvalidDigitException If the given digit is invalid
+     * @throws DigitList\InvalidDigitException If the given digit is invalid
      */
     public function getValue($digit)
     {
@@ -124,7 +124,7 @@ class NumberBase
      * Returns the decimal values for given digits.
      * @param array $digits Array of digits to look up
      * @return integer[] Array of digit values
-     * @throws InvalidDigitException If any of the digits is invalid
+     * @throws DigitList\InvalidDigitException If any of the digits is invalid
      */
     public function getValues(array $digits)
     {
@@ -203,7 +203,7 @@ class NumberBase
      *
      * @param array $digits List of digits to canonize
      * @return array Canonized list of digits
-     * @throws InvalidDigitException If any of the digits are invalid
+     * @throws DigitList\InvalidDigitException If any of the digits are invalid
      */
     public function canonizeDigits(array $digits)
     {

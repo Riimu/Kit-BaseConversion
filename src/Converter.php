@@ -42,8 +42,8 @@ interface Converter
      * digits, except converted to the target number base.
      *
      * @param array $number Array of digits representing the integer part
-     * @return array Array of digits of the converted number
-     * @throws InvalidDigitException If the integer part contains invalid digits
+     * @return array Digits for the converted number
+     * @throws DigitList\InvalidDigitException If the integer part contains invalid digits
      */
     public function convertInteger(array $number);
 
@@ -56,8 +56,8 @@ interface Converter
      * digits, except converted to the target number base.
      *
      * @param array $number Array of digits representing the fractional part
-     * @return array Array of digits of the converted number
-     * @throws InvalidDigitException If the fractional part contain invalid digits.
+     * @return array Digits for the converted number
+     * @throws DigitList\InvalidDigitException If the fractional part contain invalid digits.
      */
     public function convertFractions(array $number);
 }

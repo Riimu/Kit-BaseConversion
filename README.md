@@ -113,7 +113,7 @@ number base, the method will return false instead.
 While this library does support conversion of fractions, it's important to
 understand that fractions cannot always be converted accurately from number base
 to another the same way that integers can be converted. This is result of the
-fact that not all fractions can be represented in another number system.
+fact that not all fractions can be represented in another number base.
 
 For example, let's say we have the number 0.1 in base 3. This equals the same
 as 1/3 in base 10. However, if you were to represent 1/3 as a decimal number,
@@ -131,7 +131,7 @@ echo BaseConverter::baseConvert('0.1', 3, 10, 12); // outputs: 0.333333333333
 ```
 
 Due to this behavior, it is possible to set the precision used for inaccurate
-fractions conversions. As can be seen in the previous example, the precision
+fraction conversions. As can be seen in the previous example, the precision
 value defines the maximum number of digits in the resulting number. The result
 may have less digits, however, if the number can be accurately converted using
 a small number of digits. The precision may also be completely ignored, if the
