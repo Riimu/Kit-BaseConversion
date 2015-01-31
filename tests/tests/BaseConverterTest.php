@@ -12,6 +12,8 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
     public function testStaticMethod()
     {
         $this->assertSame('101000110111001100110100', BaseConverter::baseConvert('A37334', 16, 2));
+        $this->assertSame('-113863.683853', BaseConverter::baseConvert('-1BCC7.AF11', 16, 10));
+        $this->assertSame('-113863.68', BaseConverter::baseConvert('-1BCC7.AF11', 16, 10, 2));
     }
 
     public function testCreatingWithReplaceBases()

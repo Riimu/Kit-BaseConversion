@@ -11,7 +11,7 @@ two different conversion strategies. In some cases, it's possible to convert
 numbers simply by replacing the digits with digits from the other base (e.g.
 when converting from base 2 to base 16). This is considerably faster than
 the other strategy, which simply calculates the new number using arbitrary
-precision integer arithmetic provided by the GMP extension.
+precision integer arithmetic.
 
 The API documentation, which can be generated using Apigen, can be read online
 at: http://kit.riimu.net/api/baseconversion/
@@ -59,9 +59,21 @@ the provided `src/autoload.php` file.
 
 ## Usage ##
 
-For your convenience, this library provides a single static method that can be
-easily used to convert numbers. In most common cases, it works the same way
-as `base_convert` does. For example:
+The most convenient way to use this library is via the `baseConvert()` static
+method provided by the `BaseConverter` class. In most cases, it works the same
+way as `base_convert()` does. For example:
+
+```php
+<?php
+
+require 'vendor/autoload.php';
+use Riimu\Kit\BaseConversion\BaseConverter;
+echo BaseConverter::baseConvert('A37334', 16, 2); // outputs: 101000110111001100110100
+```
+
+The method accepts negative numbers and fractions in the same way. An optional
+fourth parameter can be used to define the precision for the conversion. For
+example:
 
 ```php
 <?php
@@ -69,120 +81,171 @@ as `base_convert` does. For example:
 require 'vendor/autoload.php';
 use Riimu\Kit\BaseConversion\BaseConverter;
 
-echo BaseConverter::convertBase('A37334', 16, 2); // outputs: 101000110111001100110100
+echo BaseConverter::baseConvert('-1BCC7.A', 16, 10)  . PHP_EOL; // outputs: -113863.625
+echo BaseConverter::baseConvert('-1BCC7.A', 16, 10, 1); // outputs: -113863.6
 ```
 
-In most cases, all you need to do to use this library is to create new instance
-of `BaseConverter` and use the `convert()` method to convert numbers. For
-example:
+The static method is simply a convenient wrapper for creating an instance of
+`BaseConvert` and calling the `setPrecision()` and `convert()` methods. If you
+need to convert multiple numbers, it's more efficient to call the object in a
+non static manner. For example:
 
 ```php
 <?php
-$converter = new Riimu\Kit\BaseConversion\BaseConverter(10, 16);
-echo $converter->convert('42'); // Will output '2A'
+
+require 'vendor/autoload.php';
+use Riimu\Kit\BaseConversion\BaseConverter;
+
+$converter = new BaseConverter(16, 10);
+
+echo $converter->convert('A37334') . PHP_EOL; // outputs: 10711860
+echo $converter->convert('-1BCC7.A')  . PHP_EOL; // outputs: -113863.625
+
+$converter->setPrecision(1);
+echo $converter->convert('-1BCC7.A'); // outputs: -113863.6
 ```
 
-The constructor arguments are the number bases used for conversion. The first
-argument is the number base used by input numbers and the second is the number
-based used by output numbers. For information about defining numbers bases, see
-below.
+If the provided number contains invalid digits that are not part of the defined
+number base, the method will return false instead.
 
-Converting fractions is just as easy. For example:
+### Converting Fractions ###
+
+While this library does support conversion of fractions, it's important to
+understand that fractions cannot always be converted accurately from number base
+to another the same way that integers can be converted. This is result of the
+fact that not all fractions can be represented in another number system.
+
+For example, let's say we have the number 0.1 in base 3. This equals the same
+as 1/3 in base 10. However, if you were to represent 1/3 as a decimal number,
+you would get an infinitely repeating '0.3333...'. For example:
 
 ```php
 <?php
-$converter = new Riimu\Kit\BaseConversion\BaseConverter(8, 12);
-echo $converter->convert('-1337.1337'); // Will output '-513.21A0B'
+
+require 'vendor/autoload.php';
+use Riimu\Kit\BaseConversion\BaseConverter;
+
+echo BaseConverter::baseConvert('0.1', 3, 10)  . PHP_EOL; // outputs: 0.33
+echo BaseConverter::baseConvert('0.1', 3, 10, 6)  . PHP_EOL; // outputs: 0.333333
+echo BaseConverter::baseConvert('0.1', 3, 10, 12); // outputs: 0.333333333333
 ```
 
-See below for further information about how fractions and number bases are
-handled.
+Due to this behavior, it is possible to set the precision used for inaccurate
+fractions conversions. As can be seen in the previous example, the precision
+value defines the maximum number of digits in the resulting number. The result
+may have less digits, however, if the number can be accurately converted using
+a small number of digits. The precision may also be completely ignored, if the
+converter knows, that it can accurately convert the fractions.
 
-### Fractions ###
-
-In some cases, it is impossible to convert fractions accurately. For example,
-if the number 0.1 is converted from base 3 to base 10, it equals 1/3 which is
-0.3333... For cases like this, the precision used for conversion can be set
-using `setPrecision()`. A positive integer of 1 or greater indicates the number
-of digits in these inaccurate conversions. For example:
+The precision value also has an alternative definition. If the precision is
+0 or a negative number, then the maximum number of digits in the resulting
+number is based on the precision of the original number. If the precision is 0,
+the resulting number will have as many digits as it takes to represent the
+number in the same precision as the original number. A negative number will
+simply increase the number of digits in addition to that. For example:
 
 ```php
 <?php
-$converter = new Riimu\Kit\BaseConversion\BaseConverter(10, 12);
-$converter->setPrecision(5);
-echo $converter->convert('-1337.1337') . PHP_EOL; // Outputs '-935.17304'
 
-$converter->setPrecision(10);
-echo $converter->convert('-1337.1337') . PHP_EOL; // Outputs '-935.17304A0890'
+require 'vendor/autoload.php';
+use Riimu\Kit\BaseConversion\BaseConverter;
 
-$converter->setPrecision(4);
-echo $converter->convert('-1337.1337') . PHP_EOL; // Outputs '-935.1730'
+echo BaseConverter::baseConvert('0.A7', 16, 10, 0)  . PHP_EOL; // outputs: 0.652
+echo BaseConverter::baseConvert('0.A7', 16, 10, -2); // outputs: 0.65234
 ```
 
-Note that the last number is not rounded. However, by using 0 or a negative
-integer as the precision, the converter will determine the number of digits
-required to represent the number in at least same accuracy as the input number.
-If the precision is negative, digits will be added equal to the absolute value
-of the precision. The default precision is -1. For example:
+In the previous example, the original number is `0.A7` in the base 16. A base 16
+number with two digits in the fractional part can represent a number up to
+accuracy of `1/(16 * 16) == 1/256`. To represent the the fractional part in the
+same accuracy in base 10, we need at least 3 digits, because two digit can only
+represent numbers up to accuracy of `1/100`.
+
+The default precision value used by the library is `-1`. It is also important
+to note that the last digit is not rounded (due to the fact that it would
+cause inconsistent results in some cases).
+
+### Case Sensitivity ###
+
+In order to make user interaction with the library more convenient, the library
+treats all numbers in a case insensitive manner, unless the number base
+prohibits that. For example, the base 16 can be treated in a case insensitive
+manner, because it only defines the value for the digits `0-9A-F`. However,
+base 62 cannot be treated in a case insensitive manner, because letters like
+`A` and `a` have a different value.
+
+The returned numbers will always respect the character case defined by the
+number base. For example:
 
 ```php
 <?php
-$converter = new Riimu\Kit\BaseConversion\BaseConverter(15, 2);
-echo $converter->convert('0.A7') . PHP_EOL; // Outputs '0.101100101'
 
-$converter->setPrecision(-3);
-echo $converter->convert('0.A7') . PHP_EOL; // Outputs '0.10110010101'
+require 'vendor/autoload.php';
+use Riimu\Kit\BaseConversion\BaseConverter;
 
-$converter->setPrecision(-10);
-echo $converter->convert('0.A7') . PHP_EOL; // Outputs '0.101100101010000110'
+echo BaseConverter::baseConvert('7BFA11', 16, 12)  . PHP_EOL; // outputs: 2879B29
+echo BaseConverter::baseConvert('7bfa11', 16, 12); // outputs: 2879B29
 ```
 
-Note that precision parameter is ignored if the number is converted using
-replacement logic as this always yields accurate results. Additionally, if the
-number can be accurately represented using less digits than the indicated
-precision, the resulting number won't have trailing zeros.
+### Customizing Number Bases ###
 
-### Case sensitivity ###
-
-In general, the number bases are case insensitive whenever possible. For example,
-base 16 has digits 0-9A-F, which allows you to use either lower or upper case
-letters for the digits. However, for bases like base 62, the characters are
-case sensitive, because the number base contains both 'a' and 'A' digits and
-they have different values. In numerical bases, the library prefers upper case
-letters in output. This may be easily overridden by providing the digits
-yourself in the constructor, for example:
+One of the features of this library is that allows much better customization of
+number bases than `base_convert()`. In most cases, you will probably define the
+number base using a simple integer such as `10` or `16`. However, there is no
+limit to the size of that integer. For example:
 
 ```php
 <?php
-$converter = new Riimu\Kit\BaseConversion\BaseConverter(10, '0123456789abcdef');
-echo $converter->convert('42'); // Will output '2a'
+
+require 'vendor/autoload.php';
+use Riimu\Kit\BaseConversion\BaseConverter;
+
+echo BaseConverter::baseConvert('7F', 16, 1024)  . PHP_EOL; // outputs: #0127
+echo BaseConverter::baseConvert('5Glm1z', 64, 512); // outputs: #456#421#310#371
 ```
 
-### Number Bases ###
+For large number bases, however, the digits are simply represented by a string
+that consists of `#` and the value for the digit. Whenever the number base is
+defined using an integer, the digits follow the following rules:
 
-When creating new instances of `BaseConverter`, the arguments can be provided as
-instances of `NumberBase` or the constructor arguments passed to `NumberBase`. The
-constructor argument of `NumberBase` allows you to define number bases in couple
-different ways.
+  * Bases equal or smaller than 62 use digits from the string
+    `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`
+  * A base 64 number uses digits from the base64 standard, i.e.
+    `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/`
+  * Other bases equal or smaller than 256 use bytes as digits with byte value
+    indicating the digit value.
+  * Large bases use strings for digits that consist of `#` and the value for the
+    digit (the length of the string depends on the greatest digit value).
+    
+In addition to defining the number base using an integer, it's also possible
+to define the number base using a string. Each character in the string
+represents a digit and the position of each character represents it's value.
+The base 16, for example, could be defined as `0123456789ABCDEF`. Defining
+number bases this way also makes it easier to get resulting numbers in a
+specific case. For example:
 
-The easiest way is to provide a positive integer. If the integer is between 2
-and 62, the characters from sequence 0-9A-Za-z are used as digits. If the number
-is 64, the the number base will use the digits as defined in base64 encoding.
-For other numbers equal to 256 or smaller single bytes are used with byte value
-used as digit value. If the number is 257 or greater, then each digit is
-represented by hash followed by the digit value. For example, in base 1028 the
-number 372 is represented by "#0372".
+```php
+<?php
 
-The second way to provide a number base is to provide a string of characters.
-The position of each character indicates their digit value. For example, binary
-would be given as "012". Decimal would be "0123456789" and hexadecimal would be
-"0123456789ABCDEF".
+require 'vendor/autoload.php';
+use Riimu\Kit\BaseConversion\BaseConverter;
 
-The third way to create a number base is to provide the digits as an array. In
-the array, the index indicates the value of the digit and the value is the digit
-itself. The number base is completely agnostic to the value types used in the
-array. However, it is worth noting that `NumberBase` uses loose comparison to
-compare digit equality.
+echo BaseConverter::baseConvert('101100011101', '01', 16)  . PHP_EOL; // outputs: B1D
+echo BaseConverter::baseConvert('101100011101', 2, '0123456789abcdef'); // outputs: b1d
+```
+
+There is also a third way to define the number bases using an array. This allows
+even greater customization in terms of number bases. Each value in the array
+represents a digit and the index indicates the value. For example:
+
+```php
+<?php
+
+require 'src/autoload.php';
+use Riimu\Kit\BaseConversion\BaseConverter;
+
+echo BaseConverter::baseConvert('22', 10, ['nil', 'one'])  . PHP_EOL; // outputs: oneniloneonenil
+echo BaseConverter::baseConvert('187556', 10, ['-', '-!', '-"', '-#', '-¤', '-%']); // outputs: -¤---¤-!-%-"
+```
 
 ## Credits ##
 

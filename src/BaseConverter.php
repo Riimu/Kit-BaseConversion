@@ -77,11 +77,13 @@ class BaseConverter implements Converter
      * @param string $number The number to convert
      * @param mixed $fromBase Number base used by the provided number
      * @param mixed $toBase Number base used by the returned number
+     * @param integer $precision Precision for inaccurate conversion
      * @return string|false The converted number or false on error
      */
-    public static function baseConvert($number, $fromBase, $toBase)
+    public static function baseConvert($number, $fromBase, $toBase, $precision = -1)
     {
         $converter = new BaseConverter($fromBase, $toBase);
+        $converter->setPrecision($precision);
         return $converter->convert($number);
     }
 

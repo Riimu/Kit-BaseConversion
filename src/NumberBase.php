@@ -128,7 +128,13 @@ class NumberBase
      */
     public function getValues(array $digits)
     {
-        return array_map([$this->digits, 'getValue'], $digits);
+        $values = [];
+
+        foreach ($digits as $digit) {
+            $values[] = $this->digits->getValue($digit);
+        }
+
+        return $values;
     }
 
     /**
@@ -150,7 +156,13 @@ class NumberBase
      */
     public function getDigits(array $decimals)
     {
-        return array_map([$this->digits, 'getDigit'], $decimals);
+        $digits = [];
+
+        foreach ($decimals as $decimal) {
+            $digits[] = $this->digits->getDigit($decimal);
+        }
+
+        return $digits;
     }
 
     /**
