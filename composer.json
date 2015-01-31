@@ -3,7 +3,7 @@
     "type": "library",
     "description": "Arbitrary precision number base conversion library",
     "homepage": "http://kit.riimu.net",
-    "keywords": ["math", "base", "converter"],
+    "keywords": ["math", "number", "base", "converter"],
     "license": "MIT",
     "authors": [
         {
