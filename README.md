@@ -1,6 +1,6 @@
 # Arbitrary Precision Base Converter #
 
-BaseConversion is a PHP library for converting number bases, similar to PHP's
+*BaseConversion* is a PHP library for converting number bases, similar to PHP's
 built in function `base_convert()`. However, unlike the built in function, this
 library is not limited by 32 bit integers and is capable of converting numbers
 of arbitrary precision. This library also supports conversion of fractions and
