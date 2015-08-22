@@ -255,8 +255,11 @@ class NumberBase
             if (count(array_flip($lengths)) === 1) {
                 $this->digitPattern = array_pop($lengths);
             } else {
-                $string = implode('|', array_map('preg_quote', $this->digits->getDigits()));
-                $this->digitPattern = "($string|.+)s" . ($this->digits->isCaseSensitive() ? '' : 'i');
+                $this->digitPattern = sprintf(
+                    '(%s|.+)s%s',
+                    implode('|', array_map('preg_quote', $this->digits->getDigits())),
+                    $this->digits->isCaseSensitive() ? '' : 'i'
+                );
             }
         }
 

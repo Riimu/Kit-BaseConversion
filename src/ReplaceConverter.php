@@ -39,7 +39,7 @@ class ReplaceConverter implements Converter
     /** @var ReplaceConverter Converter used to convert from common root base */
     private $targetConverter;
 
-    /** @var string[] String replacement table for converting numbers */
+    /** @var array<string,string> String replacement table for converting numbers */
     private $conversionTable;
 
     /**
