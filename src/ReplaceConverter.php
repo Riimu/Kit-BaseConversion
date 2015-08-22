@@ -93,7 +93,7 @@ class ReplaceConverter implements Converter
 
     /**
      * Creates string replacement table between source base and target base.
-     * @return string[] String replacement table for converting numbers
+     * @return array<string,string> String replacement table for converting numbers
      */
     private function buildConversionTable()
     {
@@ -108,7 +108,7 @@ class ReplaceConverter implements Converter
      * Creates a conversion table between two lists of digits.
      * @param string[] $source Digits for the number base with larger number of digits
      * @param string[] $target Digits for the number base with smaller number of digits
-     * @return string[] String replacement table for converting numbers
+     * @return array<string,string> String replacement table for converting numbers
      */
     private function createTable($source, $target)
     {

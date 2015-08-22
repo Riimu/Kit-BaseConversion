@@ -2,6 +2,10 @@
 
 namespace Riimu\Kit\BaseConversion;
 
+use Riimu\Kit\BaseConversion\DigitList\ArrayDigitList;
+use Riimu\Kit\BaseConversion\DigitList\IntegerDigitList;
+use Riimu\Kit\BaseConversion\DigitList\StringDigitList;
+
 /**
  * Represents a positional numeral system with a specific number base.
  *
@@ -42,16 +46,16 @@ class NumberBase
     /**
      * Returns an appropriate type of digit list based on the parameter.
      * @param int|string|array $digitList List of digits
-     * @return DigitList\DigitList Appropriate type of digit list
+     * @return IntegerDigitList|StringDigitList|ArrayDigitList The built digit list
      */
     private function buildDigitList($digitList)
     {
         if (is_int($digitList)) {
-            return new DigitList\IntegerDigitList($digitList);
+            return new IntegerDigitList($digitList);
         } elseif (is_string($digitList)) {
-            return new DigitList\StringDigitList($digitList);
+            return new StringDigitList($digitList);
         } elseif (is_array($digitList)) {
-            return new DigitList\ArrayDigitList($digitList);
+            return new ArrayDigitList($digitList);
         }
 
         throw new \InvalidArgumentException('Unexpected number base type');
