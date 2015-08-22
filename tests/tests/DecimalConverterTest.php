@@ -107,7 +107,7 @@ class DecimalConverterTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($input, (new DecimalConverter($target, $source))->convertInteger($result));
     }
 
-    public function getIntegerConversionData ()
+    public function getIntegerConversionData()
     {
         return [
             ['16778DA0', '2635706640', 16, 8],
@@ -141,14 +141,14 @@ class DecimalConverterTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function getFractionConversionData ()
+    public function getFractionConversionData()
     {
         return [
             ['2', '1', 4, 2],
             ['1', '01', 4, 2],
             ['ABEEF', 'LFNF', 16, 32],
             ['302230323', 'CACEC', 4, 16],
-            ['NH6CG2363', '7782135321061', 27, 9]
+            ['NH6CG2363', '7782135321061', 27, 9],
         ];
     }
 

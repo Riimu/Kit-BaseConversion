@@ -28,7 +28,7 @@ interface Converter
      * Note that the fractional part may have fewer digits than what is required
      * by the precision if it can be accurately represented using fewer digits.
      *
-     * @param integer $precision Precision used for inaccurate conversions.
+     * @param int $precision Precision used for inaccurate conversions.
      * @return void
      */
     public function setPrecision($precision);

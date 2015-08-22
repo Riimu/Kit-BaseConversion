@@ -75,8 +75,8 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
     public function testSignedNumbers()
     {
         $converter = new BaseConverter(10, 2);
-        $this->assertEquals('-1010111', $converter->convert('-87'));
-        $this->assertEquals('+1010111', $converter->convert('+87'));
+        $this->assertSame('-1010111', $converter->convert('-87'));
+        $this->assertSame('+1010111', $converter->convert('+87'));
     }
 
     public function testConversionWithSameBase()
@@ -89,7 +89,7 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
 
     public function testFractionConversionByReplace()
     {
-        $this->assertEquals('-22.7782135321061', (new BaseConverter(27, 9))->convert('-K.NH6CG2363'));
+        $this->assertSame('-22.7782135321061', (new BaseConverter(27, 9))->convert('-K.NH6CG2363'));
     }
 
     public function testInvalidDigits()

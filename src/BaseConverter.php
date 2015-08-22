@@ -26,7 +26,7 @@ class BaseConverter implements Converter
     /** @var Converter Selected converter for base conversion */
     private $converter;
 
-    /** @var integer Precision provided to the fraction converter */
+    /** @var int Precision provided to the fraction converter */
     private $precision;
 
     /** @var NumberBase Number base used by provided numbers */
@@ -77,13 +77,14 @@ class BaseConverter implements Converter
      * @param string $number The number to convert
      * @param mixed $fromBase Number base used by the provided number
      * @param mixed $toBase Number base used by the returned number
-     * @param integer $precision Precision for inaccurate conversion
+     * @param int $precision Precision for inaccurate conversion
      * @return string|false The converted number or false on error
      */
     public static function baseConvert($number, $fromBase, $toBase, $precision = -1)
     {
-        $converter = new BaseConverter($fromBase, $toBase);
+        $converter = new self($fromBase, $toBase);
         $converter->setPrecision($precision);
+
         return $converter->convert($number);
     }
 
@@ -159,6 +160,7 @@ class BaseConverter implements Converter
     public function convertFractions(array $number)
     {
         $this->converter->setPrecision($this->precision);
+
         return $this->converter->convertFractions($number);
     }
 }

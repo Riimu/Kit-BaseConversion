@@ -59,7 +59,7 @@ class ArrayDigitList extends AbstractDigitList
     /**
      * Tells if the list of digits has duplicate values.
      * @param array $digits The list of digits for the numeral system.
-     * @return boolean True if the list contains duplicate digits, false if not
+     * @return bool True if the list contains duplicate digits, false if not
      */
     private function detectDuplicates(array $digits)
     {
@@ -75,7 +75,7 @@ class ArrayDigitList extends AbstractDigitList
     /**
      * Tells if the digit can be mapped using a value map.
      * @param mixed $digit The digit to test
-     * @return boolean True if the digit can be mapped, false if not
+     * @return bool True if the digit can be mapped, false if not
      */
     private function isMapped($digit)
     {
@@ -86,7 +86,7 @@ class ArrayDigitList extends AbstractDigitList
      * Tells if a conflict exists between string values.
      * @param string[] $digits The list of digits for the numeral system.
      * @param callable $detect Function used to detect the conflict
-     * @return boolean True if a conflict exists, false if not
+     * @return bool True if a conflict exists, false if not
      */
     private function detectConflict(array $digits, callable $detect)
     {
@@ -104,7 +104,7 @@ class ArrayDigitList extends AbstractDigitList
      * @param string $digit A single digit to test
      * @param string[] $digits The list of digits for the numeral system.
      * @param callable $detect Function used to detect the conflict
-     * @return boolean True if a conflict exists, false if not
+     * @return bool True if a conflict exists, false if not
      */
     private function inDigits($digit, array $digits, callable $detect)
     {

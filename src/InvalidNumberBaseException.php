@@ -10,5 +10,4 @@ namespace Riimu\Kit\BaseConversion;
  */
 class InvalidNumberBaseException extends \InvalidArgumentException
 {
-
 }

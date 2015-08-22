@@ -10,5 +10,4 @@ namespace Riimu\Kit\BaseConversion\DigitList;
  */
 class InvalidDigitException extends \InvalidArgumentException
 {
-
 }

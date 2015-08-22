@@ -58,10 +58,10 @@ class ReplaceConverter implements Converter
     {
         $root = $this->getRoot($source, $target);
 
-        if ($root != $source->getRadix() && $root != $target->getRadix()) {
+        if ($root !== $source->getRadix() && $root !== $target->getRadix()) {
             $proxy = new NumberBase($root);
-            $this->sourceConverter = new ReplaceConverter($source, $proxy);
-            $this->targetConverter = new ReplaceConverter($proxy, $target);
+            $this->sourceConverter = new self($source, $proxy);
+            $this->targetConverter = new self($proxy, $target);
         } else {
             $this->source = $source;
             $this->target = $target;
@@ -73,7 +73,7 @@ class ReplaceConverter implements Converter
      * Determines the common root for the number bases.
      * @param NumberBase $source Number base used by the provided numbers
      * @param NumberBase $target Number base used by the returned numbers
-     * @return integer The common root for the number bases
+     * @return int The common root for the number bases
      * @throws InvalidNumberBaseException If the number bases are not supported
      */
     private function getRoot(NumberBase $source, NumberBase $target)
@@ -120,7 +120,7 @@ class ReplaceConverter implements Converter
         $table = [$source[0] => implode('', $number)];
 
         for ($i = 1; $i < $limit; $i++) {
-            for ($j = $size - 1; $next[$j] == $last; $j--) {
+            for ($j = $size - 1; $next[$j] === $last; $j--) {
                 $number[$j] = $target[0];
                 $next[$j] = 0;
             }
@@ -150,7 +150,7 @@ class ReplaceConverter implements Converter
     /**
      * Converts the digits from source base to target base.
      * @param array $number The digits to convert.
-     * @param boolean $fractions True if converting fractions, false if not
+     * @param bool $fractions True if converting fractions, false if not
      * @return array The digits converted to target base.
      */
     private function convert(array $number, $fractions = false)
@@ -168,7 +168,7 @@ class ReplaceConverter implements Converter
     /**
      * Replace digits using string replacement.
      * @param array $number The digits to convert.
-     * @param boolean $fractions True if converting fractions, false if not
+     * @param bool $fractions True if converting fractions, false if not
      * @return array The digits converted to target base.
      */
     private function replace(array $number, $fractions = false)
@@ -182,7 +182,7 @@ class ReplaceConverter implements Converter
     /**
      * Pads the digits to correct count for string replacement.
      * @param array $number Array of digits to pad
-     * @param boolean $right True to pad from right, false to pad from left
+     * @param bool $right True to pad from right, false to pad from left
      * @return array Padded array of digits
      */
     private function zeroPad(array $number, $right)
@@ -200,7 +200,7 @@ class ReplaceConverter implements Converter
     /**
      * Trims extraneous zeroes from the digit list.
      * @param array $number Array of digits to trim
-     * @param boolean $right True to trim from right, false to trim from left
+     * @param bool $right True to trim from right, false to trim from left
      * @return array Trimmed array of digits
      */
     private function zeroTrim(array $number, $right)

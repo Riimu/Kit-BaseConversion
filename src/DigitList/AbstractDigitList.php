@@ -16,10 +16,10 @@ abstract class AbstractDigitList implements DigitList
     /** @var integer[] List of digit values */
     protected $valueMap;
 
-    /** @var boolean Tells if the digits are case sensitive or not */
+    /** @var bool Tells if the digits are case sensitive or not */
     protected $caseSensitive;
 
-    /** @var boolean Tells if the numeral system can be written using strings */
+    /** @var bool Tells if the numeral system can be written using strings */
     protected $stringConflict;
 
     /**

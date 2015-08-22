@@ -16,7 +16,7 @@ namespace Riimu\Kit\BaseConversion;
  */
 class DecimalConverter implements Converter
 {
-    /** @var integer Precision for fraction conversions */
+    /** @var int Precision for fraction conversions */
     private $precision;
 
     /** @var NumberBase Number base used by provided numbers */
@@ -110,7 +110,7 @@ class DecimalConverter implements Converter
     /**
      * Tells if the list of digits match those used by GMP.
      * @param array $digits List of digits for the number base
-     * @return boolean True if the digits match, false if they do not
+     * @return bool True if the digits match, false if they do not
      */
     private function isStandardBase(array $digits)
     {
@@ -118,13 +118,13 @@ class DecimalConverter implements Converter
             return false;
         }
 
-        return $digits == str_split(substr(self::$standardBase, 0, count($digits)));
+        return $digits === str_split(substr(self::$standardBase, 0, count($digits)));
     }
 
     /**
      * Determines the number of digits required in the target base.
-     * @param integer $count Number of digits in the original number
-     * @return integer Number of digits required in the target base
+     * @param int $count Number of digits in the original number
+     * @return int Number of digits required in the target base
      */
     private function getFractionDigitCount($count)
     {

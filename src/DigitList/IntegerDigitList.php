@@ -36,7 +36,7 @@ class IntegerDigitList extends AbstractDigitList
      * string of #NNN (where NNN is the value of the digit). Each string has
      * equal length, which depends on the given radix.
      *
-     * @param integer $radix Radix for the numeral system
+     * @param int $radix Radix for the numeral system
      * @throws \InvalidArgumentException If the radix is invalid
      */
     public function __construct($radix)
@@ -54,7 +54,7 @@ class IntegerDigitList extends AbstractDigitList
 
     /**
      * Builds the list of digits according to the radix.
-     * @param integer $radix Radix for the numeral system
+     * @param int $radix Radix for the numeral system
      * @return string[] The list of digits
      */
     private function buildDigitList($radix)
@@ -71,8 +71,8 @@ class IntegerDigitList extends AbstractDigitList
     }
 
     /**
-     * Builds the list of digits for arbitrary radix
-     * @param integer $radix Radix for the numeral system
+     * Builds the list of digits for arbitrary radix.
+     * @param int $radix Radix for the numeral system
      * @return string[] The list of digits
      */
     private function buildArbitraryList($radix)

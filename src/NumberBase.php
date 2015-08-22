@@ -18,7 +18,7 @@ class NumberBase
     /** @var DigitList\DigitList List of digits */
     private $digits;
 
-    /** @var string|integer|false Pattern for splitting strings into digits */
+    /** @var string|int|false Pattern for splitting strings into digits */
     private $digitPattern;
 
     /**
@@ -30,7 +30,7 @@ class NumberBase
      * the appropriate type of DigitList. See the constructors for appropriate
      * classes for how to define those digit lists.
      *
-     * @param DigitList\DigitList|integer|string|array $digitList List of digits
+     * @param DigitList\DigitList|int|string|array $digitList List of digits
      * @throws \InvalidArgumentException If the list of digits is invalid
      */
     public function __construct($digitList)
@@ -41,7 +41,7 @@ class NumberBase
 
     /**
      * Returns an appropriate type of digit list based on the parameter.
-     * @param integer|string|array $digitList List of digits
+     * @param int|string|array $digitList List of digits
      * @return DigitList\DigitList Appropriate type of digit list
      */
     private function buildDigitList($digitList)
@@ -59,7 +59,7 @@ class NumberBase
 
     /**
      * Tells if numbers using this numeral system cannot be represented using a string.
-     * @return boolean True if string representation is not supported, false if it is
+     * @return bool True if string representation is not supported, false if it is
      */
     public function hasStringConflict()
     {
@@ -67,8 +67,8 @@ class NumberBase
     }
 
     /**
-     * Tells if this numeral system is case sensitive or not
-     * @return boolean True if case sensitive, false if not
+     * Tells if this numeral system is case sensitive or not.
+     * @return bool True if case sensitive, false if not
      */
     public function isCaseSensitive()
     {
@@ -77,7 +77,7 @@ class NumberBase
 
     /**
      * Returns the radix (i.e. base) of the numeral system.
-     * @return integer Radix of the numeral system
+     * @return int Radix of the numeral system
      */
     public function getRadix()
     {
@@ -96,7 +96,7 @@ class NumberBase
     /**
      * Tells if the given digit is part of this numeral system.
      * @param mixed $digit The digit to look up
-     * @return boolean True if the digit exists, false is not
+     * @return bool True if the digit exists, false is not
      */
     public function hasDigit($digit)
     {
@@ -112,7 +112,7 @@ class NumberBase
     /**
      * Returns the decimal value represented by the given digit.
      * @param mixed $digit The digit to look up
-     * @return integer The decimal value for the provided digit
+     * @return int The decimal value for the provided digit
      * @throws DigitList\InvalidDigitException If the given digit is invalid
      */
     public function getValue($digit)
@@ -123,7 +123,7 @@ class NumberBase
     /**
      * Returns the decimal values for given digits.
      * @param array $digits Array of digits to look up
-     * @return integer[] Array of digit values
+     * @return int[] Array of digit values
      * @throws DigitList\InvalidDigitException If any of the digits is invalid
      */
     public function getValues(array $digits)
@@ -139,7 +139,7 @@ class NumberBase
 
     /**
      * Returns the digit representing the given decimal value.
-     * @param integer $decimal Decimal value to lookup
+     * @param int $decimal Decimal value to lookup
      * @return mixed The digit that represents the given decimal value
      * @throws \InvalidArgumentException If the decimal value is not within the number system
      */
@@ -150,7 +150,7 @@ class NumberBase
 
     /**
      * Returns the digits representing the given decimal values.
-     * @param integer[] $decimals Decimal values to look up
+     * @param int[] $decimals Decimal values to look up
      * @return array Array of digits that represent the given decimal values
      * @throws \InvalidArgumentException If any of the decimal values is invalid
      */
@@ -168,17 +168,18 @@ class NumberBase
     /**
      * Finds the largest integer root shared by the radix of both numeral systems.
      * @param NumberBase $base Numeral system to compare against
-     * @return integer|false Highest common integer root or false if none
+     * @return int|false Highest common integer root or false if none
      */
     public function findCommonRadixRoot(NumberBase $base)
     {
         $common = array_intersect($this->getRadixRoots(), $base->getRadixRoots());
+
         return count($common) > 0 ? max($common) : false;
     }
 
     /**
      * Returns all integer roots for the radix.
-     * @return integer[] Array of integer roots for the radix
+     * @return int[] Array of integer roots for the radix
      */
     private function getRadixRoots()
     {
@@ -208,6 +209,7 @@ class NumberBase
     public function canonizeDigits(array $digits)
     {
         $result = $this->getDigits($this->getValues($digits));
+
         return empty($result) ? [$this->digits->getDigit(0)] : $result;
     }
 
@@ -239,7 +241,7 @@ class NumberBase
 
     /**
      * Creates and returns the pattern for splitting strings into digits.
-     * @return string|integer Pattern to split strings into digits
+     * @return string|int Pattern to split strings into digits
      */
     private function getDigitPattern()
     {

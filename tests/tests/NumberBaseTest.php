@@ -18,30 +18,30 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     public function testCreateDefaultIntegerBase()
     {
         $base = new NumberBase(18);
-        $this->assertEquals(18, $base->getRadix());
-        $this->assertEquals('G', $base->getDigit(16));
-        $this->assertEquals(17, $base->getValue('H'));
+        $this->assertSame(18, $base->getRadix());
+        $this->assertSame('G', $base->getDigit(16));
+        $this->assertSame(17, $base->getValue('H'));
     }
 
     public function testCreateBase64IntegerBase()
     {
         $base = new NumberBase(64);
-        $this->assertEquals('A', $base->getDigit(0));
-        $this->assertEquals(62, $base->getValue('+'));
+        $this->assertSame('A', $base->getDigit(0));
+        $this->assertSame(62, $base->getValue('+'));
     }
 
     public function testCreateByteIntegerBase()
     {
         $base = new NumberBase(256);
-        $this->assertEquals("\x64", $base->getDigit(0x64));
-        $this->assertEquals(032, $base->getValue("\032"));
+        $this->assertSame("\x64", $base->getDigit(0x64));
+        $this->assertSame(032, $base->getValue("\032"));
     }
 
     public function testCreateLargeIntegerBase()
     {
         $base = new NumberBase(512);
-        $this->assertEquals("#306", $base->getDigit(306));
-        $this->assertEquals(32, $base->getValue("#032"));
+        $this->assertSame('#306', $base->getDigit(306));
+        $this->assertSame(32, $base->getValue('#032'));
     }
 
     public function testCreateWithTooSmallInteger()
@@ -53,8 +53,8 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     public function testCreateWithString()
     {
         $base = new NumberBase('ABCDEF');
-        $this->assertEquals(6, $base->getRadix());
-        $this->assertEquals(4, $base->getValue('E'));
+        $this->assertSame(6, $base->getRadix());
+        $this->assertSame(4, $base->getValue('E'));
     }
 
     public function testBaseWithTooFewCharacters()
@@ -72,9 +72,9 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     public function testCreateWithArray()
     {
         $base = new NumberBase(['foo', 'bar']);
-        $this->assertEquals(2, $base->getRadix());
-        $this->assertEquals(0, $base->getValue('foo'));
-        $this->assertEquals('bar', $base->getDigit(1));
+        $this->assertSame(2, $base->getRadix());
+        $this->assertSame(0, $base->getValue('foo'));
+        $this->assertSame('bar', $base->getDigit(1));
     }
 
     public function testBaseWithSingleNumber()
@@ -111,7 +111,7 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
         $zeroA = (object) ['n' => 0];
         $zeroB = (object) ['n' => 0];
 
-        $this->assertNotEquals(spl_object_hash($zeroA), spl_object_hash($zeroB));
+        $this->assertNotSame(spl_object_hash($zeroA), spl_object_hash($zeroB));
 
         $this->setExpectedException('InvalidArgumentException');
         new NumberBase([$zeroA, $zeroB]);
@@ -148,8 +148,8 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
         $base = new NumberBase(36);
         $this->assertTrue($base->hasDigit('A'));
         $this->assertTrue($base->hasDigit('a'));
-        $this->assertEquals(10, $base->getValue('A'));
-        $this->assertEquals(10, $base->getValue('a'));
+        $this->assertSame(10, $base->getValue('A'));
+        $this->assertSame(10, $base->getValue('a'));
 
         $base = new NumberBase('aAB');
         $this->assertFalse($base->hasDigit('b'));
@@ -162,7 +162,7 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     {
         $aBase = new NumberBase($a);
         $bBase = new NumberBase($b);
-        $this->assertEquals($common, $aBase->findCommonRadixRoot($bBase));
+        $this->assertSame($common, $aBase->findCommonRadixRoot($bBase));
     }
 
     public function getFindCommonRadixRootTestValues()

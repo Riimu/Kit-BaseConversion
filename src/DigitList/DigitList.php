@@ -17,14 +17,14 @@ namespace Riimu\Kit\BaseConversion\DigitList;
 interface DigitList extends \Countable
 {
     /**
-     * Tells if there is conflict that prevents numbers from being represented as a string
-     * @return boolean True if a number cannot be represented using a string, false if it can
+     * Tells if there is conflict that prevents numbers from being represented as a string.
+     * @return bool True if a number cannot be represented using a string, false if it can
      */
     public function hasStringConflict();
 
     /**
      * Tells if the digits are case sensitive or not.
-     * @return boolean True if the digits are case sensitive, false if not
+     * @return bool True if the digits are case sensitive, false if not
      */
     public function isCaseSensitive();
 
@@ -36,7 +36,7 @@ interface DigitList extends \Countable
 
     /**
      * Returns the digit that represents the given value.
-     * @param integer $value The value of the digit
+     * @param int $value The value of the digit
      * @return mixed The digit that represents the value
      * @throws \InvalidArgumentException If the value is invalid
      */
@@ -45,14 +45,14 @@ interface DigitList extends \Countable
     /**
      * Returns the value for the given digit.
      * @param mixed $digit Digit to search for
-     * @return integer The value of the digit
+     * @return int The value of the digit
      * @throws InvalidDigitException if the digit is invalid
      */
     public function getValue($digit);
 
     /**
      * Returns the number of different digits.
-     * @return integer the number of different digits
+     * @return int the number of different digits
      */
     public function count();
 }
