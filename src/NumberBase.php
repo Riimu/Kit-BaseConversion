@@ -14,7 +14,7 @@ use Riimu\Kit\BaseConversion\DigitList\StringDigitList;
  * strings and also provides convenience when creating lists of digits.
  *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
- * @copyright Copyright (c) 2013, Riikka Kalliomäki
+ * @copyright Copyright (c) 2014-2017 Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
 class NumberBase

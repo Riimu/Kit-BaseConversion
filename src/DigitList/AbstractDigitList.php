@@ -5,7 +5,7 @@ namespace Riimu\Kit\BaseConversion\DigitList;
 /**
  * Provides common functionality for different digit lists.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
- * @copyright Copyright (c) 2015, Riikka Kalliomäki
+ * @copyright Copyright (c) 2015-2017 Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
 abstract class AbstractDigitList implements DigitList
