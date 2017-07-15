@@ -1,17 +1,13 @@
 <?php
 
 if ($argc < 3) {
-    echo "Usage efficiency.php <repeats> <length> [source-base] [target-base]" . PHP_EOL;
+    echo 'Usage php efficiency.php <repeats> <length> [source-base] [target-base]' . PHP_EOL;
     exit;
 }
 
-require __DIR__ . '/../src/Converter.php';
-require __DIR__ . '/../src/NumberBase.php';
-require __DIR__ . '/../src/DecimalConverter.php';
-require __DIR__ . '/../src/ReplaceConverter.php';
-require __DIR__ . '/../src/BaseConverter.php';
+require __DIR__ . '/../src/autoload.php';
 
-echo "Test for efficiency of different algorithms available:" . PHP_EOL;
+echo 'Test for efficiency of different algorithms available:' . PHP_EOL;
 
 $sbase = isset($argv[3]) ? (ctype_digit($argv[3]) ? intval($argv[3]) : $argv[3]) : 2;
 $tbase = isset($argv[4]) ? (ctype_digit($argv[4]) ? intval($argv[4]) : $argv[4]) : 16;
@@ -75,6 +71,6 @@ $doTrial = function ($class) use ($source, $target, $repeats, $number, & $timer,
 
 echo "\nReplace Conversion:\n\n";
 
-$doTrial('Riimu\Kit\BaseConversion\ReplaceConverter');
-$doTrial('Riimu\Kit\BaseConversion\DecimalConverter');
+$doTrial(\Riimu\Kit\BaseConversion\ReplaceConverter::class);
+$doTrial(\Riimu\Kit\BaseConversion\DecimalConverter::class);
 
