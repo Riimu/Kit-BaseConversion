@@ -2,16 +2,19 @@
 
 namespace Riimu\Kit\BaseConversion;
 
+use PHPUnit\Framework\TestCase;
+use Riimu\Kit\BaseConversion\DigitList\InvalidDigitException;
+
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class NumberBaseTest extends \PHPUnit_Framework_TestCase
+class NumberBaseTest extends TestCase
 {
     public function testInvalidBaseType()
     {
-        $this->setExpectedException('\InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new NumberBase(true);
     }
 
@@ -46,7 +49,7 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
 
     public function testCreateWithTooSmallInteger()
     {
-        $this->setExpectedException('\InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new NumberBase(1);
     }
 
@@ -59,13 +62,13 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
 
     public function testBaseWithTooFewCharacters()
     {
-        $this->setExpectedException('\InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new NumberBase('0');
     }
 
     public function testBaseWithDuplicateCharacters()
     {
-        $this->setExpectedException('\InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new NumberBase('00');
     }
 
@@ -79,19 +82,19 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
 
     public function testBaseWithSingleNumber()
     {
-        $this->setExpectedException('\InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new NumberBase([0]);
     }
 
     public function testBaseWithDuplicateNumbers()
     {
-        $this->setExpectedException('\InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new NumberBase([0, 0, 1]);
     }
 
     public function testBaseWithMissingValues()
     {
-        $this->setExpectedException('\InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new NumberBase([0 => 0, 2 => 1]);
     }
 
@@ -113,7 +116,7 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
 
         $this->assertNotSame(spl_object_hash($zeroA), spl_object_hash($zeroB));
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new NumberBase([$zeroA, $zeroB]);
     }
 
@@ -125,20 +128,20 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
 
         $base = new NumberBase([$zero, $one]);
 
-        $this->setExpectedException('Riimu\Kit\BaseConversion\DigitList\InvalidDigitException');
+        $this->expectException(InvalidDigitException::class);
         $base->getValue($two);
     }
 
     public function testGettingMissingDecimalValue()
     {
-        $this->setExpectedException('\InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         $base = new NumberBase(16);
         $base->getDigit(17);
     }
 
     public function testGettingMissingCharacter()
     {
-        $this->setExpectedException('\InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         $base = new NumberBase(16);
         $base->getValue('G');
     }
@@ -156,6 +159,9 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @param int $a The radix of the first number base
+     * @param int $b The radix of the second number base
+     * @param int $common The common root for both number bases
      * @dataProvider getFindCommonRadixRootTestValues
      */
     public function testFindCommonRadixRoot($a, $b, $common)
@@ -211,13 +217,13 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
 
     public function testUnsupportedSplitting()
     {
-        $this->setExpectedException('\RuntimeException');
+        $this->expectException(\RuntimeException::class);
         (new NumberBase(['a', 'aa']))->splitString('aaa');
     }
 
     public function testMissingDigits()
     {
-        $this->setExpectedException('Riimu\Kit\BaseConversion\DigitList\InvalidDigitException');
+        $this->expectException(InvalidDigitException::class);
         (new NumberBase('01'))->splitString('2');
     }
 
@@ -234,7 +240,7 @@ class NumberBaseTest extends \PHPUnit_Framework_TestCase
 
     public function testArrayOnScalarBase()
     {
-        $this->setExpectedException('Riimu\Kit\BaseConversion\DigitList\InvalidDigitException');
+        $this->expectException(InvalidDigitException::class);
         (new NumberBase('ab'))->getValue([]);
     }
 }

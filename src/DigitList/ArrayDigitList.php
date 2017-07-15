@@ -18,7 +18,7 @@ class ArrayDigitList extends AbstractDigitList
      * value is an acceptable digit, but note that the digits are considered
      * duplicate if their values are equal using a loose comparison.
      *
-     * @param array $digits The list of digits for the numeral system.
+     * @param array $digits The list of digits for the numeral system
      * @throws \InvalidArgumentException If the list of digits is invalid
      */
     public function __construct(array $digits)
@@ -41,7 +41,8 @@ class ArrayDigitList extends AbstractDigitList
 
     /**
      * Validates and sorts the list of digits.
-     * @param array $digits The list of digits for the numeral system.
+     * @param array $digits The list of digits for the numeral system
+     * @throws \InvalidArgumentException If the digit list is invalid
      */
     private function validateDigits(& $digits)
     {
@@ -58,7 +59,7 @@ class ArrayDigitList extends AbstractDigitList
 
     /**
      * Tells if the list of digits has duplicate values.
-     * @param array $digits The list of digits for the numeral system.
+     * @param array $digits The list of digits for the numeral system
      * @return bool True if the list contains duplicate digits, false if not
      */
     private function detectDuplicates(array $digits)
@@ -84,7 +85,7 @@ class ArrayDigitList extends AbstractDigitList
 
     /**
      * Tells if a conflict exists between string values.
-     * @param string[] $digits The list of digits for the numeral system.
+     * @param string[] $digits The list of digits for the numeral system
      * @param callable $detect Function used to detect the conflict
      * @return bool True if a conflict exists, false if not
      */
@@ -102,7 +103,7 @@ class ArrayDigitList extends AbstractDigitList
     /**
      * Tells if a conflict exists for a digit in a list of digits.
      * @param string $digit A single digit to test
-     * @param string[] $digits The list of digits for the numeral system.
+     * @param string[] $digits The list of digits for the numeral system
      * @param callable $detect Function used to detect the conflict
      * @return bool True if a conflict exists, false if not
      */

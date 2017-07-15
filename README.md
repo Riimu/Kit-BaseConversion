@@ -16,15 +16,16 @@ precision integer arithmetic.
 The API documentation, which can be generated using Apigen, can be read online
 at: http://kit.riimu.net/api/baseconversion/
 
-[![Build Status](https://img.shields.io/travis/Riimu/Kit-BaseConversion.svg?style=flat)](https://travis-ci.org/Riimu/Kit-BaseConversion)
-[![Code Coverage](https://img.shields.io/scrutinizer/coverage/g/Riimu/Kit-BaseConversion.svg?style=flat)](https://scrutinizer-ci.com/g/Riimu/Kit-BaseConversion/)
-[![Scrutinizer Code Quality](https://img.shields.io/scrutinizer/g/Riimu/Kit-BaseConversion.svg?style=flat)](https://scrutinizer-ci.com/g/Riimu/Kit-BaseConversion/)
+[![Travis](https://img.shields.io/travis/Riimu/Kit-BaseConversion.svg?style=flat-square)](https://travis-ci.org/Riimu/Kit-BaseConversion)
+[![Scrutinizer](https://img.shields.io/scrutinizer/g/Riimu/Kit-BaseConversion.svg?style=flat-square)](https://scrutinizer-ci.com/g/Riimu/Kit-BaseConversion/)
+[![Scrutinizer Coverage](https://img.shields.io/scrutinizer/coverage/g/Riimu/Kit-BaseConversion.svg?style=flat-square)](https://scrutinizer-ci.com/g/Riimu/Kit-BaseConversion/)
+[![Packagist](https://img.shields.io/packagist/v/riimu/kit-baseconversion.svg?style=flat-square)](https://packagist.org/packages/riimu/kit-baseconversion)
 
 ## Requirements ##
 
 In order to use this library, the following requirements must be met:
 
-  * PHP version 5.4
+  * PHP version 5.6
   * GMP extension must be enabled
 
 ## Installation ##

@@ -149,9 +149,9 @@ class ReplaceConverter implements Converter
 
     /**
      * Converts the digits from source base to target base.
-     * @param array $number The digits to convert.
+     * @param array $number The digits to convert
      * @param bool $fractions True if converting fractions, false if not
-     * @return array The digits converted to target base.
+     * @return array The digits converted to target base
      */
     private function convert(array $number, $fractions = false)
     {
@@ -167,9 +167,9 @@ class ReplaceConverter implements Converter
 
     /**
      * Replace digits using string replacement.
-     * @param array $number The digits to convert.
+     * @param array $number The digits to convert
      * @param bool $fractions True if converting fractions, false if not
-     * @return array The digits converted to target base.
+     * @return array The digits converted to target base
      */
     private function replace(array $number, $fractions = false)
     {

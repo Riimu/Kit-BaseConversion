@@ -190,8 +190,8 @@ class NumberBase
         $radix = count($this->digits);
         $roots = [$radix];
 
-        for ($i = 2; ($root = (int) pow($radix, 1 / $i)) > 1; $i++) {
-            if (pow($root, $i) === $radix) {
+        for ($i = 2; ($root = (int) ($radix ** (1 / $i))) > 1; $i++) {
+            if ($root ** $i === $radix) {
                 $roots[] = $root;
             }
         }

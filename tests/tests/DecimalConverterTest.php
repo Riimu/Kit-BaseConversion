@@ -2,17 +2,19 @@
 
 namespace Riimu\Kit\BaseConversion;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2014, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class DecimalConverterTest extends \PHPUnit_Framework_TestCase
+class DecimalConverterTest extends TestCase
 {
     public function testCreatingValidConverter()
     {
         $this->assertInstanceOf(
-            'Riimu\Kit\BaseConversion\DecimalConverter',
+            DecimalConverter::class,
             new DecimalConverter(new NumberBase(2), new NumberBase(16))
         );
     }
@@ -94,6 +96,10 @@ class DecimalConverterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @param string $input The input number
+     * @param string $result The resulting number
+     * @param int $source The source number base radix
+     * @param int $target The target number base radix
      * @dataProvider getIntegerConversionData
      */
     public function testIntegerConversion($input, $result, $source, $target)
@@ -124,6 +130,10 @@ class DecimalConverterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @param string $input The input number
+     * @param string $result The resulting number
+     * @param int $source The source number base radix
+     * @param int $target The target number base radix
      * @dataProvider getFractionConversionData
      */
     public function testFractionConversion($input, $result, $source, $target)
@@ -153,6 +163,11 @@ class DecimalConverterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @param string $input The input number
+     * @param string $result The resulting number
+     * @param int $source The source number base radix
+     * @param int $target The target number base radix
+     * @param int $precision The result number precision
      * @dataProvider getPrecisionConversionData
      */
     public function testConversionPrecision($input, $result, $source, $target, $precision)

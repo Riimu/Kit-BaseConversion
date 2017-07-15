@@ -28,7 +28,7 @@ interface Converter
      * Note that the fractional part may have fewer digits than what is required
      * by the precision if it can be accurately represented using fewer digits.
      *
-     * @param int $precision Precision used for inaccurate conversions.
+     * @param int $precision Precision used for inaccurate conversions
      * @return void
      */
     public function setPrecision($precision);
@@ -57,7 +57,7 @@ interface Converter
      *
      * @param array $number Array of digits representing the fractional part
      * @return array Digits for the converted number
-     * @throws DigitList\InvalidDigitException If the fractional part contain invalid digits.
+     * @throws DigitList\InvalidDigitException If the fractional part contain invalid digits
      */
     public function convertFractions(array $number);
 }

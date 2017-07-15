@@ -13,7 +13,7 @@ abstract class AbstractDigitList implements DigitList
     /** @var array List of digits */
     protected $digits;
 
-    /** @var integer[] List of digit values */
+    /** @var int[] List of digit values */
     protected $valueMap;
 
     /** @var bool Tells if the digits are case sensitive or not */
@@ -24,7 +24,7 @@ abstract class AbstractDigitList implements DigitList
 
     /**
      * Sets the value map and determines if it's case sensitive.
-     * @param integer[] $map List of values for digits
+     * @param int[] $map List of values for digits
      */
     protected function setValueMap(array $map)
     {

@@ -2,12 +2,15 @@
 
 namespace Riimu\Kit\BaseConversion;
 
+use PHPUnit\Framework\TestCase;
+use Riimu\Kit\BaseConversion\DigitList\InvalidDigitException;
+
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class BaseConverterTest extends \PHPUnit_Framework_TestCase
+class BaseConverterTest extends TestCase
 {
     public function testStaticMethod()
     {
@@ -19,7 +22,7 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
     public function testCreatingWithReplaceBases()
     {
         $this->assertInstanceOf(
-            'Riimu\Kit\BaseConversion\BaseConverter',
+            BaseConverter::class,
             new BaseConverter(new NumberBase(8), new NumberBase(16))
         );
     }
@@ -27,7 +30,7 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
     public function testCreatingWithMathBases()
     {
         $this->assertInstanceOf(
-            'Riimu\Kit\BaseConversion\BaseConverter',
+            BaseConverter::class,
             new BaseConverter(new NumberBase(10), new NumberBase(2))
         );
     }
@@ -35,7 +38,7 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
     public function testCreatingWithStringBases()
     {
         $this->assertInstanceOf(
-            'Riimu\Kit\BaseConversion\BaseConverter',
+            BaseConverter::class,
             new BaseConverter(10, 2)
         );
     }
@@ -99,13 +102,13 @@ class BaseConverterTest extends \PHPUnit_Framework_TestCase
 
     public function testInvalidDigitsInIntegerConversion()
     {
-        $this->setExpectedException('Riimu\Kit\BaseConversion\DigitList\InvalidDigitException');
+        $this->expectException(InvalidDigitException::class);
         (new BaseConverter(2, 16))->convertInteger(['2']);
     }
 
     public function testInvalidDigitsInFractionConversion()
     {
-        $this->setExpectedException('Riimu\Kit\BaseConversion\DigitList\InvalidDigitException');
+        $this->expectException(InvalidDigitException::class);
         (new BaseConverter(2, 16))->convertFractions(['2']);
     }
 }

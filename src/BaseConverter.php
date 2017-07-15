@@ -109,7 +109,7 @@ class BaseConverter implements Converter
     public function convert($number)
     {
         $integer = (string) $number;
-        $fractions = '';
+        $fractions = null;
         $sign = '';
 
         if (in_array(substr($integer, 0, 1), ['+', '-'], true)) {
@@ -129,7 +129,7 @@ class BaseConverter implements Converter
      * Converts the different parts of the number and handles invalid digits.
      * @param string $sign Sign that preceded the number or an empty string
      * @param string $integer The integer part of the number
-     * @param string $fractions The fractional part of the number or an empty string
+     * @param string|null $fractions The fractional part of the number or null if none
      * @return string|false The converted number or false on error
      */
     private function convertNumber($sign, $integer, $fractions)
@@ -137,7 +137,7 @@ class BaseConverter implements Converter
         try {
             $result = implode('', $this->convertInteger($this->source->splitString($integer)));
 
-            if ($fractions !== '') {
+            if ($fractions !== null) {
                 $result .= '.' . implode('', $this->convertFractions($this->source->splitString($fractions)));
             }
         } catch (DigitList\InvalidDigitException $ex) {

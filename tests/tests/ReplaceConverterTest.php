@@ -2,17 +2,19 @@
 
 namespace Riimu\Kit\BaseConversion;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2014, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class ReplaceConverterTest extends \PHPUnit_Framework_TestCase
+class ReplaceConverterTest extends TestCase
 {
     public function testCreatingValidConverter()
     {
         $this->assertInstanceOf(
-            'Riimu\Kit\BaseConversion\ReplaceConverter',
+            ReplaceConverter::class,
             new ReplaceConverter(new NumberBase(2), new NumberBase(16))
         );
     }
@@ -20,7 +22,7 @@ class ReplaceConverterTest extends \PHPUnit_Framework_TestCase
     public function testCreatingProxyConverter()
     {
         $this->assertInstanceOf(
-            'Riimu\Kit\BaseConversion\ReplaceConverter',
+            ReplaceConverter::class,
             new ReplaceConverter(new NumberBase(8), new NumberBase(16))
         );
     }
@@ -28,20 +30,20 @@ class ReplaceConverterTest extends \PHPUnit_Framework_TestCase
     public function testCreatingWithSameRadix()
     {
         $this->assertInstanceOf(
-            'Riimu\Kit\BaseConversion\ReplaceConverter',
+            ReplaceConverter::class,
             new ReplaceConverter(new NumberBase('0123'), new NumberBase('ABCD'))
         );
     }
 
     public function testCreatingNoCommonRadixRoot()
     {
-        $this->setExpectedException('Riimu\Kit\BaseConversion\InvalidNumberBaseException');
+        $this->expectException(InvalidNumberBaseException::class);
         new ReplaceConverter(new NumberBase(2), new NumberBase(3));
     }
 
     public function testCreatingStringConflict()
     {
-        $this->setExpectedException('Riimu\Kit\BaseConversion\InvalidNumberBaseException');
+        $this->expectException(InvalidNumberBaseException::class);
         new ReplaceConverter(new NumberBase(['A', 'AA']), new NumberBase(4));
     }
 
@@ -136,6 +138,10 @@ class ReplaceConverterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @param string $input The input number
+     * @param string $result The resulting number
+     * @param int $source The source number base radix
+     * @param int $target The target number base radix
      * @dataProvider getIntegerConversionData
      */
     public function testIntegerConversion($input, $result, $source, $target)
@@ -166,6 +172,10 @@ class ReplaceConverterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @param string $input The input number
+     * @param string $result The resulting number
+     * @param int $source The source number base radix
+     * @param int $target The target number base radix
      * @dataProvider getFractionConversionData
      */
     public function testFractionConversion($input, $result, $source, $target)
